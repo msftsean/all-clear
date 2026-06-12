@@ -200,7 +200,7 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#phone"><span class="n">A2</span>Phone call-in &amp; speak-back</a>
       <a class="sec">Operate</a>
       <a href="#deploy"><span class="n">OP</span>Deploy &amp; manage</a>
-      <a href="#handoff"><span class="n">→</span>Hand-off to Adrian</a>
+      <a href="#handoff"><span class="n">✓</span>Summary</a>
     </nav>
   </aside>
 
@@ -286,7 +286,7 @@ html.js main section.in{opacity:1;transform:none}
         <li>Watch the outcome: it should <strong>attach</strong> to the same incident rather than open a new one, and the agent says you're not the only caller.</li>
       </ol>
       <div class="expect"><span class="eyebrow">You should see</span><p style="margin:.4em 0 0">Outcome <span class="pill">ATTACH_TO_INCIDENT</span>, the same <code>AC-####</code> id, and a similarity score on the incident card. The agent frames magnitude as community: &ldquo;you're the Nth report.&rdquo;</p></div>
-      <div class="note"><span class="eyebrow">Heads-up for coaches</span><p style="margin:.4em 0 0">Dedup compares within the <em>same category</em>. If the two messages get classified into different categories, you'll see two incidents instead of an attach &mdash; that's expected. Keep the wording very close to trigger an attach. <strong>Also:</strong> in this deployment incidents live in memory only, so dedup resets after a restart (see <a href="#handoff">Hand-off</a>, item D1).</p></div>
+      <div class="note"><span class="eyebrow">Heads-up for coaches</span><p style="margin:.4em 0 0">Dedup compares within the <em>same category</em>. If the two messages get classified into different categories, you'll see two incidents instead of an attach &mdash; that's expected. Keep the wording very close to trigger an attach. <strong>Also:</strong> in this deployment incidents live in memory only, so dedup resets after a restart (see <a href="#handoff">Summary</a>, item D1).</p></div>
     </section>
 
     <section id="ex4">
@@ -399,22 +399,22 @@ azd deploy frontend            # rebuild & ship just the UI</pre>
     </section>
 
     <section id="handoff">
-      <h2>→ Hand-off to Adrian</h2>
-      <p>What's done, what's next.</p>
-      <h3 class="status-ok">Done &amp; live</h3>
+      <h2>✓ Summary — what was created</h2>
+      <p>A snapshot of what this build delivers today, and what's intentionally left off.</p>
+      <h3 class="status-ok">Built &amp; live</h3>
       <ul>
         <li>Three-agent triage pipeline on Microsoft Agent Framework, 276 tests green.</li>
         <li>Deployed to Azure Container Apps on <span class="mono">gpt-5.1</span>; classification eval 100%; red-teamed (PII, injection, authority bounds) &mdash; all pass.</li>
         <li>Briefing-room UI live, matching the design system.</li>
       </ul>
-      <h3 class="status-warn">Next (the real work)</h3>
+      <h3 class="status-warn">Not yet enabled</h3>
       <ul>
-        <li><strong>D1/D2 &mdash; durable storage.</strong> Today incidents live in memory and reset on restart. Wire <code>AzureCosmosIncidentStore</code> to the already-provisioned Cosmos <code>incidents</code> container. This is the top priority.</li>
+        <li><strong>D1/D2 &mdash; durable storage.</strong> Today incidents live in memory and reset on restart. <code>AzureCosmosIncidentStore</code> can be wired to the already-provisioned Cosmos <code>incidents</code> container.</li>
         <li><strong>Voice + phone enablement</strong> (sections A1/A2): realtime model deployment + ACS number + Event Grid + a mic button in the new UI.</li>
         <li><strong>Map upgrade:</strong> swap the offline SVG outline for live react-leaflet + OSM tiles.</li>
         <li><strong>Developer's runbook</strong> (coming next): code structure, the Constitution, how to add an agent/tool, the test &amp; eval harness.</li>
       </ul>
-      <p class="footer">All Clear &mdash; coach's runbook. Built to get you and Adrian from &ldquo;I have no idea where to go&rdquo; to a running, demoable system. Detailed deployment &amp; eval notes live in <code>specs/016-production-deployment/</code>.</p>
+      <p class="footer">All Clear &mdash; coach's runbook. A running, demoable incident-triage system, built and deployed. Detailed deployment &amp; eval notes live in <code>specs/016-production-deployment/</code>.</p>
     </section>
   </main>
 </div>
