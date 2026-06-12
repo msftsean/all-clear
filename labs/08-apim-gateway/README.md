@@ -94,7 +94,7 @@ az apim show -n "$APIM_NAME" -g "$RG" --query provisioningState -o tsv
 
 ## 🔌 Step 2 — Import the All Clear backend API
 
-Import your backend's OpenAPI document (FastAPI serves it at `/openapi.json`).
+Import your backend's OpenAPI document (this app serves it at `/api/openapi.json`).
 
 ```bash
 BACKEND_URL="https://<your-backend>.azurecontainerapps.io"
@@ -106,7 +106,7 @@ az apim api import \
   --api-id allclear \
   --display-name "All Clear API" \
   --specification-format OpenApi \
-  --specification-url "$BACKEND_URL/openapi.json" \
+  --specification-url "$BACKEND_URL/api/openapi.json" \
   --service-url "$BACKEND_URL"
 ```
 
