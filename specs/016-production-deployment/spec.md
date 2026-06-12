@@ -28,6 +28,17 @@ The inherited `infra/main.bicep` + `azure.yaml` come from the 47 Doors "Universi
 - Voice/ACS production hardening — covered by 007-voice-demo-hardening.
 - Multi-region / DR topology. Single region (East US) to match the existing Azure OpenAI resource.
 - Azure HorizonDB adoption — see the Database Decision below; explicitly deferred to a future feature.
+- **API Management (AI gateway) provisioning** — APIM is the production-posture entry tier (rate limits · token budgets · JWT validation · usage metrics) and is built/taught in `labs/08-apim-gateway`, but it is **not** provisioned by this feature's `azd up`. See *Adjacent architecture* below.
+- **Azure AI Foundry safety/eval provisioning** — the red-team, AI-quality eval, and content-filter guardrail surface lives in the `allclear-foundry` project (East US 2). It is operated alongside the app but is out of this feature's `azd up` scope.
+
+---
+
+## Adjacent architecture: AI gateway & safety surface (production posture)
+
+These two pillars frame the documented architecture and the summit narrative but are **operated alongside** the azd-provisioned core rather than provisioned by it:
+
+- **API Management — AI gateway.** Fronts the All Clear API / model with rate-limit-by-key, `azure-openai-token-limit` (token budgets), `validate-jwt`, and App Insights usage metrics. Entry flow: `ClearBoard → APIM → Container Apps API`. Consumption SKU; see `labs/08-apim-gateway`.
+- **Azure AI Foundry — safety & evals.** Project `allclear-foundry` (East US 2) hosts the red-team scan, the AI-quality evaluations (`evals/quality/`), and the content-filter guardrails (`allclear-guardrails`) applied to the gpt-5.1 deployment.
 
 ---
 

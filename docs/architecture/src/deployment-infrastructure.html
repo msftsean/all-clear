@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+  All Clear - Azure Deployment diagram (SOURCE OF TRUTH).
+  Edit this file, then re-render with docs/architecture/src/render.ps1
+  to regenerate docs/architecture/allclear-deployment-infrastructure.png.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0b1f3a; --ink: #1b2a44; --muted: #5b6b86;
+    --azure: #0078d4; --azure2: #2a93ee; --line: #8aa0c2;
+    --canvas: #f6f8fc; --card: #ffffff; --ring: rgba(0,120,212,.18);
+    --accent: #b9f000; --green: #1faa59; --purple: #8661c5;
+  }
+  html,body { width:2000px; height:1000px; background:var(--canvas);
+    font-family:"Segoe UI",system-ui,Arial,sans-serif; color:var(--ink); }
+  .stage { position:relative; width:2000px; height:1000px; overflow:hidden; }
+  .topbar { position:absolute; top:0; left:0; width:100%; height:7px;
+    background:linear-gradient(90deg,#003a8c,#0078d4 45%,#50b9f7); }
+  h1 { position:absolute; left:56px; top:34px; font-size:46px; color:var(--navy);
+    font-weight:800; letter-spacing:-.5px; }
+  h1 .light { color:var(--azure); font-weight:700; }
+  .sub { position:absolute; left:58px; top:96px; font-size:21px; color:var(--muted); }
+
+  svg.wires { position:absolute; inset:0; width:2000px; height:1000px; z-index:1; }
+
+  .card { position:absolute; z-index:2; background:var(--card); border-radius:18px;
+    border:1px solid #e4ebf5; box-shadow:0 1px 0 var(--ring), 0 10px 24px rgba(16,42,82,.06);
+    padding:18px 20px; }
+  .card .hd { display:flex; align-items:center; gap:13px; }
+  .card .ic, .caenv .ic { width:46px; height:46px; flex:0 0 46px; }
+  .card .ttl { font-size:23px; font-weight:700; color:var(--ink); line-height:1.1; }
+  .card .desc { font-size:16px; color:var(--muted); margin-top:3px; }
+  .card.svc .ttl { font-size:21px; }
+
+  .rg { position:absolute; z-index:1; border:2.5px dashed #2a93ee; border-radius:26px;
+    background:rgba(42,147,238,.035); }
+  .rg .rglab { position:absolute; top:-16px; left:28px; background:var(--canvas);
+    padding:0 12px; font-size:20px; font-weight:700; color:var(--azure);
+    display:flex; align-items:center; gap:9px; }
+
+  .caenv { position:absolute; z-index:2; border:1.5px solid #cfe0f5; border-radius:20px;
+    background:linear-gradient(180deg,#f3f8ff,#eef4fe); }
+  .caenv .cahd { display:flex; align-items:center; gap:13px; padding:16px 20px 0; }
+  .caenv .catitle { font-size:22px; font-weight:700; color:var(--ink); }
+  .caenv .casub { font-size:15px; color:var(--muted); padding:2px 0 0 59px; }
+
+  .api { position:absolute; background:#fff; border:1.5px solid #bcd3f2; border-radius:16px;
+    box-shadow:0 8px 20px rgba(16,42,82,.07); text-align:center; }
+  .api .an { font-size:25px; font-weight:800; color:var(--navy); margin-top:14px; }
+  .api .af { font-size:16px; color:var(--muted); margin-top:2px; }
+  .pills { display:flex; gap:12px; justify-content:center; margin-top:16px; }
+  .pill { font-size:16px; font-weight:600; padding:9px 16px; border-radius:999px; }
+  .pill.q { background:#e2eefe; color:#1c5fb0; }
+  .pill.r { background:#efe7fb; color:#6f49b6; }
+  .pill.a { background:#e1f2ea; color:#1b7d49; }
+
+  .accentcard { border:1.5px solid #c7d96b; box-shadow:0 1px 0 rgba(150,180,40,.25), 0 10px 24px rgba(16,42,82,.06); }
+  .tag { display:inline-block; font-size:13px; font-weight:700; letter-spacing:.4px;
+    color:#5e7d00; background:#eef9c6; border-radius:6px; padding:3px 9px; margin-top:10px; }
+
+  .obs { position:absolute; z-index:2; border:1px solid #e4ebf5; border-radius:18px;
+    background:#fbfdff; display:flex; align-items:center; gap:34px; padding:0 28px; }
+  .obs .lbl { font-size:19px; font-weight:700; color:var(--ink); }
+  .obs .item { display:flex; align-items:center; gap:11px; font-size:18px; color:#33425e; }
+  .obs .meta { margin-left:auto; font-size:16px; color:var(--muted); }
+
+  .wlab { font-size:15px; font-weight:600; fill:#41587c; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="topbar"></div>
+  <h1>All Clear <span class="light">&mdash; Azure Deployment</span></h1>
+  <div class="sub">azd up provisions the core footprint &middot; API Management is the AI gateway &middot; Azure AI Foundry hosts safety &amp; evals</div>
+
+  <!-- connector layer -->
+  <svg class="wires" viewBox="0 0 2000 1000">
+    <defs>
+      <marker id="arrow" markerWidth="11" markerHeight="11" refX="8" refY="5" orient="auto">
+        <path d="M1,1 L9,5 L1,9 Z" fill="#5b7196"/>
+      </marker>
+      <marker id="arrowblue" markerWidth="13" markerHeight="13" refX="9" refY="5.5" orient="auto">
+        <path d="M1,1 L10,5.5 L1,10 Z" fill="#0078d4"/>
+      </marker>
+    </defs>
+    <!-- ClearBoard -> APIM -->
+    <path d="M312,512 L432,512" stroke="#0078d4" stroke-width="4" fill="none" marker-end="url(#arrowblue)"/>
+    <text class="wlab" x="322" y="500">HTTPS / WS</text>
+    <!-- APIM -> API -->
+    <path d="M664,512 L760,512" stroke="#0078d4" stroke-width="4" fill="none" marker-end="url(#arrowblue)"/>
+    <!-- API -> services fan -->
+    <path d="M1276,470 C1330,420 1360,360 1418,345" stroke="#5b7196" stroke-width="2.6" fill="none" marker-end="url(#arrow)"/>
+    <path d="M1276,486 C1360,470 1380,470 1418,470" stroke="#5b7196" stroke-width="2.6" fill="none" marker-end="url(#arrow)"/>
+    <path d="M1276,500 C1340,560 1370,600 1418,605" stroke="#5b7196" stroke-width="2.6" fill="none" marker-end="url(#arrow)"/>
+    <!-- API -> Foundry -->
+    <path d="M1010,612 C1010,690 1010,700 1418,742" stroke="#5b7196" stroke-width="2.6" fill="none" marker-end="url(#arrow)"/>
+  </svg>
+
+  <!-- ClearBoard (outside RG) -->
+  <div class="card" style="left:60px; top:440px; width:252px; height:150px;">
+    <div class="hd">
+      <svg class="ic" viewBox="0 0 48 48"><rect x="5" y="8" width="38" height="27" rx="3" fill="#2a93ee"/><rect x="8" y="11" width="32" height="21" rx="1.5" fill="#eaf4ff"/><rect x="18" y="38" width="12" height="4" rx="2" fill="#2a93ee"/><circle cx="16" cy="21" r="3" fill="#1faa59"/><circle cx="27" cy="18" r="3" fill="#e8543f"/><circle cx="31" cy="26" r="3" fill="#f0a500"/></svg>
+      <div><div class="ttl">ClearBoard</div><div class="desc">React + Vite + TS</div></div>
+    </div>
+    <div class="desc" style="margin-top:14px;">live incident map &middot; pins merge on dedup</div>
+  </div>
+
+  <!-- Resource group -->
+  <div class="rg" style="left:360px; top:168px; width:1592px; height:770px;">
+    <div class="rglab"><svg width="22" height="22" viewBox="0 0 24 24"><path d="M6 16a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1.5A4.5 4.5 0 1 1 17 16H6z" fill="#7fb6f0"/></svg>Azure subscription / resource group &middot; rg-allclear &middot; East US</div>
+  </div>
+
+  <!-- APIM AI gateway -->
+  <div class="card accentcard" style="left:452px; top:418px; width:212px; height:188px;">
+    <div class="hd">
+      <svg class="ic" viewBox="0 0 48 48"><rect x="6" y="9" width="36" height="30" rx="6" fill="#0a6c3e"/><path d="M18 18l-6 6 6 6M30 18l6 6-6 6" stroke="#b9f000" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><div class="ttl" style="font-size:20px;">API<br>Management</div></div>
+    </div>
+    <div class="desc" style="margin-top:12px; line-height:1.45;">AI gateway<br>rate limits &middot; token budgets<br>JWT &middot; observability</div>
+  </div>
+
+  <!-- Container Apps environment -->
+  <div class="caenv" style="left:704px; top:236px; width:560px; height:392px;">
+    <div class="cahd">
+      <svg class="ic" viewBox="0 0 48 48"><path d="M24 6l13 7v14l-13 7-13-7V13z" fill="#8661c5" opacity=".25"/><path d="M24 9l10 5.5v11L24 31l-10-5.5v-11z" fill="#8661c5"/><path d="M24 15l5 2.7v5.4L24 26l-5-2.9v-5.4z" fill="#cdbce8"/></svg>
+      <div class="catitle">Container Apps environment</div>
+    </div>
+    <div class="casub">managed ingress &middot; scale-to-zero &middot; backend image from ACR</div>
+
+    <div class="api" style="left:36px; top:104px; width:488px; height:230px;">
+      <div class="an">All Clear API</div>
+      <div class="af">FastAPI + Microsoft Agent Framework</div>
+      <div class="pills">
+        <span class="pill q">QueryAgent</span>
+        <span class="pill r">RouterExecutor</span>
+        <span class="pill a">ActionAgent</span>
+      </div>
+      <div class="af" style="margin-top:16px;">managed identity &middot; no keys</div>
+    </div>
+  </div>
+
+  <!-- Service cards -->
+  <div class="card svc" style="left:1300px; top:300px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><path d="M24 6l4.6 9.7L39 17.4l-7.5 7.2 1.8 10.4L24 30.1l-9.3 4.9 1.8-10.4L9 17.4l10.4-1.7z" fill="#2a93ee"/></svg>
+      <div><div class="ttl">Azure OpenAI</div><div class="desc"><b>gpt-5.1</b> + text-embedding-3-small</div></div></div>
+  </div>
+  <div class="card svc" style="left:1620px; top:300px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><circle cx="21" cy="21" r="12" fill="none" stroke="#2a93ee" stroke-width="4"/><path d="M30 30l9 9" stroke="#0a4f9e" stroke-width="5" stroke-linecap="round"/></svg>
+      <div><div class="ttl">AI Search</div><div class="desc">knowledge retrieval (1536-dim)</div></div></div>
+  </div>
+  <div class="card svc" style="left:1300px; top:430px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><circle cx="24" cy="24" r="13" fill="#2a93ee"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="#0a4f9e" stroke-width="2.5" transform="rotate(-30 24 24)"/></svg>
+      <div><div class="ttl">Cosmos DB</div><div class="desc">incidents + audit</div></div></div>
+  </div>
+  <div class="card svc" style="left:1620px; top:430px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><rect x="6" y="10" width="26" height="19" rx="4" fill="#8661c5"/><path d="M14 29l-3 7 9-7z" fill="#8661c5"/><circle cx="33" cy="30" r="9" fill="#2a93ee"/><path d="M30 30h6M33 27v6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <div><div class="ttl">Communication Svcs</div><div class="desc">phone (PSTN) intake + voice</div></div></div>
+  </div>
+  <div class="card svc" style="left:1300px; top:560px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><circle cx="18" cy="22" r="8" fill="none" stroke="#f0a500" stroke-width="4"/><path d="M24 22h17v6M34 22v8" stroke="#f0a500" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+      <div><div class="ttl">Key Vault</div><div class="desc">secrets</div></div></div>
+  </div>
+  <div class="card svc" style="left:1620px; top:560px; width:300px; height:108px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><rect x="8" y="20" width="10" height="9" fill="#2a93ee"/><rect x="20" y="20" width="10" height="9" fill="#2a93ee"/><rect x="14" y="9" width="10" height="9" fill="#7fb6f0"/><rect x="8" y="31" width="22" height="9" fill="#0a4f9e"/><path d="M34 24h7M38 21v6" stroke="#5b6b86" stroke-width="2" stroke-linecap="round"/></svg>
+      <div><div class="ttl">Container Registry</div><div class="desc">backend image</div></div></div>
+  </div>
+
+  <!-- Azure AI Foundry (new) -->
+  <div class="card accentcard" style="left:1300px; top:700px; width:620px; height:104px;">
+    <div class="hd"><svg class="ic" viewBox="0 0 48 48"><path d="M19 7h10v9l9 16a4 4 0 0 1-3.6 6H13.6A4 4 0 0 1 10 32l9-16z" fill="#2a93ee" opacity=".9"/><path d="M17 26h14l3.5 6.2a2 2 0 0 1-1.8 3H15.3a2 2 0 0 1-1.8-3z" fill="#b9f000"/></svg>
+      <div><div class="ttl">Azure AI Foundry</div><div class="desc">red team &middot; AI-quality evals &middot; content-filter guardrails &nbsp;<span class="tag">East US 2</span></div></div></div>
+  </div>
+
+  <!-- Observability -->
+  <div class="obs" style="left:704px; top:828px; width:560px; height:84px;">
+    <div class="lbl">Observability</div>
+    <div class="item"><svg width="30" height="30" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#2a93ee" stroke-width="3"/><path d="M16 16l6-4" stroke="#0a4f9e" stroke-width="3" stroke-linecap="round"/></svg>Azure Monitor</div>
+    <div class="item"><svg width="30" height="30" viewBox="0 0 32 32"><rect x="6" y="16" width="5" height="10" fill="#2a93ee"/><rect x="14" y="10" width="5" height="16" fill="#0a4f9e"/><rect x="22" y="13" width="5" height="13" fill="#7fb6f0"/></svg>Log Analytics</div>
+  </div>
+</div>
+</body>
+</html>

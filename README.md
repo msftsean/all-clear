@@ -95,13 +95,17 @@ Severity is mapped from classification indicators by RouterExecutor rules — ne
 
 | 🔧 Service | 📝 Purpose |
 | ---------- | ---------- |
-| 🤖 Azure OpenAI | Signal classification + sitrep generation (`gpt-4.1` family) |
-| 🧠 Azure OpenAI Embeddings | `text-embedding-3-small` for dedup similarity |
-| 🔍 Azure AI Search | Knowledge base retrieval (`text-embedding-ada-002` index) |
-| 📦 Container Apps | Backend API hosting |
-| 💾 Cosmos DB | Incident / audit persistence *(provisioned; live store mock-backed today)* |
+| 🛡️ API Management | **AI gateway** in front of the API/model — rate limits · token budgets · JWT validation · usage metrics *(Day-1 production posture; not provisioned by `azd up`)* |
+| 🤖 Azure OpenAI | Signal classification + sitrep generation (`gpt-5.1`) |
+| 🧠 Azure OpenAI Embeddings | `text-embedding-3-small` (1536-dim) for dedup similarity |
+| 🔍 Azure AI Search | Knowledge base retrieval (`text-embedding-3-small` index) |
+| 📦 Container Apps | Backend API hosting (managed ingress · scale-to-zero) |
+| 💾 Cosmos DB | Incident / audit persistence |
 | 📞 Communication Services | Phone (PSTN) intake + call automation |
 | 🔐 Key Vault | Secrets management |
+| 📚 Container Registry | Backend container image |
+| 🧪 Azure AI Foundry | Red team · AI-quality evals · content-filter guardrails *(East US 2)* |
+| 📊 Azure Monitor + Log Analytics | Observability / telemetry |
 
 ---
 
@@ -228,6 +232,10 @@ All Clear adopts a **CJIS mindset** everywhere — even where it doesn't legally
 3. ✅ Run `python -m pytest` in `backend/` (mock mode) before committing
 4. 💾 Commit your changes
 5. 🔀 Open a Pull Request
+
+### 👥 Contributors
+
+- **Sean Gillespie** ([@msftsean](https://github.com/msftsean)) — Operational dashboards, foundry integration, evals harness, guardrails infrastructure
 
 ---
 

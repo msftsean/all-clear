@@ -1,0 +1,163 @@
+<!doctype html>
+<!--
+  All Clear - Agent Workflow diagram (SOURCE OF TRUTH).
+  Edit this file, then re-render with docs/architecture/src/render.ps1
+  to regenerate docs/architecture/allclear-agent-workflow.png.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root{ --navy:#0b1f3a; --ink:#1b2a44; --muted:#5b6b86; --azure:#0078d4;
+    --canvas:#f6f8fc; --card:#fff; --ring:rgba(0,120,212,.18); }
+  html,body{ width:2000px; height:1000px; background:var(--canvas);
+    font-family:"Segoe UI",system-ui,Arial,sans-serif; color:var(--ink); }
+  .stage{ position:relative; width:2000px; height:1000px; overflow:hidden; }
+  .topbar{ position:absolute; top:0; left:0; width:100%; height:7px;
+    background:linear-gradient(90deg,#003a8c,#0078d4 45%,#50b9f7); }
+  h1{ position:absolute; left:56px; top:34px; font-size:46px; color:var(--navy);
+    font-weight:800; letter-spacing:-.5px; }
+  h1 .light{ color:var(--azure); }
+  .sub{ position:absolute; left:58px; top:96px; font-size:21px; color:var(--muted); }
+
+  svg.wires{ position:absolute; inset:0; width:2000px; height:1000px; z-index:1; }
+  .wlab{ font-size:17px; font-weight:700; fill:#33507c; }
+  .wlab.alt{ fill:#1b7d49; }
+  .wlab.dim{ fill:#5b6b86; font-weight:600; }
+
+  .node{ position:absolute; z-index:2; background:var(--card); border-radius:18px;
+    border:1px solid #e4ebf5; box-shadow:0 1px 0 var(--ring), 0 10px 24px rgba(16,42,82,.06);
+    padding:18px 22px; }
+  .node .step{ font-size:14px; font-weight:800; letter-spacing:1.2px; color:var(--azure); }
+  .node .nt{ font-size:26px; font-weight:800; color:var(--navy); margin-top:5px; }
+  .node .nd{ font-size:17px; color:var(--muted); margin-top:8px; line-height:1.4; }
+  .node .ag{ display:inline-block; font-size:14px; font-weight:700; border-radius:7px;
+    padding:4px 10px; margin-top:12px; }
+  .ag.q{ background:#e2eefe; color:#1c5fb0; }
+  .ag.r{ background:#efe7fb; color:#6f49b6; }
+  .ag.a{ background:#e1f2ea; color:#1b7d49; }
+
+  .diamond{ position:absolute; z-index:2; width:260px; height:260px;
+    background:linear-gradient(180deg,#fff,#f2f7ff); border:2px solid #bcd3f2;
+    transform:rotate(45deg); border-radius:26px; box-shadow:0 10px 24px rgba(16,42,82,.07); }
+  .diamond .inner{ position:absolute; inset:0; transform:rotate(-45deg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; }
+  .diamond .dq{ font-size:23px; font-weight:800; color:var(--navy); }
+  .diamond .dsub{ font-size:18px; color:var(--muted); margin-top:6px; }
+  .diamond .thr{ font-size:19px; font-weight:800; color:var(--azure); margin-top:8px; }
+
+  .branch{ position:absolute; z-index:2; border-radius:16px; padding:14px 20px;
+    border:1.5px solid; }
+  .branch .bt{ font-size:22px; font-weight:800; }
+  .branch .bd{ font-size:16px; color:var(--muted); margin-top:4px; }
+  .branch.attach{ background:#eef9c6; border-color:#c7d96b; }
+  .branch.attach .bt{ color:#5e7d00; }
+  .branch.open{ background:#e7f1ff; border-color:#9cc2f0; }
+  .branch.open .bt{ color:#1c5fb0; }
+
+  .receipt{ position:absolute; z-index:2; background:#0b1f3a; color:#eaf2ff;
+    border-radius:18px; padding:20px 24px; box-shadow:0 12px 28px rgba(11,31,58,.28); }
+  .receipt .rt{ font-size:23px; font-weight:800; }
+  .receipt .rd{ font-size:16px; color:#9fb6d8; margin-top:6px; line-height:1.5; }
+
+  .footer{ position:absolute; z-index:2; left:56px; top:856px; width:1888px; height:108px;
+    background:#fbfdff; border:1px solid #e4ebf5; border-radius:18px;
+    display:flex; align-items:center; gap:30px; padding:0 30px; }
+  .footer .flbl{ font-size:15px; font-weight:800; letter-spacing:1.2px; color:#33507c; }
+  .footer .fit{ display:flex; align-items:center; gap:12px; font-size:19px; color:#27384f; font-weight:600; }
+  .footer .fit b{ color:var(--navy); }
+  .footer .ic{ width:38px; height:38px; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="topbar"></div>
+  <h1>All Clear <span class="light">&mdash; Agent Workflow</span></h1>
+  <div class="sub">One signal in &middot; entities &amp; intent extracted &middot; deduped against open incidents &middot; one decision receipt out</div>
+
+  <svg class="wires" viewBox="0 0 2000 1000">
+    <defs>
+      <marker id="a" markerWidth="12" markerHeight="12" refX="8" refY="5.5" orient="auto"><path d="M1,1 L10,5.5 L1,10 Z" fill="#5b7196"/></marker>
+      <marker id="ab" markerWidth="12" markerHeight="12" refX="8" refY="5.5" orient="auto"><path d="M1,1 L10,5.5 L1,10 Z" fill="#0078d4"/></marker>
+      <marker id="ag" markerWidth="12" markerHeight="12" refX="8" refY="5.5" orient="auto"><path d="M1,1 L10,5.5 L1,10 Z" fill="#5e7d00"/></marker>
+    </defs>
+    <!-- Signal -> QueryAgent -->
+    <path d="M324,430 L392,430" stroke="#0078d4" stroke-width="4" fill="none" marker-end="url(#ab)"/>
+    <!-- QueryAgent -> diamond -->
+    <path d="M700,430 L792,430" stroke="#0078d4" stroke-width="4" fill="none" marker-end="url(#ab)"/>
+    <!-- diamond -> ATTACH (up) -->
+    <path d="M992,360 C1120,300 1160,250 1232,238" stroke="#5e7d00" stroke-width="3.4" fill="none" marker-end="url(#ag)"/>
+    <text class="wlab alt" x="1070" y="280">&ge; 0.83  ATTACH</text>
+    <!-- diamond -> OPEN (down) -->
+    <path d="M992,500 C1120,560 1160,600 1232,612" stroke="#5b7196" stroke-width="3.4" fill="none" marker-end="url(#a)"/>
+    <text class="wlab" x="1078" y="600">&lt; 0.83  OPEN</text>
+    <!-- branches -> ActionAgent -->
+    <path d="M1560,250 C1620,300 1628,360 1632,392" stroke="#5b7196" stroke-width="3" fill="none" marker-end="url(#a)"/>
+    <path d="M1560,628 C1620,580 1628,500 1632,470" stroke="#5b7196" stroke-width="3" fill="none" marker-end="url(#a)"/>
+    <!-- ActionAgent -> receipt -->
+    <path d="M1700,560 C1700,640 1500,680 1352,704" stroke="#5b7196" stroke-width="3.4" fill="none" marker-end="url(#a)"/>
+  </svg>
+
+  <!-- Signal intake -->
+  <div class="node" style="left:56px; top:352px; width:268px; height:158px;">
+    <div class="step">SIGNAL IN</div>
+    <div class="nt">Field signal</div>
+    <div class="nd">phone &middot; voice &middot; text<br>SMS &middot; web form</div>
+  </div>
+
+  <!-- QueryAgent -->
+  <div class="node" style="left:392px; top:328px; width:308px; height:206px;">
+    <div class="step">STEP 1 &middot; UNDERSTAND</div>
+    <div class="nt">QueryAgent</div>
+    <div class="nd">extract entities, intent &amp; severity; embed for similarity</div>
+    <span class="ag q">structured extraction</span>
+  </div>
+
+  <!-- Diamond decision -->
+  <div class="diamond" style="left:792px; top:300px;">
+    <div class="inner">
+      <div class="dq">Match an open<br>incident?</div>
+      <div class="dsub">cosine similarity</div>
+      <div class="thr">threshold 0.83</div>
+    </div>
+  </div>
+
+  <!-- ATTACH branch -->
+  <div class="branch attach" style="left:1232px; top:188px; width:328px; height:104px;">
+    <div class="bt">ATTACH</div>
+    <div class="bd">merge into existing incident &middot; dedup the map pin &middot; bump severity if higher</div>
+  </div>
+
+  <!-- OPEN branch -->
+  <div class="branch open" style="left:1232px; top:572px; width:328px; height:104px;">
+    <div class="bt">OPEN</div>
+    <div class="bd">create new incident AC-#### &middot; assign owner &middot; drop a fresh map pin</div>
+  </div>
+
+  <!-- ActionAgent -->
+  <div class="node" style="left:1592px; top:392px; width:300px; height:172px;">
+    <div class="step">STEP 2 &middot; ACT</div>
+    <div class="nt">ActionAgent</div>
+    <div class="nd">escalate &middot; notify &middot; PII-redact &middot; write audit</div>
+    <span class="ag a">--clear approval gate</span>
+  </div>
+
+  <!-- Decision receipt -->
+  <div class="receipt" style="left:880px; top:690px; width:472px; height:150px;">
+    <div class="rt">Decision receipt</div>
+    <div class="rd">what was decided &middot; why (evidence + similarity) &middot; which action ran &middot; who approved &mdash; streamed to ClearBoard over SSE</div>
+  </div>
+
+  <!-- Azure services footer -->
+  <div class="footer">
+    <div class="flbl">AZURE SERVICES</div>
+    <div class="fit"><svg class="ic" viewBox="0 0 48 48"><path d="M24 6l4.6 9.7L39 17.4l-7.5 7.2 1.8 10.4L24 30.1l-9.3 4.9 1.8-10.4L9 17.4l10.4-1.7z" fill="#2a93ee"/></svg>Azure OpenAI &nbsp;<b>gpt-5.1</b>&nbsp;+ embeddings</div>
+    <div class="fit"><svg class="ic" viewBox="0 0 48 48"><circle cx="21" cy="21" r="12" fill="none" stroke="#2a93ee" stroke-width="4"/><path d="M30 30l9 9" stroke="#0a4f9e" stroke-width="5" stroke-linecap="round"/></svg>AI Search</div>
+    <div class="fit"><svg class="ic" viewBox="0 0 48 48"><circle cx="24" cy="24" r="13" fill="#2a93ee"/><ellipse cx="24" cy="24" rx="20" ry="8" fill="none" stroke="#0a4f9e" stroke-width="2.5" transform="rotate(-30 24 24)"/></svg>Cosmos DB</div>
+    <div class="fit"><svg class="ic" viewBox="0 0 48 48"><rect x="6" y="12" width="26" height="19" rx="4" fill="#8661c5"/><path d="M14 31l-3 7 9-7z" fill="#8661c5"/><circle cx="35" cy="31" r="8" fill="#2a93ee"/></svg>Communication Services</div>
+    <div class="fit"><svg class="ic" viewBox="0 0 48 48"><path d="M19 7h10v9l9 16a4 4 0 0 1-3.6 6H13.6A4 4 0 0 1 10 32l9-16z" fill="#2a93ee" opacity=".9"/><path d="M17 26h14l3.5 6.2a2 2 0 0 1-1.8 3H15.3a2 2 0 0 1-1.8-3z" fill="#b9f000"/></svg>AI Foundry guardrails</div>
+  </div>
+</div>
+</body>
+</html>
