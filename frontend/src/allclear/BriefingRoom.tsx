@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ApiError, getHealth, submitSignal } from "./api";
-import type { PipelineResult } from "./types";
+import { ApiError, getDemoClearBoard, getHealth, submitSignal } from "./api";
+import type { DemoClearBoard, PipelineResult } from "./types";
 import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
 import LiveCalls from "./LiveCalls";
+import { HERO_DEMO_BOARD } from "./demo";
 
 type Role = "caller" | "agent" | "system";
 interface Msg {
@@ -20,6 +21,11 @@ function uid(): string {
 
 function clock(ts: number): string {
   return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function initialDemoMode(): "blank" | "loaded" | null {
+  const mode = new URLSearchParams(window.location.search).get("demo");
+  return mode === "blank" || mode === "loaded" || mode === "hero" ? (mode === "blank" ? "blank" : "loaded") : null;
 }
 
 // The agent's plain-spoken voice line, derived from the typed result.
@@ -61,6 +67,10 @@ export default function BriefingRoom() {
   const [published, setPublished] = useState<Set<string>>(new Set());
   const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
+  const [demoMode, setDemoMode] = useState<"blank" | "loaded" | null>(() => initialDemoMode());
+  const [demoBoard, setDemoBoard] = useState<DemoClearBoard | null>(
+    () => (initialDemoMode() === "loaded" ? HERO_DEMO_BOARD : null),
+  );
   // Reports observed per normalized location this session — drives the map's
   // cluster so repeat reports about the same place visibly accumulate even when
   // backend dedup opens separate incidents (different category/below threshold).
@@ -76,6 +86,28 @@ export default function BriefingRoom() {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (demoMode === "loaded") {
+      setDemoBoard(HERO_DEMO_BOARD);
+      getDemoClearBoard()
+        .then(setDemoBoard)
+        .catch(() => setDemoBoard(HERO_DEMO_BOARD));
+    } else {
+      setDemoBoard(null);
+    }
+  }, [demoMode]);
+
+  function setDemo(mode: "blank" | "loaded" | null) {
+    const url = new URL(window.location.href);
+    if (mode) {
+      url.searchParams.set("demo", mode);
+    } else {
+      url.searchParams.delete("demo");
+    }
+    window.history.replaceState({}, "", url);
+    setDemoMode(mode);
+  }
 
   async function send(text: string) {
     const trimmed = text.trim();
@@ -120,6 +152,7 @@ export default function BriefingRoom() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            {demoMode ? <DemoToggle mode={demoMode} onSetMode={setDemo} /> : null}
             <button
               data-testid="live-calls-toggle"
               onClick={() => setLiveOpen(true)}
@@ -223,6 +256,8 @@ export default function BriefingRoom() {
           <Canvas
             result={latest}
             onOpenReceipt={() => setReceiptOpen(true)}
+            demoBoard={demoBoard}
+            demoBlank={demoMode === "blank"}
             locationReports={
               latest?.classification.entities?.location
                 ? locCounts[latest.classification.entities.location.trim().toLowerCase()] || 1
@@ -255,6 +290,43 @@ export default function BriefingRoom() {
       ) : null}
 
       {liveOpen ? <LiveCalls onExit={() => setLiveOpen(false)} /> : null}
+    </div>
+  );
+}
+
+function DemoToggle({
+  mode,
+  onSetMode,
+}: {
+  mode: "blank" | "loaded";
+  onSetMode: (mode: "blank" | "loaded" | null) => void;
+}) {
+  return (
+    <div data-testid="demo-toggle" className="hidden items-center gap-1 sm:flex">
+      <span className="font-mono text-[9px] uppercase tracking-wider text-midwarm/70">demo</span>
+      <button
+        onClick={() => onSetMode("blank")}
+        className={`rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
+          mode === "blank" ? "border-voice/60 text-voice" : "border-paperline text-midwarm"
+        }`}
+      >
+        blank
+      </button>
+      <button
+        onClick={() => onSetMode("loaded")}
+        className={`rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
+          mode === "loaded" ? "border-voice/60 text-voice" : "border-paperline text-midwarm"
+        }`}
+      >
+        loaded
+      </button>
+      <button
+        onClick={() => onSetMode(null)}
+        className="rounded-chip border border-paperline px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft"
+        title="Exit demo mode"
+      >
+        live
+      </button>
     </div>
   );
 }

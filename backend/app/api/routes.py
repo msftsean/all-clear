@@ -13,7 +13,7 @@ free of any direct model/client wiring (Constitution Art. V).
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
@@ -24,6 +24,74 @@ from app.core.dependencies import get_knowledge_service, get_pipeline
 from app.services.interfaces import KnowledgeServiceInterface
 
 router = APIRouter()
+
+DEMO_CLEARBOARD = {
+    "mode": "loaded",
+    "total_signals": 1240,
+    "headline": "Many signals in → few incidents out",
+    "subhead": (
+        "Most signals are duplicates of a few incidents, so ClearBoard collapses "
+        "the surge."
+    ),
+    "incidents": [
+        {
+            "incident_id": "AC-1240",
+            "title": "Downtown high-rise fire",
+            "location": "3rd & Pine downtown",
+            "queue": "Fire / EMS",
+            "severity": "SEV1",
+            "report_count": 812,
+            "sla_minutes": 5,
+            "dedup_similarity": 0.94,
+            "status": "escalated",
+            "summary": (
+                "Smoke and visible flames reported from the same downtown tower; "
+                "callers describe one shared fire scene."
+            ),
+            "sample_signals": [
+                "I can see flames from the upper floors at 3rd and Pine.",
+                "Smoke pouring out of the high-rise downtown near Pine.",
+            ],
+        },
+        {
+            "incident_id": "AC-1241",
+            "title": "Eastside power outage",
+            "location": "Eastside substation corridor",
+            "queue": "Utilities",
+            "severity": "SEV2",
+            "report_count": 351,
+            "sla_minutes": 15,
+            "dedup_similarity": 0.91,
+            "status": "crews dispatched",
+            "summary": (
+                "Neighborhood reports map to one eastside outage footprint around "
+                "the same substation corridor."
+            ),
+            "sample_signals": [
+                "The whole eastside block lost power ten minutes ago.",
+                "Traffic lights are out along the eastside corridor.",
+            ],
+        },
+        {
+            "incident_id": "AC-1242",
+            "title": "Gas leak on Oak St",
+            "location": "Oak St & 7th Ave",
+            "queue": "Hazmat",
+            "severity": "SEV1",
+            "report_count": 77,
+            "sla_minutes": 5,
+            "dedup_similarity": 0.89,
+            "status": "evacuation advised",
+            "summary": (
+                "Reports of gas odor and hissing cluster at Oak Street and 7th Avenue."
+            ),
+            "sample_signals": [
+                "Strong gas smell outside the laundromat on Oak Street.",
+                "I hear hissing near the Oak and 7th construction trench.",
+            ],
+        },
+    ],
+}
 
 
 def _is_content_safety_block(exc: BaseException) -> bool:
@@ -126,3 +194,21 @@ async def health_check(settings: Settings = Depends(get_settings)) -> dict:
         "mock_mode": settings.use_mock_services,
         "domain": "all-clear-incident-triage",
     }
+
+
+@router.get("/demo/clearboard", tags=["Demo"], summary="Idempotent ClearBoard demo fixture")
+async def demo_clearboard(mode: Literal["blank", "loaded"] = "loaded") -> dict:
+    """Return the safe, idempotent live-demo board fixture.
+
+    ``mode=blank`` intentionally returns zero signals/incidents for before/after
+    contrast; ``mode=loaded`` returns the hero scenario without mutating live data.
+    """
+    if mode == "blank":
+        return {
+            "mode": "blank",
+            "total_signals": 0,
+            "headline": "The board is quiet.",
+            "subhead": "Clean slate before the signal surge.",
+            "incidents": [],
+        }
+    return DEMO_CLEARBOARD

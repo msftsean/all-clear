@@ -78,3 +78,25 @@ export interface HealthStatus {
   mock_mode: boolean;
   domain: string;
 }
+
+export interface DemoClearBoardIncident {
+  incident_id: string;
+  title: string;
+  location: string;
+  queue: string;
+  severity: Severity;
+  report_count: number;
+  sla_minutes: number;
+  dedup_similarity: number;
+  status: string;
+  summary: string;
+  sample_signals: string[];
+}
+
+export interface DemoClearBoard {
+  mode: "loaded";
+  total_signals: number;
+  incidents: DemoClearBoardIncident[];
+  headline: string;
+  subhead: string;
+}

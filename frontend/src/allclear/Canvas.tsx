@@ -1,5 +1,5 @@
 import React from "react";
-import type { PipelineResult } from "./types";
+import type { DemoClearBoard, DemoClearBoardIncident, PipelineResult, Severity } from "./types";
 import { Card, Eyebrow, MonoPill, SeverityBadge } from "./components";
 
 const MODEL = "gpt-5.1";
@@ -270,6 +270,143 @@ function MapCard({ r, locationReports = 1 }: { r: PipelineResult; locationReport
   );
 }
 
+function severityVar(sev: Severity): string {
+  return `var(--${sev.toLowerCase()})`;
+}
+
+function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] }) {
+  return (
+    <Card title="map clusters" testid="hero-map-card" span>
+      <div className="relative overflow-hidden rounded-[16px] border border-nline bg-night shadow-dark-glass">
+        <svg
+          viewBox="0 0 320 170"
+          className="h-[170px] w-full"
+          role="img"
+          aria-label={`${incidents.length} incident clusters on the ClearBoard map`}
+        >
+          <rect width="320" height="170" fill="#070b1a" />
+          {Array.from({ length: 8 }).map((_, i) => (
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#1c2447" strokeWidth="1" />
+          ))}
+          {Array.from({ length: 11 }).map((_, i) => (
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="170" stroke="#1c2447" strokeWidth="1" />
+          ))}
+          {incidents.flatMap((incident, incidentIndex) =>
+            streetPaths(incident.location).map((d, i) => (
+              <path
+                key={`${incident.incident_id}-s${i}`}
+                d={d}
+                transform={`translate(0 ${incidentIndex * 8})`}
+                fill="none"
+                stroke="#7b5cff"
+                strokeWidth={i < 3 ? 1.8 : 1.2}
+                strokeLinecap="round"
+                opacity={0.16}
+              />
+            )),
+          )}
+          {incidents.map((incident) => {
+            const points = clusterPoints(incident.location, Math.min(incident.report_count, 18));
+            const color = severityVar(incident.severity);
+            return (
+              <g key={incident.incident_id}>
+                {points.map((p, i) => (
+                  <circle
+                    key={`${incident.incident_id}-p${i}`}
+                    cx={p.x}
+                    cy={p.y + 10}
+                    r={i === points.length - 1 ? 5.2 : 3.4}
+                    fill={color}
+                    opacity={i === points.length - 1 ? 1 : 0.62}
+                  />
+                ))}
+                <circle cx={points[0]?.x || 160} cy={(points[0]?.y || 75) + 10} r="18" fill={color} opacity="0.12" />
+              </g>
+            );
+          })}
+        </svg>
+        <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+          {incidents.map((incident) => (
+            <span
+              key={incident.incident_id}
+              className="rounded-tag border border-nline/80 bg-night/70 px-2 py-0.5 font-mono text-[10px] text-nink backdrop-blur"
+            >
+              {incident.location} · ×{incident.report_count}
+            </span>
+          ))}
+        </div>
+      </div>
+      <div className="mt-2 eyebrow text-ndim/70">
+        offline outline · clusters show deduped report density, not separate emergencies
+      </div>
+    </Card>
+  );
+}
+
+function HeroRatioCard({ board }: { board: DemoClearBoard }) {
+  const incidentCount = board.incidents.length;
+  const duplicateSignals = board.total_signals - incidentCount;
+  return (
+    <Card title="triage by deduplication" testid="hero-ratio-card" span accent="text-clear">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <div className="font-display text-[36px] font-medium leading-none tracking-tight text-nink">
+            {board.total_signals.toLocaleString()} signals
+            <span className="mx-3 text-clear">→</span>
+            {incidentCount} incidents
+          </div>
+          <p className="mt-2 text-[13px] text-ndim">{board.subhead}</p>
+        </div>
+        <div className="rounded-card border border-clear/30 bg-clear/10 px-4 py-3 text-right">
+          <div className="font-mono text-[24px] text-clear">{duplicateSignals.toLocaleString()}</div>
+          <div className="eyebrow text-clear/80">duplicate signals collapsed</div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function HeroIncidentCard({ incident }: { incident: DemoClearBoardIncident }) {
+  return (
+    <Card title={`incident ${incident.incident_id}`} testid="hero-incident-card">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <SeverityBadge sev={incident.severity} />
+            <span className="font-mono text-[11px] text-ndim">{incident.queue}</span>
+          </div>
+          <div className="mt-2 font-sans text-[15px] font-medium text-nink">{incident.title}</div>
+          <div className="mt-1 text-[12px] text-ndim">{incident.location}</div>
+        </div>
+        <div className="text-right">
+          <div className="font-mono text-[28px] leading-none text-clear">
+            {incident.report_count.toLocaleString()}
+          </div>
+          <div className="eyebrow text-clear/80">reports</div>
+        </div>
+      </div>
+      <p className="mt-3 text-[12px] text-nink">{incident.summary}</p>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        <MonoPill>{incident.status}</MonoPill>
+        <MonoPill>SLA {incident.sla_minutes}m</MonoPill>
+        <MonoPill>sim {incident.dedup_similarity.toFixed(2)}</MonoPill>
+      </div>
+    </Card>
+  );
+}
+
+function HeroClearBoard({ board }: { board: DemoClearBoard }) {
+  return (
+    <div data-testid="hero-clearboard" className="grid grid-cols-2 gap-[14px] p-5">
+      <HeroRatioCard board={board} />
+      <CompactClusterMap incidents={board.incidents} />
+      {board.incidents.map((incident) => (
+        <HeroIncidentCard key={incident.incident_id} incident={incident} />
+      ))}
+    </div>
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Decision receipt slide-over (DESIGN signature #3)
 // ---------------------------------------------------------------------------
@@ -429,12 +566,19 @@ export function Canvas({
   result,
   onOpenReceipt,
   locationReports = 1,
+  demoBoard,
+  demoBlank = false,
 }: {
   result: PipelineResult | null;
   onOpenReceipt: () => void;
   locationReports?: number;
+  demoBoard?: DemoClearBoard | null;
+  demoBlank?: boolean;
 }) {
-  if (!result) {
+  if (demoBoard) {
+    return <HeroClearBoard board={demoBoard} />;
+  }
+  if (!result || demoBlank) {
     return (
       <div
         data-testid="canvas-empty"
@@ -444,7 +588,9 @@ export function Canvas({
           <div className="mx-auto mb-3 h-px w-24 bg-nline" />
           <p className="font-display text-[40px] font-medium leading-tight tracking-tight text-nink">The board is quiet.</p>
           <p className="mt-1 text-[12px] text-ndim/70">
-            Submit a signal on the left. Classification, routing, and the incident appear here.
+            {demoBlank
+              ? "Demo blank state: a clean slate before the signal surge."
+              : "Submit a signal on the left. Classification, routing, and the incident appear here."}
           </p>
         </div>
       </div>
