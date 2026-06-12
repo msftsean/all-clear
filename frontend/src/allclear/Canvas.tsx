@@ -397,6 +397,7 @@ function HeroRatioCard({
   const incidentCount = board.incidents.length;
   const duplicateSignals = Math.max(0, board.total_signals - incidentCount);
   const progress = finalSignals ? Math.min(100, (board.total_signals / finalSignals) * 100) : 0;
+  const hasFinalTarget = finalSignals !== board.total_signals || finalIncidents !== incidentCount;
   return (
     <Card title="Surge · triage by deduplication" testid="hero-ratio-card" span accent="text-clear">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
@@ -407,7 +408,10 @@ function HeroRatioCard({
             {incidentCount} INCIDENTS
           </div>
           <p className="mt-2 text-[13px] text-ndim">
-            {board.subhead} Final target: {finalSignals.toLocaleString()} Signals → {finalIncidents} Incidents.
+            {board.subhead}
+            {hasFinalTarget
+              ? ` Final target: ${finalSignals.toLocaleString()} Signals → ${finalIncidents} Incidents.`
+              : ""}
           </p>
           <div className="mt-3 h-2 overflow-hidden rounded-full border border-nline bg-night">
             <div className="h-full bg-clear transition-all duration-100" style={{ width: `${progress}%` }} />
@@ -627,6 +631,7 @@ export function Canvas({
   onOpenReceipt,
   locationReports = 1,
   demoBoard,
+  clearBoard,
   demoBlank = false,
   demoSignalsReceived,
 }: {
@@ -634,11 +639,15 @@ export function Canvas({
   onOpenReceipt: () => void;
   locationReports?: number;
   demoBoard?: DemoClearBoard | null;
+  clearBoard?: DemoClearBoard | null;
   demoBlank?: boolean;
   demoSignalsReceived?: number;
 }) {
   if (demoBoard) {
     return <HeroClearBoard board={demoBoard} signalsReceived={demoSignalsReceived} />;
+  }
+  if (clearBoard) {
+    return <HeroClearBoard board={clearBoard} />;
   }
   if (!result || demoBlank) {
     return (

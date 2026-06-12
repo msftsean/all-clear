@@ -41,4 +41,38 @@ describe("Canvas demo board", () => {
     expect(screen.getByTestId("canvas-empty")).toBeInTheDocument();
     expect(screen.getByText(/clean slate before the signal surge/i)).toBeInTheDocument();
   });
+
+  it("renders a real-session ClearBoard from submitted signal results", () => {
+    render(
+      <Canvas
+        result={null}
+        onOpenReceipt={() => undefined}
+        clearBoard={{
+          mode: "loaded",
+          total_signals: 2,
+          headline: "Live ClearBoard",
+          subhead: "Live Signals are preserved as Reports.",
+          incidents: [
+            {
+              incident_id: "AC-2001",
+              title: "FIELD HAZARD · Oak St",
+              location: "Oak St",
+              queue: "Utilities",
+              severity: "SEV2",
+              report_count: 2,
+              sla_minutes: 15,
+              dedup_similarity: 0.94,
+              status: "attached",
+              summary: "Two real Signals attached to one Incident.",
+              sample_signals: ["line down", "same line sparking"],
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/2 SIGNALS/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 INCIDENTS/i)).toBeInTheDocument();
+    expect(screen.getByText(/Oak St · Magnitude 2/i)).toBeInTheDocument();
+  });
 });

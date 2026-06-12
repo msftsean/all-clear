@@ -77,10 +77,10 @@ export default function BriefingRoom() {
     initialDemoMode() === "loaded" ? 0 : HERO_DEMO_BOARD.total_signals,
   );
   const [demoSurgeRun, setDemoSurgeRun] = useState(0);
-  // Reports observed per normalized location this session — drives the map's
-  // cluster so repeat reports about the same place visibly accumulate even when
-  // backend dedup opens separate incidents (different category/below threshold).
-  const [locCounts, setLocCounts] = useState<Record<string, number>>({});
+  const [signalCount, setSignalCount] = useState(0);
+  const [clearBoardIncidents, setClearBoardIncidents] = useState<
+    Record<string, DemoClearBoard["incidents"][number]>
+  >({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -141,6 +141,32 @@ export default function BriefingRoom() {
     setDemoSurgeRun((n) => n + 1);
   }
 
+  function updateClearBoard(r: PipelineResult) {
+    const incidentId = r.action.incident_id;
+    const location = r.classification.entities?.location?.trim() || incidentId;
+    setSignalCount((n) => n + 1);
+    setClearBoardIncidents((prev) => {
+      const existing = prev[incidentId];
+      const magnitude = Math.max(existing?.report_count || 0, r.routing.magnitude || 1);
+      return {
+        ...prev,
+        [incidentId]: {
+          incident_id: incidentId,
+          title: existing?.title || `${r.classification.intent_category.replace(/_/g, " ")} · ${location}`,
+          location,
+          queue: r.action.queue,
+          severity: r.action.severity,
+          report_count: magnitude,
+          sla_minutes: r.routing.sla_minutes,
+          dedup_similarity: r.routing.dedup_similarity ?? existing?.dedup_similarity ?? 0,
+          status: r.action.status,
+          summary: r.action.sitrep?.summary || r.action.user_message,
+          sample_signals: [...(existing?.sample_signals || []), r.signal_text].slice(-3),
+        },
+      };
+    });
+  }
+
   async function send(text: string) {
     const trimmed = text.trim();
     if (!trimmed || busy) return;
@@ -150,10 +176,7 @@ export default function BriefingRoom() {
     try {
       const r = await submitSignal(trimmed, sessionId, channel);
       setLatest(r);
-      const loc = r.classification.entities?.location?.trim().toLowerCase();
-      if (loc) {
-        setLocCounts((prev) => ({ ...prev, [loc]: (prev[loc] || 0) + 1 }));
-      }
+      updateClearBoard(r);
       setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);
     } catch (e) {
       const msg =
@@ -171,6 +194,18 @@ export default function BriefingRoom() {
   function approve(incidentId: string) {
     setPublished((p) => new Set(p).add(incidentId));
   }
+
+  const liveClearBoard: DemoClearBoard | null =
+    signalCount > 0
+      ? {
+          mode: "loaded",
+          total_signals: signalCount,
+          headline: "Live ClearBoard",
+          subhead:
+            "Live Signals are preserved as Reports; dedup attaches Reports to the same Incident and raises Magnitude.",
+          incidents: Object.values(clearBoardIncidents).sort((a, b) => b.report_count - a.report_count),
+        }
+      : null;
 
   return (
     <div className="flex h-full w-full flex-col bg-paper md:flex-row">
@@ -297,13 +332,9 @@ export default function BriefingRoom() {
             result={latest}
             onOpenReceipt={() => setReceiptOpen(true)}
             demoBoard={demoBoard}
+            clearBoard={liveClearBoard}
             demoBlank={demoMode === "blank"}
             demoSignalsReceived={demoSignalsReceived}
-            locationReports={
-              latest?.classification.entities?.location
-                ? locCounts[latest.classification.entities.location.trim().toLowerCase()] || 1
-                : 1
-            }
           />
         </div>
       </main>
