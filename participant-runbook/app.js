@@ -57,8 +57,8 @@
     secs.forEach(function (s) { s.classList.add('in'); });
   }
 
-  /* ---- Exercise checklist (per-exercise "mark done", persisted) ---- */
-  var EXERCISES = ['ex1', 'ex2', 'ex3', 'ex4', 'ex5'];
+  /* ---- Stage checklist (per-stage "mark done", persisted) ---- */
+  var EXERCISES = ['stage0', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5'];
   var DONE_KEY = 'allclear-participant-done';
   var done = {};
   try { done = JSON.parse(localStorage.getItem(DONE_KEY) || '{}') || {}; } catch (e) { done = {}; }
@@ -68,7 +68,7 @@
   function refreshCount() {
     var n = EXERCISES.filter(function (id) { return done[id]; }).length;
     var prog = document.getElementById('railProg');
-    if (prog) prog.innerHTML = '<b>' + n + '</b> / ' + EXERCISES.length + ' exercises done';
+    if (prog) prog.innerHTML = '<b>' + n + '</b> / ' + EXERCISES.length + ' stages done';
   }
 
   EXERCISES.forEach(function (id) {

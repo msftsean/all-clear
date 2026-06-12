@@ -137,6 +137,30 @@
         "create_incident / search_knowledge / generate_sitrep tools respond",
         "@all-clear queries work in VS Code"
       ]
+    },
+    {
+      "lab_number": "08",
+      "title": "APIM as the AI Gateway",
+      "duration_minutes": 60,
+      "day2_stage": 4,
+      "apim_sku": "Consumption",
+      "learning_objectives": [
+        "Provision an APIM Consumption instance and import the All Clear backend",
+        "Throttle traffic with rate-limit-by-key",
+        "Cap LLM spend with azure-openai-token-limit (token budgets)",
+        "Require a JWT with validate-jwt",
+        "Wire APIM diagnostics to Application Insights"
+      ],
+      "prerequisites": ["06"],
+      "has_start_code": false,
+      "has_solution_code": false,
+      "deliverables": [
+        "All Clear backend reachable through an APIM Consumption gateway",
+        "rate-limit-by-key returns 429 past threshold",
+        "azure-openai-token-limit emits remaining-token headers / 429 on budget",
+        "validate-jwt rejects unauthenticated calls with 401",
+        "APIM telemetry visible in Application Insights"
+      ]
     }
   ]
 }
