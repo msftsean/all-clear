@@ -8,6 +8,77 @@ function pct(n: number): string {
   return `${Math.round(n * 100)}%`;
 }
 
+// --- Deterministic geometry helpers --------------------------------------
+// The map is intentionally tile-free (offline, no network dependency) but it
+// must not look hardcoded: the street outline is *derived* from the location
+// string (stable per place, distinct between places) and the markers are
+// driven by the pipeline's real dedup signal (routing.magnitude), so repeat
+// reports at the same incident visibly accumulate instead of being faked.
+function hashStr(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
+function mulberry32(seed: number): () => number {
+  let a = seed || 1;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Stylized "street" polylines seeded by the location — same place renders the
+// same outline every time, different places look different.
+function streetPaths(seedKey: string): string[] {
+  const rng = mulberry32(hashStr(seedKey + "|streets"));
+  const paths: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    const y = 18 + rng() * 110;
+    const y2 = y + (rng() - 0.5) * 46;
+    const ymid = (y + y2) / 2 + (rng() - 0.5) * 34;
+    paths.push(`M0 ${y.toFixed(0)} Q160 ${ymid.toFixed(0)} 320 ${y2.toFixed(0)}`);
+  }
+  for (let i = 0; i < 2; i++) {
+    const x = 36 + rng() * 248;
+    const x2 = x + (rng() - 0.5) * 64;
+    const xmid = (x + x2) / 2 + (rng() - 0.5) * 30;
+    paths.push(`M${x.toFixed(0)} 0 Q${xmid.toFixed(0)} 75 ${x2.toFixed(0)} 150`);
+  }
+  return paths;
+}
+
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+
+// One marker per report, clustered around a location-seeded epicenter. Earlier
+// markers are positionally stable as the count grows (new reports append).
+function clusterPoints(
+  seedKey: string,
+  count: number,
+): { x: number; y: number }[] {
+  const epi = mulberry32(hashStr(seedKey + "|epicenter"));
+  const cx = 70 + epi() * 180; // 70..250
+  const cy = 42 + epi() * 64; // 42..106
+  const rng = mulberry32(hashStr(seedKey + "|spread"));
+  const pts: { x: number; y: number }[] = [];
+  for (let k = 0; k < count; k++) {
+    const ang = rng() * Math.PI * 2;
+    const jit = rng();
+    const radius = k === 0 ? 0 : 7 + Math.sqrt(k) * 7 * (0.55 + jit * 0.7);
+    pts.push({
+      x: clamp(cx + Math.cos(ang) * radius, 12, 308),
+      y: clamp(cy + Math.sin(ang) * radius, 12, 138),
+    });
+  }
+  return pts;
+}
+
 // ---------------------------------------------------------------------------
 // Incident card
 // ---------------------------------------------------------------------------
@@ -106,33 +177,95 @@ function ClassificationCard({ r }: { r: PipelineResult }) {
 }
 
 // ---------------------------------------------------------------------------
-// Map card — GeoJSON-outline fallback (no external tiles, no network dep)
+// Map card — offline, location-derived outline with magnitude-driven cluster
 // ---------------------------------------------------------------------------
-function MapCard({ r }: { r: PipelineResult }) {
+function MapCard({ r, locationReports = 1 }: { r: PipelineResult; locationReports?: number }) {
   const loc = r.classification.entities?.location || "Location not specified";
+  const hasLoc = Boolean(r.classification.entities?.location);
   const sevVar = `var(--${r.action.severity.toLowerCase()})`;
+  // Visible cluster reflects the most corroboration we can see: the server's
+  // dedup magnitude OR the number of reports about this place this session.
+  const magnitude = Math.max(1, r.routing.magnitude || 1, locationReports || 1);
+
+  // Seed off the location so the same place keeps a stable map and the cluster
+  // grows around one epicenter; fall back to the incident id when unknown.
+  const seedKey = hasLoc ? loc.trim().toLowerCase() : r.action.incident_id;
+  const streets = React.useMemo(() => streetPaths(seedKey), [seedKey]);
+  const MAX_DOTS = 14;
+  const shown = Math.min(magnitude, MAX_DOTS);
+  const points = React.useMemo(
+    () => clusterPoints(seedKey, shown),
+    [seedKey, shown],
+  );
+
   return (
     <Card title="map" testid="map-card">
       <div className="relative overflow-hidden rounded-[16px] border border-nline bg-night shadow-dark-glass">
-        <svg viewBox="0 0 320 150" className="h-[150px] w-full" role="img" aria-label={`Map: ${loc}`}>
+        <svg
+          viewBox="0 0 320 150"
+          className="h-[150px] w-full"
+          role="img"
+          aria-label={`Map: ${loc} — ${magnitude} report${magnitude === 1 ? "" : "s"}`}
+        >
           <rect width="320" height="150" fill="#070b1a" />
+          {/* faint reference grid */}
           {Array.from({ length: 7 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#2a335f" strokeWidth="1" />
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#1c2447" strokeWidth="1" />
           ))}
           {Array.from({ length: 11 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#2a335f" strokeWidth="1" />
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#1c2447" strokeWidth="1" />
           ))}
-          <path d="M0 96 L120 70 L210 92 L320 60" fill="none" stroke="#7b5cff" strokeWidth="2" opacity="0.6" />
-          <g>
-            <circle cx="166" cy="78" r="16" fill={sevVar} opacity="0.18" />
-            <circle cx="166" cy="78" r="5" fill={sevVar} />
-          </g>
+          {/* location-derived streets */}
+          {streets.map((d, i) => (
+            <path
+              key={`s${i}`}
+              d={d}
+              fill="none"
+              stroke="#7b5cff"
+              strokeWidth={i < 3 ? 2 : 1.4}
+              strokeLinecap="round"
+              opacity={i < 3 ? 0.4 : 0.28}
+            />
+          ))}
+          {/* accumulated report markers (oldest first, newest pulses) */}
+          {hasLoc &&
+            points.map((p, i) => {
+              const isNewest = i === points.length - 1;
+              return (
+                <g key={`m${i}`}>
+                  <circle cx={p.x} cy={p.y} r={isNewest ? 13 : 9} fill={sevVar} opacity={isNewest ? 0.18 : 0.1} />
+                  <circle cx={p.x} cy={p.y} r={isNewest ? 4.5 : 3.5} fill={sevVar} opacity={isNewest ? 1 : 0.8}>
+                    {isNewest ? (
+                      <>
+                        <animate attributeName="r" values="4.5;7;4.5" dur="1.8s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="1;0.45;1" dur="1.8s" repeatCount="indefinite" />
+                      </>
+                    ) : null}
+                  </circle>
+                </g>
+              );
+            })}
         </svg>
+        {/* magnitude badge */}
+        {magnitude > 1 ? (
+          <div
+            data-testid="map-magnitude"
+            className="absolute right-2 top-2 rounded-tag border border-nline/80 bg-night/70 px-2 py-0.5 font-mono text-[10px] text-nink backdrop-blur"
+          >
+            ×{magnitude} report{magnitude === 1 ? "" : "s"}
+          </div>
+        ) : null}
         <div className="absolute bottom-2 left-2 right-2">
           <span className="font-mono text-[11px] text-nink">{loc}</span>
         </div>
       </div>
-      <div className="mt-2 eyebrow text-ndim/70">offline outline · tiles unavailable</div>
+      <div data-testid="map-caption" className="mt-2 eyebrow text-ndim/70">
+        {!hasLoc
+          ? "offline outline · no location given"
+          : magnitude > 1
+          ? `offline outline · ${magnitude} reports clustered near ${loc}`
+          : `offline outline · 1 report · awaiting corroboration`}
+      </div>
     </Card>
   );
 }
@@ -295,9 +428,11 @@ export function ApprovalGate({
 export function Canvas({
   result,
   onOpenReceipt,
+  locationReports = 1,
 }: {
   result: PipelineResult | null;
   onOpenReceipt: () => void;
+  locationReports?: number;
 }) {
   if (!result) {
     return (
@@ -319,7 +454,7 @@ export function Canvas({
     <div data-testid="canvas" className="grid grid-cols-2 gap-[14px] p-5">
       <IncidentCard r={result} onOpenReceipt={onOpenReceipt} />
       <ClassificationCard r={result} />
-      <MapCard r={result} />
+      <MapCard r={result} locationReports={locationReports} />
     </div>
   );
 }

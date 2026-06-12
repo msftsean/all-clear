@@ -61,6 +61,10 @@ export default function BriefingRoom() {
   const [published, setPublished] = useState<Set<string>>(new Set());
   const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
+  // Reports observed per normalized location this session — drives the map's
+  // cluster so repeat reports about the same place visibly accumulate even when
+  // backend dedup opens separate incidents (different category/below threshold).
+  const [locCounts, setLocCounts] = useState<Record<string, number>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,6 +86,10 @@ export default function BriefingRoom() {
     try {
       const r = await submitSignal(trimmed, sessionId, channel);
       setLatest(r);
+      const loc = r.classification.entities?.location?.trim().toLowerCase();
+      if (loc) {
+        setLocCounts((prev) => ({ ...prev, [loc]: (prev[loc] || 0) + 1 }));
+      }
       setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);
     } catch (e) {
       const msg =
@@ -212,7 +220,15 @@ export default function BriefingRoom() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8px_8px,rgba(255,255,255,.34)_1px,transparent_1.5px)] bg-[length:24px_24px] opacity-15 [mask-image:linear-gradient(180deg,#000,transparent_72%)]" />
         <div className="pointer-events-none absolute -right-28 -top-36 h-[620px] w-[620px] rounded-full bg-[radial-gradient(50%_50%,rgba(0,128,248,.32)_0%,rgba(95,189,247,.32)_20%,rgba(211,239,252,.32)_60%,rgba(248,249,252,0)_100%)]" />
         <div className="relative z-10">
-          <Canvas result={latest} onOpenReceipt={() => setReceiptOpen(true)} />
+          <Canvas
+            result={latest}
+            onOpenReceipt={() => setReceiptOpen(true)}
+            locationReports={
+              latest?.classification.entities?.location
+                ? locCounts[latest.classification.entities.location.trim().toLowerCase()] || 1
+                : 1
+            }
+          />
         </div>
       </main>
 
