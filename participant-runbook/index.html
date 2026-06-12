@@ -305,7 +305,7 @@ html.js main section.in{opacity:1;transform:none}
       <p class="lead">All Clear is an incident-triage agent: a signal comes in &mdash; someone reports a problem in plain language &mdash; and an agent turns that speech into a structured, auditable incident, then drafts a public update that <em>waits for a human's approval</em>. Over Day&nbsp;2 you build that agent yourself, end to end.</p>
       <p><strong>Six stages, one repo, one deployed URL.</strong> You start from a spec'd scaffold and finish with a deployed, evaluated, gateway-fronted service. Each stage builds on the last &mdash; you don't get handed the finished product, you ship it.</p>
       <div class="grid2">
-        <div class="card"><div class="eyebrow">the six production domains</div><p style="margin:0">Every stage maps to what a real agent needs: <strong>model, memory, tools, orchestration, safety, evaluation</strong>. By Stage&nbsp;5 you've touched all six.</p></div>
+        <div class="card"><div class="eyebrow">the six domains of a production agent</div><p style="margin:0">Across these stages you put all six in place: <strong>identity, observability, evals, safety, memory &amp; state, and cost governance</strong> &mdash; the same six domains from the Day&nbsp;1 talk.</p></div>
         <div class="card"><div class="eyebrow">how you work</div><p style="margin:0">In a pre-configured <strong>GitHub Codespace</strong> with Azure wired up. The detailed instructions for each stage live in the repo under <code class="mono">labs/</code> &mdash; this workbook is your map and checklist.</p></div>
       </div>
       <div class="note"><span class="eyebrow">No finished app to peek at</span><p style="margin:.4em 0 0">That's deliberate. This is a build lab, not a demo &mdash; the whole point is that <em>you</em> make it work. Use the <strong>API docs / health</strong> buttons above to test your <em>own</em> running service as you go.</p></div>
@@ -317,7 +317,7 @@ html.js main section.in{opacity:1;transform:none}
       <table>
         <tr><th>Stage</th><th>What you build</th><th>Time</th><th>Clock (ET)</th></tr>
         <tr><td><strong>S0</strong></td><td>Scaffold + multi-agent dev env + first eval stub passing</td><td>45 min</td><td>11:00 &ndash; 11:45</td></tr>
-        <tr><td><strong>S1</strong></td><td>Working agent on Agent Framework (six domains)</td><td>90 min</td><td>11:45 &ndash; 1:15</td></tr>
+        <tr><td><strong>S1</strong></td><td>Working agent on Agent Framework (model, tools, orchestration)</td><td>90 min</td><td>11:45 &ndash; 1:15</td></tr>
         <tr><td><strong>S2</strong></td><td>Multi-source agentic retrieval (Foundry IQ)</td><td>60 min</td><td>1:15 &ndash; 2:15</td></tr>
         <tr><td><strong>S3</strong></td><td>Tools via a discoverable MCP server + red-team pass</td><td>75 min</td><td>2:15 &ndash; 3:30</td></tr>
         <tr><td><strong>S4</strong></td><td>APIM as the AI gateway (rate limits, token budgets, JWT, observability)</td><td>60 min</td><td>3:30 &ndash; 4:30</td></tr>
@@ -340,7 +340,7 @@ html.js main section.in{opacity:1;transform:none}
 
     <section id="stage1">
       <h2>S1 &middot; A working agent on Agent Framework <span class="pill">90 min</span></h2>
-      <p class="tag">Goal: a working agent with the six production domains in place &mdash; model, memory, tools, orchestration, safety, evaluation.</p>
+      <p class="tag">Goal: a working agent with the core building blocks in place &mdash; model, tools, orchestration, plus the first pass at memory, safety, and evaluation.</p>
       <ol class="steps">
         <li>Understand the multi-agent shape: <strong>QueryAgent → RouterExecutor → ActionAgent</strong> &mdash; classify, route (deterministic, no AI), then act.</li>
         <li>Wire up the three-agent pipeline with handoffs and session context so a multi-turn conversation holds together.</li>
@@ -428,7 +428,7 @@ html.js main section.in{opacity:1;transform:none}
       <p>If you can tick all six of these, you've completed the Day&nbsp;2 build:</p>
       <ul class="finish">
         <li><strong>S0</strong> &mdash; My scaffold runs and a first eval passes in my Codespace.</li>
-        <li><strong>S1</strong> &mdash; I have a working agent on Agent Framework with the six domains and the human-approval gate.</li>
+        <li><strong>S1</strong> &mdash; I have a working agent on Agent Framework with the core building blocks and the human-approval gate.</li>
         <li><strong>S2</strong> &mdash; My agent does grounded retrieval and returns citations.</li>
         <li><strong>S3</strong> &mdash; My tools are exposed via an MCP server and survived a red-team pass.</li>
         <li><strong>S4</strong> &mdash; My agent is fronted by an APIM Consumption gateway with rate limits, token budgets, JWT, and telemetry.</li>
