@@ -85,6 +85,10 @@ class Settings(BaseSettings):
         default="audit_logs",
         description="Container for audit logs"
     )
+    cosmos_db_incidents_container: str = Field(
+        default="incidents",
+        description="Container for incidents and their dedup embeddings"
+    )
 
     # ==========================================================================
     # Azure AI Search Settings

@@ -285,13 +285,22 @@ def get_embedding_fn():  # type: ignore[no-untyped-def]
 
 @lru_cache
 def get_incident_store():  # type: ignore[no-untyped-def]
-    """Return the incident store. Cached so dedup state persists across requests."""
-    # Live Cosmos `incidents` store is build task D1/D2 in specs/016-production-deployment
-    # (AzureCosmosIncidentStore). Until that lands, the in-memory store is the twin for
-    # both modes — note this means a deployed instance does NOT persist incidents yet.
-    from app.services.mock.incident_store import MockIncidentStore
+    """Return the incident store. Cached so dedup state persists across requests.
 
-    return MockIncidentStore()
+    Mock mode uses the in-memory MockIncidentStore; live mode uses the durable
+    Cosmos `incidents` store (spec 016 D1/D2). Live imports are lazy so mock mode
+    never requires the Cosmos SDK or credentials (Constitution Art. V).
+    """
+    settings = get_settings()
+
+    if settings.use_mock_services:
+        from app.services.mock.incident_store import MockIncidentStore
+
+        return MockIncidentStore()
+
+    from app.services.azure.incident_store import AzureCosmosIncidentStore
+
+    return AzureCosmosIncidentStore.from_settings(settings)
 
 
 @lru_cache
