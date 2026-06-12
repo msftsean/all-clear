@@ -1,0 +1,68 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-general-001",
+      "title": "What does Jesuit education actually mean? (cura personalis, magis, men and women for others)",
+      "url": "https://general.university.edu/kb/general-001",
+      "content": "Jesuit education forms the whole person — mind, heart, and spirit. 'Cura personalis' means care for the individual person: you are known, not processed. 'Magis' is the restless pursuit of the greater good and your fullest potential. Graduating as 'men and women for and with others' means using your education in service of justice. Practically, that shows up in small classes, reflection, service-learning, and an expectation that you ask not just 'what will I do?' but 'who will I become?'",
+      "snippet": "Jesuit education forms the whole person — mind, heart, and spirit",
+      "department": "general",
+      "category": "mission",
+      "tags": [
+        "jesuit education",
+        "cura personalis",
+        "magis",
+        "mission"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-general-002",
+      "title": "How to find your advisor, your dean, and your class dean",
+      "url": "https://general.university.edu/kb/general-002",
+      "content": "Your academic advisor (listed in the student portal) guides course selection and degree planning. Your class dean supports you on the bigger picture — academic difficulty, leaves, and life issues that affect school. Your school or college dean's office handles policy and petitions. When you are unsure who to ask, start with your class dean's office; they will point you to the right door.",
+      "snippet": "Your academic advisor (listed in the student portal) guides course selection and degree planning",
+      "department": "general",
+      "category": "advising",
+      "tags": [
+        "advisor",
+        "dean",
+        "class dean",
+        "find my advisor"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-general-003",
+      "title": "First-year orientation: what's required vs. optional",
+      "url": "https://general.university.edu/kb/general-003",
+      "content": "First-year orientation includes required sessions — registration, advising, and core safety and Title IX modules — plus optional social and ministry events. There is a separate parent and family orientation (orientación para padres) with its own schedule, offered in English and Spanish, covering billing, safety, and how to support your student. Dates and the full agenda are posted on the orientation website.",
+      "snippet": "First-year orientation includes required sessions — registration, advising, and core safety and Title IX modules — plus optional social and ministry events",
+      "department": "general",
+      "category": "orientation",
+      "tags": [
+        "orientation",
+        "first-year",
+        "parent orientation",
+        "día de orientación",
+        "padres"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-general-004",
+      "title": "Service-learning courses — how they work and how they count",
+      "url": "https://general.university.edu/kb/general-004",
+      "content": "Service-learning courses pair academic content with real community engagement and structured reflection, a hallmark of Jesuit education. They count as regular credit toward your degree and sometimes toward core or major requirements. Community hours are part of the coursework, scheduled with a community partner. Check the course catalog's service-learning designation and ask your advisor how a specific course applies to your plan.",
+      "snippet": "Service-learning courses pair academic content with real community engagement and structured reflection, a hallmark of Jesuit education",
+      "department": "general",
+      "category": "service-learning",
+      "tags": [
+        "service-learning",
+        "courses",
+        "credit"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    }
+  ]
+}

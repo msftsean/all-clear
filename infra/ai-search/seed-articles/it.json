@@ -1,0 +1,79 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-it-001",
+      "title": "Resetting your university password and enrolling in MFA",
+      "url": "https://it.university.edu/kb/it-001",
+      "content": "Reset your university password at the self-service portal using your registered recovery method, or call the IT Help Desk if you are locked out. All accounts require multifactor authentication (MFA); enroll a phone or authenticator app the first time you sign in. If you ever receive an unexpected MFA prompt you did not start, deny it and report it — it may indicate someone has your password.",
+      "snippet": "Reset your university password at the self-service portal using your registered recovery method, or call the IT Help Desk if you are locked out",
+      "department": "it",
+      "category": "accounts",
+      "tags": [
+        "password",
+        "mfa",
+        "reset"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-it-002",
+      "title": "Connecting to eduroam Wi-Fi",
+      "url": "https://it.university.edu/kb/it-002",
+      "content": "Connect to the 'eduroam' network using your full university email address and password; MFA may be required on first setup. Eduroam also works at thousands of partner campuses worldwide with the same credentials. If you cannot connect, forget the network and rejoin, confirm your password is current, and contact the Help Desk if the issue persists.",
+      "snippet": "Connect to the 'eduroam' network using your full university email address and password; MFA may be required on first setup",
+      "department": "it",
+      "category": "network",
+      "tags": [
+        "wifi",
+        "eduroam",
+        "network"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-it-003",
+      "title": "Canvas / LMS access issues — first-stop checklist",
+      "url": "https://it.university.edu/kb/it-003",
+      "content": "If a course is missing or you cannot open Canvas: confirm you are fully registered (recent enrollment can take a day to sync), sign out and back in, clear your browser cache, and try a different browser. Instructors control course visibility, so an unpublished course will not appear. If you are registered and the course is published but still missing, contact the Help Desk.",
+      "snippet": "If a course is missing or you cannot open Canvas: confirm you are fully registered (recent enrollment can take a day to sync), sign out and back in, clear yo...",
+      "department": "it",
+      "category": "learning-systems",
+      "tags": [
+        "canvas",
+        "lms",
+        "access"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-it-004",
+      "title": "Reporting a phishing email",
+      "url": "https://it.university.edu/kb/it-004",
+      "content": "If you receive a suspicious message, do not click links or reply. Use the 'Report Phishing' button in your mail client or forward it to the security team. If you already clicked a link or entered your password, change your password immediately, approve no MFA prompts, and contact IT Security right away so we can open a security-incident review and protect your account.",
+      "snippet": "If you receive a suspicious message, do not click links or reply",
+      "department": "it",
+      "category": "security",
+      "tags": [
+        "phishing",
+        "security",
+        "report"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-it-005",
+      "title": "Borrowing a loaner laptop from the library",
+      "url": "https://it.university.edu/kb/it-005",
+      "content": "The library lends laptops and chargers for short-term use with your student ID. Loan periods and availability vary; reserve ahead during exams. Save your work to cloud storage, since loaners are wiped on return. Report any damage at checkout. For longer-term need due to financial hardship, ask about the student technology equity program.",
+      "snippet": "The library lends laptops and chargers for short-term use with your student ID",
+      "department": "it",
+      "category": "devices",
+      "tags": [
+        "loaner laptop",
+        "library",
+        "devices"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    }
+  ]
+}

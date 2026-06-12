@@ -1,0 +1,279 @@
+import React, { useEffect, useRef, useState } from "react";
+import { ApiError, getHealth, submitSignal } from "./api";
+import type { PipelineResult } from "./types";
+import { Eyebrow, MonoPill, Waveform } from "./components";
+import { Canvas, DecisionReceipt } from "./Canvas";
+
+type Role = "caller" | "agent" | "system";
+interface Msg {
+  id: string;
+  role: Role;
+  text: string;
+  channel?: string;
+  ts: number;
+}
+
+function uid(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function clock(ts: number): string {
+  return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+// The agent's plain-spoken voice line, derived from the typed result.
+function agentVoice(r: PipelineResult): string {
+  const a = r.action;
+  const rd = r.routing;
+  const community =
+    rd.outcome === "ATTACH_TO_INCIDENT"
+      ? `You're not the only one — this joins ${a.incident_id}, now ${rd.magnitude} report${rd.magnitude === 1 ? "" : "s"}. `
+      : "";
+  const boundary = a.sitrep
+    ? " I drafted the all-clear, but it needs your approval before it goes out — that's the boundary, not a bug."
+    : "";
+  return `${community}${a.user_message}${boundary}`;
+}
+
+const SUGGESTIONS = [
+  "There's a downed power line sparking on Oak Street near the school.",
+  "The whole neighborhood lost power about ten minutes ago.",
+  "I just want to check the status of the outage on 5th Avenue.",
+];
+
+export default function BriefingRoom() {
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      id: uid(),
+      role: "agent",
+      text:
+        "All Clear here. Tell me what's happening and I'll classify it, route it, and open or attach an incident. Anything public-facing waits for your approval.",
+      ts: Date.now(),
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [channel, setChannel] = useState<"chat" | "phone">("chat");
+  const [busy, setBusy] = useState(false);
+  const [sessionId] = useState(() => `sess-${uid()}`);
+  const [latest, setLatest] = useState<PipelineResult | null>(null);
+  const [receiptOpen, setReceiptOpen] = useState(false);
+  const [published, setPublished] = useState<Set<string>>(new Set());
+  const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    getHealth()
+      .then((h) => setHealth({ ok: h.status === "healthy", live: !h.mock_mode }))
+      .catch(() => setHealth({ ok: false, live: false }));
+  }, []);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages]);
+
+  async function send(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || busy) return;
+    setBusy(true);
+    setInput("");
+    setMessages((m) => [...m, { id: uid(), role: "caller", text: trimmed, channel, ts: Date.now() }]);
+    try {
+      const r = await submitSignal(trimmed, sessionId, channel);
+      setLatest(r);
+      setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);
+    } catch (e) {
+      const msg =
+        e instanceof ApiError && e.status === 400
+          ? "That signal was rejected by content safety and wasn't processed. Rephrase it without disallowed content."
+          : e instanceof ApiError
+          ? `I couldn't process that signal (${e.status}). Try again in a moment.`
+          : "I couldn't reach the triage service. Check the connection and try again.";
+      setMessages((m) => [...m, { id: uid(), role: "system", text: msg, ts: Date.now() }]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function approve(incidentId: string) {
+    setPublished((p) => new Set(p).add(incidentId));
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col bg-night md:flex-row">
+      {/* ---- Paper world: conversation column ---- */}
+      <div className="flex h-full w-full flex-col border-r border-paperline bg-paper md:w-[430px] md:flex-none">
+        <header className="flex items-center justify-between border-b border-paperline px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="h-2.5 w-2.5 rounded-full bg-clear" />
+            <span className="font-display text-[18px] font-bold tracking-tight text-inkwarm">
+              All Clear
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {health ? (
+              <span
+                data-testid="health-pill"
+                className="font-mono text-[10px] text-midwarm"
+                title={health.live ? "Live model" : "Mock / offline"}
+              >
+                {health.ok ? (health.live ? "● live" : "● mock") : "○ offline"}
+              </span>
+            ) : null}
+          </div>
+        </header>
+
+        {/* Live channel strip — voice orange, the only ambient motion */}
+        <div className="flex items-center gap-3 border-b border-paperline/70 px-4 py-2">
+          <Waveform live={channel === "phone"} />
+          <button
+            data-testid="channel-toggle"
+            onClick={() => setChannel((c) => (c === "phone" ? "chat" : "phone"))}
+            className="ml-auto rounded-chip border border-paperline px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-voice"
+          >
+            {channel === "phone" ? "● inbound · phone" : "chat"}
+          </button>
+        </div>
+
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+          {messages.map((m) => (
+            <MessageBubble key={m.id} m={m} />
+          ))}
+          {/* Classification chips materialize under the transcript */}
+          {latest ? <ChipStrip r={latest} /> : null}
+          {busy ? (
+            <div className="flex items-center gap-1.5 px-1 text-midwarm" data-testid="thinking">
+              <span className="h-1.5 w-1.5 animate-blink rounded-full bg-midwarm" />
+              <span className="text-[12px]">Classifying…</span>
+            </div>
+          ) : null}
+        </div>
+
+        {messages.length <= 1 ? (
+          <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+            {SUGGESTIONS.map((s, i) => (
+              <button
+                key={i}
+                data-testid={`suggestion-${i}`}
+                onClick={() => send(s)}
+                className="rounded-chip border border-paperline bg-paper2 px-2 py-1 text-left text-[11px] text-midwarm hover:border-midwarm"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        <form
+          className="border-t border-paperline p-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            send(input);
+          }}
+        >
+          <div className="flex items-end gap-2">
+            <textarea
+              data-testid="signal-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  send(input);
+                }
+              }}
+              rows={2}
+              placeholder="Describe the signal…"
+              className="flex-1 resize-none rounded-bubble border border-paperline bg-paper2 px-3 py-2 text-[13px] text-inkwarm placeholder:text-midwarm/60 focus:border-midwarm"
+            />
+            <button
+              data-testid="send-signal"
+              type="submit"
+              disabled={busy || !input.trim()}
+              className="rounded-chip bg-inkwarm px-3 py-2 font-sans text-[13px] font-medium text-paper2 disabled:opacity-40"
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* ---- Night world: canvas ---- */}
+      <main className="hidden flex-1 overflow-y-auto bg-night md:block">
+        <Canvas result={latest} onOpenReceipt={() => setReceiptOpen(true)} />
+      </main>
+
+      {/* Mobile canvas summary (no split on phones per DESIGN) */}
+      {latest ? (
+        <div className="border-t border-nline bg-night p-3 md:hidden">
+          <button
+            data-testid="open-receipt-mobile"
+            onClick={() => setReceiptOpen(true)}
+            className="w-full rounded-chip border border-nline px-3 py-2 text-[12px] text-nink"
+          >
+            View {latest.action.incident_id} · {latest.action.severity}
+          </button>
+        </div>
+      ) : null}
+
+      {receiptOpen && latest ? (
+        <DecisionReceipt
+          r={latest}
+          published={published.has(latest.action.incident_id)}
+          onApprove={() => approve(latest.action.incident_id)}
+          onClose={() => setReceiptOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function MessageBubble({ m }: { m: Msg }) {
+  if (m.role === "system") {
+    return (
+      <div
+        data-testid="system-message"
+        className="rounded-bubble border border-dashed border-paperline bg-paper2/60 px-3 py-2 text-[12px] text-midwarm"
+      >
+        {m.text}
+      </div>
+    );
+  }
+  const isAgent = m.role === "agent";
+  return (
+    <div
+      data-testid={isAgent ? "agent-message" : "caller-message"}
+      className={`flex flex-col ${isAgent ? "items-start" : "items-end"}`}
+    >
+      <div
+        className={`max-w-[86%] rounded-bubble border px-3 py-2 ${
+          isAgent
+            ? "rounded-bl-[3px] border-paperline bg-paper2 font-display text-[13.5px] font-medium text-inkwarm"
+            : "rounded-br-[3px] border-paperline bg-paper2/70 font-sans text-[13px] text-inkwarm"
+        }`}
+        style={isAgent ? { letterSpacing: "-0.005em" } : undefined}
+      >
+        {m.text}
+      </div>
+      <div className="mt-0.5 flex items-center gap-1.5 px-1">
+        {m.channel === "phone" ? (
+          <span className="font-mono text-[9px] uppercase tracking-wider text-voice">phone</span>
+        ) : null}
+        <span className="font-mono text-[9px] text-midwarm/70">{clock(m.ts)}</span>
+      </div>
+    </div>
+  );
+}
+
+// Waveform-to-chips: structured chips materialize under the transcript (DESIGN #1)
+function ChipStrip({ r }: { r: PipelineResult }) {
+  const c = r.classification;
+  return (
+    <div data-testid="chip-strip" className="animate-rise flex flex-wrap gap-1.5 pt-1">
+      <MonoPill>{c.intent_category}</MonoPill>
+      <MonoPill>{r.action.severity}</MonoPill>
+      <MonoPill>conf {Math.round(c.confidence * 100)}%</MonoPill>
+      {c.pii_detected ? <MonoPill tone="voice">pii redacted</MonoPill> : null}
+      {r.routing.escalate ? <MonoPill tone="voice">escalated</MonoPill> : null}
+    </div>
+  );
+}

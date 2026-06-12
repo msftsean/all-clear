@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourcePrefix": { "value": "allclear" },
+    "location": { "value": "eastus" },
+    "cosmosLocation": { "value": "eastus" },
+    "searchLocation": { "value": "eastus" },
+    "openAiModel": { "value": "gpt-5.1" },
+    "openAiModelVersion": { "value": "2025-11-13" },
+    "embeddingModel": { "value": "text-embedding-3-small" },
+    "embeddingModelVersion": { "value": "1" },
+    "mockMode": { "value": false }
+  }
+}

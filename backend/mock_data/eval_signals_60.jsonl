@@ -1,0 +1,60 @@
+{"text": "The whole neighborhood lost power about ten minutes ago", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "There's a total blackout on our street, no power anywhere", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "A transformer just blew and now the lights are out", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "The substation seems to be offline, power outage across the grid", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "Our building has no power, looks like a wider outage", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "System down across the whole district, electricity gone", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "The power grid in the east side is offline again", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "No power since the storm, blackout in the area", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "There is a downed power line sparking on Fifth Street", "expected_category": "FIELD_HAZARD"}
+{"text": "A tree down across the road is blocking traffic", "expected_category": "FIELD_HAZARD"}
+{"text": "Water main break flooding the entire street", "expected_category": "FIELD_HAZARD"}
+{"text": "Live wire hanging low over the sidewalk, very dangerous", "expected_category": "FIELD_HAZARD"}
+{"text": "Flood waters rising fast on Pine Road", "expected_category": "FIELD_HAZARD"}
+{"text": "Debris and a downed line blocking the intersection", "expected_category": "FIELD_HAZARD"}
+{"text": "A power line is down and sparking near the school", "expected_category": "FIELD_HAZARD"}
+{"text": "Road blocked by flooding after the water main broke", "expected_category": "FIELD_HAZARD"}
+{"text": "There's a building fire with people trapped inside", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Heavy smoke and flames, someone is injured", "expected_category": "PUBLIC_SAFETY"}
+{"text": "I smell a strong gas leak in the apartment building", "expected_category": "PUBLIC_SAFETY"}
+{"text": "A car accident with someone bleeding and unconscious", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Explosion at the plant, people trapped", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Fire spreading fast, residents need rescue", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Someone collapsed and is unconscious, need help now", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Smoke filling the stairwell and people are trapped", "expected_category": "PUBLIC_SAFETY"}
+{"text": "I have a question about my bill, I think I was overcharged", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "Can I get a refund for the double charge on my account", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "How do I update the payment method on my account", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "When will my invoice be available to download", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "Question about a charge I don't recognize on my bill", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "My account shows the wrong balance on the bill, can you help", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "I'd like a refund, the service didn't work as described", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "How do I dispute an incorrect charge on my statement", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "We need to file the NFIRS report before the deadline", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "This is a regulatory breach notification we must submit", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "There's a product recall we have to report to compliance", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "The statutory reporting deadline closes tomorrow", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "Compliance requires we log this NIBRS incident", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "Data breach must be reported within the notification window", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "We have a regulatory deadline for this recall filing", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "I want to speak to a human representative right now", "expected_category": "HUMAN_REQUEST"}
+{"text": "Please connect me with a real person, not a bot", "expected_category": "HUMAN_REQUEST"}
+{"text": "Can I talk to a person about this", "expected_category": "HUMAN_REQUEST"}
+{"text": "Get me a manager, I need a representative", "expected_category": "HUMAN_REQUEST"}
+{"text": "I'd like to speak to someone, a human please", "expected_category": "HUMAN_REQUEST"}
+{"text": "Any update on the status of my earlier report", "expected_category": "STATUS_CHECK"}
+{"text": "What's the status of ticket number 4821", "expected_category": "STATUS_CHECK"}
+{"text": "Following up on the incident I reported yesterday", "expected_category": "STATUS_CHECK"}
+{"text": "Just checking the status of my open request", "expected_category": "STATUS_CHECK"}
+{"text": "I'm following up, any update on my case", "expected_category": "STATUS_CHECK"}
+{"text": "Thanks for the help earlier, appreciate it", "expected_category": "GENERAL_INQUIRY"}
+{"text": "Hello, I have a general question for you", "expected_category": "GENERAL_INQUIRY"}
+{"text": "Just wanted to say the new portal looks nice", "expected_category": "GENERAL_INQUIRY"}
+{"text": "Hi there, hope you're having a good day", "expected_category": "GENERAL_INQUIRY"}
+{"text": "What kinds of things can you help me with", "expected_category": "GENERAL_INQUIRY"}
+{"text": "Power outage on the north side, transformer down", "expected_category": "INFRASTRUCTURE_OUTAGE"}
+{"text": "Sparking downed power line near the park entrance", "expected_category": "FIELD_HAZARD"}
+{"text": "Building fire, people trapped on the roof", "expected_category": "PUBLIC_SAFETY"}
+{"text": "Refund question about the charge on my last invoice", "expected_category": "CUSTOMER_INQUIRY"}
+{"text": "Need to report a compliance breach before the statutory deadline", "expected_category": "COMPLIANCE_REPORT"}
+{"text": "Please let me speak to a human agent", "expected_category": "HUMAN_REQUEST"}

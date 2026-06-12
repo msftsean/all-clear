@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-paper text-ink font-sans;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :focus-visible {
+    outline: 2px solid #0081c0;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* Skip link */
+  .skip-link {
+    @apply absolute left-4 z-50 px-4 py-2 bg-cofounder text-white rounded-lg font-medium text-sm;
+    top: -4rem;
+    transition: top 0.15s ease-in-out;
+  }
+  .skip-link:focus {
+    top: 0.75rem;
+  }
+
+  /* Card styles */
+  .card {
+    @apply bg-surface rounded-2xl border border-border shadow-soft p-6;
+  }
+  .card-raised {
+    @apply bg-surface rounded-2xl border border-border shadow-medium p-6;
+  }
+
+  /* Pill nav */
+  .pill-nav {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Tab button styles */
+  .tab-button {
+    @apply px-4 py-2 text-sm font-medium rounded-pill transition-all duration-200;
+    @apply text-ink-secondary hover:text-cofounder hover:bg-cofounder-soft;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-cofounder focus-visible:ring-offset-2;
+    white-space: nowrap;
+  }
+  .tab-button-active {
+    @apply bg-cofounder text-white shadow-soft;
+  }
+
+  /* Callout */
+  .callout {
+    @apply bg-surface-raised rounded-xl border border-border p-4 shadow-soft;
+  }
+
+  /* Reveal animation (JS-toggled) */
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+}
+
+/* Reduced-motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-hidden {
+    opacity: 1;
+    transform: none;
+  }
+  .reveal-visible {
+    transition: none;
+  }
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@keyframes fade-slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}

@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --paper: #F2EDE3;
+  --paper2: #FFFDF7;
+  --paperline: #E0D8C8;
+  --inkwarm: #2E2A22;
+  --midwarm: #6E6657;
+  --voice: #B0541F;
+  --night: #10161F;
+  --panel: #161E2A;
+  --nline: #27324A;
+  --nink: #C6D2E4;
+  --ndim: #7C8CA6;
+  --sev1: #E25555;
+  --sev2: #E59A3A;
+  --sev3: #5B8FE8;
+  --clear: #37C281;
+}
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, sans-serif;
+  background: var(--night);
+  color: var(--nink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Mono eyebrows: uppercase, tracked */
+.eyebrow {
+  font-family: "JetBrains Mono", Menlo, monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Visible keyboard focus: 2px sev3 ring (DESIGN accessibility floor) */
+:focus-visible {
+  outline: 2px solid var(--sev3);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbars, restrained */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #2a3445; border-radius: 6px; }
+
+/* prefers-reduced-motion: freeze waveform at 50%, stop blink/rise */
+@media (prefers-reduced-motion: reduce) {
+  .animate-bar { animation: none !important; transform: scaleY(0.5) !important; }
+  .animate-blink { animation: none !important; opacity: 1 !important; }
+  .animate-rise { animation: none !important; }
+}

@@ -1,0 +1,51 @@
+name: Deploy Workshop Site to Azure Static Web Apps
+
+# Deploys the workshop-site/ (Vite + React) to its OWN Static Web App. Public site
+# (no auth gate). The deployment token MUST be the one for the workshop SWA — each
+# SWA resource has a unique token. See docs/deployment/SWA_PROVISIONING.md to
+# provision the resource and capture the token into
+# AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP.
+#
+# Safe to merge before Azure is wired up: the guard below no-ops with a clear
+# message when AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP is not set.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "workshop-site/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - name: Guard — require workshop SWA token
+        id: guard
+        run: |
+          if [ -z "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP }}" ]; then
+            echo "::warning::AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP not set — workshop deploy skipped. See docs/deployment/SWA_PROVISIONING.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      # The SWA action runs Oryx to build the Vite app: it installs deps in
+      # app_location and emits the production bundle to output_location (dist).
+      - name: Build and Deploy to Azure Static Web Apps
+        if: steps.guard.outputs.ready == 'true'
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "workshop-site"
+          output_location: "dist"

@@ -1,0 +1,166 @@
+name: Deploy Hackathon Site to Azure SWA (OIDC)
+
+# OIDC / federated-credential deploy — no stored deployment token or client secret.
+# GitHub Actions exchanges a short-lived OIDC token for an Azure access token via
+# a federated credential on an Entra app registration. The SWA deployment token is
+# fetched at runtime with `az`, so nothing long-lived is stored in the repo.
+#
+# Required GitHub secrets (Settings > Secrets and variables > Actions):
+#   AZURE_CLIENT_ID         - app registration (client) ID
+#   AZURE_TENANT_ID         - directory (tenant) ID
+#   AZURE_SUBSCRIPTION_ID   - subscription ID
+# Optional GitHub variables (same screen, "Variables" tab):
+#   SWA_HOSTNAME            - the SWA default hostname used to auto-discover the
+#                             resource (defaults to the known production hostname)
+#   SWA_NAME / SWA_RESOURCE_GROUP - only used as a fallback if discovery by
+#                             hostname fails. The workflow no longer depends on
+#                             these being correct: it discovers the SWA's real
+#                             name + resource group from the subscription itself.
+#
+# This workflow is disabled until the Azure secrets are set: it no-ops with a
+# clear message if AZURE_CLIENT_ID is absent, so it is safe to merge before
+# Azure is wired up.
+
+on:
+  workflow_dispatch: {}
+  # Dispatch-only. Verified green on 2026-05-31 (run 26715437491): OIDC login +
+  # hostname auto-discovery resolved swa-47doors-ajcu-hackathon in rg-ajcu-hackathon
+  # and deployed successfully. Normal pushes deploy via the token-based
+  # deploy-hackathon-swa.yml; run this variant manually via Actions > Run workflow.
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy (OIDC)
+    environment: production
+    steps:
+      - name: Guard — require Azure config
+        id: guard
+        run: |
+          if [ -z "${{ secrets.AZURE_CLIENT_ID }}" ]; then
+            echo "::warning::AZURE_CLIENT_ID not set — OIDC deploy skipped. Configure federated credentials to enable."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.guard.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.guard.outputs.ready == 'true'
+        with:
+          node-version: 18
+
+      - name: Install and build
+        if: steps.guard.outputs.ready == 'true'
+        working-directory: hackathon-site
+        run: |
+          npm ci
+          npm run build
+
+      - name: Azure login (OIDC, no secret)
+        if: steps.guard.outputs.ready == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Discover the SWA by hostname
+        if: steps.guard.outputs.ready == 'true'
+        id: discover
+        run: |
+          set -uo pipefail
+          # The SWA_NAME / SWA_RESOURCE_GROUP variables have historically been set
+          # to the wrong values. Rather than trust them, discover the real resource
+          # by its stable production hostname within the login subscription.
+          hostname="${{ vars.SWA_HOSTNAME }}"
+          if [ -z "$hostname" ]; then
+            hostname="white-ground-0c80a6f10.7.azurestaticapps.net"
+          fi
+          echo "Looking for a Static Web App with defaultHostname=$hostname"
+          echo "::group::Static Web Apps visible to this service principal"
+          az staticwebapp list \
+            --query "[].{name:name, rg:resourceGroup, host:defaultHostname}" -o table || true
+          echo "::endgroup::"
+
+          name=$(az staticwebapp list \
+            --query "[?defaultHostname=='$hostname'].name | [0]" -o tsv 2>/dev/null || echo "")
+          rg=$(az staticwebapp list \
+            --query "[?defaultHostname=='$hostname'].resourceGroup | [0]" -o tsv 2>/dev/null || echo "")
+
+          if [ -z "$name" ] || [ -z "$rg" ]; then
+            echo "::warning::Could not discover the SWA by hostname; falling back to Variables."
+            name="${{ vars.SWA_NAME }}"
+            rg="${{ vars.SWA_RESOURCE_GROUP }}"
+          fi
+
+          if [ -z "$name" ] || [ -z "$rg" ]; then
+            echo "::error::Unable to determine the SWA name/resource group. Either the"
+            echo "::error::login subscription does not contain the SWA with hostname"
+            echo "::error::$hostname, or set the SWA_HOSTNAME / SWA_NAME / SWA_RESOURCE_GROUP"
+            echo "::error::variables. Subscriptions this principal can see:"
+            az account list --query "[].{name:name,id:id}" -o table || true
+            exit 1
+          fi
+          echo "Resolved SWA: name=$name resourceGroup=$rg"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "rg=$rg" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch SWA deployment token at runtime
+        if: steps.guard.outputs.ready == 'true'
+        id: swatoken
+        env:
+          EXPECTED_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          SWA_NAME: ${{ steps.discover.outputs.name }}
+          SWA_RG: ${{ steps.discover.outputs.rg }}
+        run: |
+          set -uo pipefail
+          # Retry to ride out RBAC propagation lag after a fresh role assignment.
+          token=""
+          for attempt in 1 2 3 4 5; do
+            if token=$(az staticwebapp secrets list \
+                --name "$SWA_NAME" \
+                --resource-group "$SWA_RG" \
+                --query "properties.apiKey" -o tsv 2>/tmp/azerr); then
+              if [ -n "$token" ]; then break; fi
+            fi
+            echo "::warning::Attempt $attempt to fetch SWA token failed; retrying in 30s..."
+            sed 's/^/  az: /' /tmp/azerr || true
+            sleep 30
+            token=""
+          done
+          if [ -z "$token" ]; then
+            oid=$(az ad sp show --id "$EXPECTED_CLIENT_ID" --query id -o tsv 2>/dev/null || echo "<lookup failed>")
+            echo "::error::Could not fetch the SWA deployment token. The authenticated"
+            echo "::error::service principal lacks 'Microsoft.Web/staticSites/listSecrets/action'"
+            echo "::error::on $SWA_NAME (rg $SWA_RG)."
+            echo "::error::Assign an ACTIVE Contributor role to the principal with"
+            echo "::error::client id $EXPECTED_CLIENT_ID (object id $oid) on that SWA."
+            echo "::error::Tip: in the IAM picker, search by the client id (not the display"
+            echo "::error::name) to avoid hitting a different principal with the same name."
+            exit 1
+          fi
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy to Azure Static Web Apps
+        if: steps.guard.outputs.ready == 'true'
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swatoken.outputs.token }}
+          action: upload
+          # We pre-build above (npm run build -> hackathon-site/dist) and set
+          # skip_app_build: true. With skip_app_build the SWA action uploads the
+          # content at app_location directly and IGNORES output_location, so
+          # app_location MUST point at the built output. Pointing it at the
+          # source folder (hackathon-site) uploaded the un-built index.html
+          # (referencing /src/main.tsx), which served a blank page in production.
+          app_location: hackathon-site/dist
+          output_location: ""
+          skip_app_build: true

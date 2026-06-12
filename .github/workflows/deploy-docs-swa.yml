@@ -1,0 +1,49 @@
+name: Deploy Docs to Azure Static Web Apps
+
+# Deploys the docs/ site to its OWN Static Web App. The deployment token MUST be
+# the one for the docs SWA — NOT AZURE_STATIC_WEB_APPS_API_TOKEN, which belongs to
+# the hackathon-site SWA. Using the wrong token would deploy docs content into the
+# hackathon site. See docs/deployment/SWA_PROVISIONING.md to provision the resource
+# and capture the token into AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS.
+#
+# Safe to merge before Azure is wired up: the guard below no-ops with a clear
+# message when AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS is not set.
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs-site/**"
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Build and Deploy
+    steps:
+      - name: Guard — require docs SWA token
+        id: guard
+        run: |
+          if [ -z "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS }}" ]; then
+            echo "::warning::AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS not set — docs deploy skipped. See docs/deployment/SWA_PROVISIONING.md."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+
+      - name: Deploy to Azure Static Web Apps
+        if: steps.guard.outputs.ready == 'true'
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "docs-site"
+          output_location: "dist"

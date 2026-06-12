@@ -1,0 +1,32 @@
+{
+  "name": "47doors-coach-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Coach prep companion site for the 47 Doors AJCU hackathon — how to prepare for and help participants",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@fluentui/react-icons": "^2.0.328",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@heroicons/react": "^2.1.1",
+    "@playwright/test": "^1.60.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "serve": "^14.2.6",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  }
+}

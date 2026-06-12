@@ -1,0 +1,96 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-student_wellness-001",
+      "title": "Booking a counseling intake — what to expect at your first session",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-001",
+      "content": "Schedule a counseling intake online or by phone. Your first session is a confidential conversation about what brings you in, your history, and your goals; together you and the counselor decide next steps, which may include short-term therapy, a group, or a referral. There is no cost for the initial sessions. Counseling is separate from academics and your records are private.",
+      "snippet": "Schedule a counseling intake online or by phone",
+      "department": "student_wellness",
+      "category": "counseling",
+      "tags": [
+        "counseling",
+        "intake",
+        "appointment"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-student_wellness-002",
+      "title": "Same-day urgent appointments and after-hours crisis support",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-002",
+      "content": "If you are in crisis during business hours, walk in or call Counseling Services and ask for an urgent same-day appointment. After hours, call or text the 988 Suicide & Crisis Lifeline, or call campus safety or 911 if you are in immediate danger. You never have to be in danger to reach out — if something feels like too much, we want to talk with you today.",
+      "snippet": "If you are in crisis during business hours, walk in or call Counseling Services and ask for an urgent same-day appointment",
+      "department": "student_wellness",
+      "category": "crisis",
+      "tags": [
+        "crisis",
+        "urgent",
+        "988",
+        "after-hours"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-student_wellness-003",
+      "title": "CAPS group therapy and peer-support communities",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-003",
+      "content": "Counseling & Psychological Services (CAPS) runs therapy and support groups on themes like anxiety, grief, identity, and adjusting to college. Peer-support communities, led by trained students, offer a lower-barrier place to feel less alone. Groups are confidential and free; join through an intake or by contacting CAPS directly.",
+      "snippet": "Counseling & Psychological Services (CAPS) runs therapy and support groups on themes like anxiety, grief, identity, and adjusting to college",
+      "department": "student_wellness",
+      "category": "groups",
+      "tags": [
+        "group therapy",
+        "peer support",
+        "community"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-student_wellness-004",
+      "title": "Basic needs: food pantry, emergency funds, housing insecurity support",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-004",
+      "content": "No student should have to choose between books and meals. The campus food pantry is free and confidential, emergency micro-grants can help with an unexpected bill, and case managers assist students facing housing insecurity. Reach out early — we can connect you to campus and community resources and, when relevant, to Financial Aid for a special-circumstances review.",
+      "snippet": "No student should have to choose between books and meals",
+      "department": "student_wellness",
+      "category": "basic-needs",
+      "tags": [
+        "food pantry",
+        "emergency funds",
+        "housing insecurity",
+        "basic needs"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-student_wellness-005",
+      "title": "Accessibility services and academic accommodations",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-005",
+      "content": "Students with disabilities — including chronic health, mental-health, and learning conditions — can register with Accessibility Services to arrange accommodations such as extended testing time, note-taking support, or housing adjustments. Bring documentation if you have it; if not, we can help you get it. Accommodations are confidential and arranged collaboratively with you and your instructors.",
+      "snippet": "Students with disabilities — including chronic health, mental-health, and learning conditions — can register with Accessibility Services to arrange accommoda...",
+      "department": "student_wellness",
+      "category": "accessibility",
+      "tags": [
+        "accessibility",
+        "accommodations",
+        "disability"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-student_wellness-006",
+      "title": "Substance use support — confidential and non-disciplinary pathways",
+      "url": "https://studentwellness.university.edu/kb/student_wellness-006",
+      "content": "Support for alcohol and other drug concerns is confidential and separate from the conduct process. You can meet one-on-one with a wellness counselor, join a recovery-ally community, or get a referral for higher-level care. Seeking help on your own will not trigger discipline; our goal is your health and safety.",
+      "snippet": "Support for alcohol and other drug concerns is confidential and separate from the conduct process",
+      "department": "student_wellness",
+      "category": "substance-use",
+      "tags": [
+        "substance use",
+        "confidential",
+        "recovery"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    }
+  ]
+}

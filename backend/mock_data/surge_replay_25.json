@@ -1,0 +1,35 @@
+{
+  "description": "Surge replay fixture (001-maf-rehost, T4b). 25 signals across 5 scripted duplicate clusters. Streaming these through process_signal in mock mode must yield <=6 open incidents and >=19 attachments (Exercise 5 checkpoint). Cluster members share a strong common core phrase so the deterministic mock embedding (services/mock/embeddings.py) pushes within-cluster cosine >= DEDUP_THRESHOLD (0.83) and cross-cluster cosine below it.",
+  "expected": { "max_open_incidents": 6, "min_attachments": 19, "total": 25 },
+  "signals": [
+    {"id": "S01", "channel": "phone", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout entireblock"},
+    {"id": "S02", "channel": "chat", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout darkhouses"},
+    {"id": "S03", "channel": "phone", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout reportedagain"},
+    {"id": "S04", "channel": "report", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout nopower"},
+    {"id": "S05", "channel": "chat", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout lightsgone"},
+    {"id": "S06", "channel": "phone", "cluster": "outage_oak", "text": "power outage transformer substation explosion oak avenue neighborhood blackout stillhappening"},
+
+    {"id": "S07", "channel": "phone", "cluster": "downed_line_main", "text": "downed power line sparking arcing fifth main street wire hanging dangerous pavement"},
+    {"id": "S08", "channel": "chat", "cluster": "downed_line_main", "text": "downed power line sparking arcing fifth main street wire hanging dangerous sidewalk"},
+    {"id": "S09", "channel": "report", "cluster": "downed_line_main", "text": "downed power line sparking arcing fifth main street wire hanging dangerous crossing"},
+    {"id": "S10", "channel": "phone", "cluster": "downed_line_main", "text": "downed power line sparking arcing fifth main street wire hanging dangerous intersection"},
+    {"id": "S11", "channel": "chat", "cluster": "downed_line_main", "text": "downed power line sparking arcing fifth main street wire hanging dangerous corner"},
+
+    {"id": "S12", "channel": "phone", "cluster": "fire_elm", "text": "building fire heavy smoke people trapped third floor elm tower flames spreading rescue"},
+    {"id": "S13", "channel": "phone", "cluster": "fire_elm", "text": "building fire heavy smoke people trapped third floor elm tower flames spreading help"},
+    {"id": "S14", "channel": "report", "cluster": "fire_elm", "text": "building fire heavy smoke people trapped third floor elm tower flames spreading injured"},
+    {"id": "S15", "channel": "chat", "cluster": "fire_elm", "text": "building fire heavy smoke people trapped third floor elm tower flames spreading screaming"},
+    {"id": "S16", "channel": "phone", "cluster": "fire_elm", "text": "building fire heavy smoke people trapped third floor elm tower flames spreading hurry"},
+
+    {"id": "S17", "channel": "chat", "cluster": "billing_refund", "text": "refund question double charge bill account overcharged invoice incorrect amount statement"},
+    {"id": "S18", "channel": "chat", "cluster": "billing_refund", "text": "refund question double charge bill account overcharged invoice incorrect amount wrong"},
+    {"id": "S19", "channel": "chat", "cluster": "billing_refund", "text": "refund question double charge bill account overcharged invoice incorrect amount dispute"},
+    {"id": "S20", "channel": "chat", "cluster": "billing_refund", "text": "refund question double charge bill account overcharged invoice incorrect amount twice"},
+    {"id": "S21", "channel": "chat", "cluster": "billing_refund", "text": "refund question double charge bill account overcharged invoice incorrect amount help"},
+
+    {"id": "S22", "channel": "phone", "cluster": "water_main_pine", "text": "water main break massive flooding pine road street submerged gushing cars stranded basement"},
+    {"id": "S23", "channel": "report", "cluster": "water_main_pine", "text": "water main break massive flooding pine road street submerged gushing cars stranded garage"},
+    {"id": "S24", "channel": "phone", "cluster": "water_main_pine", "text": "water main break massive flooding pine road street submerged gushing cars stranded yard"},
+    {"id": "S25", "channel": "chat", "cluster": "water_main_pine", "text": "water main break massive flooding pine road street submerged gushing cars stranded driveway"}
+  ]
+}

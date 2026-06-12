@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-cream text-ink font-sans antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif text-maroon;
+  }
+
+  /* Global visible focus indicator using the gold theme token. */
+  :focus-visible {
+    outline: 2px solid #b8860b; /* gold */
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Skip link: visually hidden until focused, on-brand when focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 50;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  width: auto;
+  height: auto;
+  padding: 0.5rem 1rem;
+  background-color: #791a3e; /* maroon */
+  color: #f5f0e8; /* cream */
+  font-weight: 600;
+  border-radius: 0.25rem;
+  outline: 2px solid #b8860b; /* gold */
+  outline-offset: 2px;
+}
+
+
+/* Gold rule under page headings */
+.gold-rule {
+  @apply border-b-2 border-gold pb-2 mb-6;
+}
+
+/* Chat bubble for student messages */
+.chat-bubble {
+  @apply bg-deep-cream border border-maroon/20 border-t-gold/50 rounded-lg p-4 italic text-ink/90;
+}
+
+/* Smooth transitions */
+details summary {
+  @apply cursor-pointer select-none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: '▶ ';
+  @apply text-gold text-sm mr-1;
+}
+
+details[open] summary::before {
+  content: '▼ ';
+}

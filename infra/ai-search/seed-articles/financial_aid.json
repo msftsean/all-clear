@@ -1,0 +1,81 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-financial_aid-001",
+      "title": "How federal aid is recalculated when you drop below full-time status",
+      "url": "https://financialaid.university.edu/kb/financial_aid-001",
+      "content": "Dropping below full-time enrollment (typically 12 credits for undergraduates) can change your federal aid eligibility. The Pell Grant is prorated by enrollment intensity, and most federal loans require at least half-time (6 credits) status to disburse. Before you drop a class, contact the Financial Aid Office so we can model the impact on your package and protect any need-based or institutional awards. We can often suggest alternatives — an incomplete, a tutoring referral, or a special-circumstances review — that keep your aid intact.",
+      "snippet": "Dropping below full-time enrollment (typically 12 credits for undergraduates) can change your federal aid eligibility",
+      "department": "financial_aid",
+      "category": "aid-impact",
+      "tags": [
+        "enrollment status",
+        "full-time",
+        "federal aid",
+        "drop below"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-financial_aid-002",
+      "title": "Work-study vs. on-campus employment: what counts toward your aid package",
+      "url": "https://financialaid.university.edu/kb/financial_aid-002",
+      "content": "Federal Work-Study (FWS) is need-based aid you earn through an approved part-time job; your earnings do not count against next year's FAFSA in the same way regular wages do. Standard on-campus employment is open to any student but is treated as ordinary income. If work-study appears on your award letter, you must be hired into an FWS-eligible position to use it. Talk to us before swapping jobs so we can preserve the work-study portion of your package.",
+      "snippet": "Federal Work-Study (FWS) is need-based aid you earn through an approved part-time job; your earnings do not count against next year's FAFSA in the same way r...",
+      "department": "financial_aid",
+      "category": "work-study",
+      "tags": [
+        "work-study",
+        "employment",
+        "aid package"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-financial_aid-003",
+      "title": "Appealing your financial aid award: the special-circumstances form",
+      "url": "https://financialaid.university.edu/kb/financial_aid-003",
+      "content": "If your family has experienced a significant change — job loss, reduced income, large medical bills, divorce, or the death of a parent — you may request a professional-judgment review using the Special Circumstances Appeal form. Submit documentation of the change and a short narrative describing your situation. Appeals are reviewed individually, and we can often increase need-based aid. Hardship appeals are handled with priority; reach out as soon as the change occurs rather than waiting for the next aid year.",
+      "snippet": "If your family has experienced a significant change — job loss, reduced income, large medical bills, divorce, or the death of a parent — you may request a pr...",
+      "department": "financial_aid",
+      "category": "appeals",
+      "tags": [
+        "appeal",
+        "special circumstances",
+        "professional judgment"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-financial_aid-004",
+      "title": "Tuition payment plans and deadlines",
+      "url": "https://financialaid.university.edu/kb/financial_aid-004",
+      "content": "The Bursar offers interest-free monthly payment plans that split each semester's balance into installments. Enrollment opens before the term begins and closes after the add/drop period. Plans require a small enrollment fee and automatic payments. Missing the payment-plan deadline may result in a registration hold, so enroll early. If you cannot meet an installment, contact the Bursar before the due date to avoid late fees and holds.",
+      "snippet": "The Bursar offers interest-free monthly payment plans that split each semester's balance into installments",
+      "department": "financial_aid",
+      "category": "billing",
+      "tags": [
+        "payment plan",
+        "deadlines",
+        "bursar"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-financial_aid-005",
+      "title": "Loyola scholarships, Magis grants, and need-based aid stacking rules",
+      "url": "https://financialaid.university.edu/kb/financial_aid-005",
+      "content": "Institutional awards — merit scholarships, Magis grants, and need-based grants — can often be combined, but total gift aid cannot exceed your cost of attendance. When outside scholarships arrive, we may adjust loans or work-study first to keep your grants whole. Renewal usually requires full-time enrollment and a minimum GPA. Review your award letter's stacking notes and contact us before declining any award so we can show you the net effect on your package.",
+      "snippet": "Institutional awards — merit scholarships, Magis grants, and need-based grants — can often be combined, but total gift aid cannot exceed your cost of attendance",
+      "department": "financial_aid",
+      "category": "scholarships",
+      "tags": [
+        "scholarship",
+        "magis grant",
+        "stacking",
+        "need-based"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    }
+  ]
+}

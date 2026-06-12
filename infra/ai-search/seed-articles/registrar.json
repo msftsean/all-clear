@@ -1,0 +1,78 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-registrar-001",
+      "title": "Add/drop, withdrawal, and the W vs. WF distinction",
+      "url": "https://registrar.university.edu/kb/registrar-001",
+      "content": "During the add/drop period you may change your schedule with no transcript record. After add/drop closes, leaving a course is a withdrawal: a 'W' appears on your transcript and does not affect GPA, while a 'WF' (withdraw failing, after the deadline) is calculated as an F. Deadlines are published each term in the academic calendar. Because dropping a course can affect financial aid and full-time status, check with Financial Aid before you withdraw.",
+      "snippet": "During the add/drop period you may change your schedule with no transcript record",
+      "department": "registrar",
+      "category": "enrollment",
+      "tags": [
+        "add/drop",
+        "withdrawal",
+        "transcript notation"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-registrar-002",
+      "title": "Requesting an official vs. unofficial transcript",
+      "url": "https://registrar.university.edu/kb/registrar-002",
+      "content": "Unofficial transcripts are free and available instantly in the student portal for your own use. Official transcripts are sealed or sent electronically directly to schools and employers, and may carry a small fee. Order officials through the Registrar's transcript service and clear any financial holds first, since holds block release. Allow extra processing time during graduation and the start of each term.",
+      "snippet": "Unofficial transcripts are free and available instantly in the student portal for your own use",
+      "department": "registrar",
+      "category": "transcripts",
+      "tags": [
+        "transcript",
+        "official",
+        "unofficial"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-registrar-003",
+      "title": "Changing your major or declaring a minor",
+      "url": "https://registrar.university.edu/kb/registrar-003",
+      "content": "To change your major or declare a minor, submit the Change/Declaration of Program form with the new department's approval. Your degree audit updates to the requirements in effect when you declare. Switching late in your program can add semesters, so meet with your advisor and the Registrar to review how existing credits apply before you file.",
+      "snippet": "To change your major or declare a minor, submit the Change/Declaration of Program form with the new department's approval",
+      "department": "registrar",
+      "category": "records",
+      "tags": [
+        "change major",
+        "declare minor",
+        "major"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-registrar-004",
+      "title": "Graduation application deadlines and the audit process",
+      "url": "https://registrar.university.edu/kb/registrar-004",
+      "content": "Apply to graduate by the deadline in the term before your final semester. After you apply, the Registrar runs a final degree audit against your declared program; any unmet requirements are flagged so you can resolve them in your last term. Missing the graduation-application deadline can delay your diploma and participation in commencement, so file early and review your audit promptly.",
+      "snippet": "Apply to graduate by the deadline in the term before your final semester",
+      "department": "registrar",
+      "category": "graduation",
+      "tags": [
+        "graduation application",
+        "degree audit",
+        "commencement"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    },
+    {
+      "article_id": "kb-registrar-005",
+      "title": "Cross-registration with consortium schools",
+      "url": "https://registrar.university.edu/kb/registrar-005",
+      "content": "Eligible students may take courses at partner consortium institutions and have them count toward the home degree. Use the cross-registration form, obtain advisor approval, and confirm the course has no equivalent restriction. Grades and credits transfer back per the consortium agreement. Watch home-campus deadlines, which may differ from the host school's calendar.",
+      "snippet": "Eligible students may take courses at partner consortium institutions and have them count toward the home degree",
+      "department": "registrar",
+      "category": "registration",
+      "tags": [
+        "cross-registration",
+        "consortium"
+      ],
+      "last_updated": "2026-02-02T10:00:00Z"
+    }
+  ]
+}

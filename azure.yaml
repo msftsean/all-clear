@@ -1,0 +1,36 @@
+# Azure Developer CLI (azd) configuration for All Clear
+# Run `azd up` to provision and deploy the solution
+
+name: all-clear
+metadata:
+  template: all-clear@0.1.0
+
+services:
+  backend:
+    project: ./backend
+    language: python
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
+
+  frontend:
+    project: ./frontend
+    language: js
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
+
+# Azure infrastructure
+infra:
+  provider: bicep
+  path: ./infra
+  module: main
+
+hooks:
+  postdeploy:
+    shell: sh
+    run: |
+      echo "Backend URL: ${AZURE_CONTAINERAPP_URL}"
+      echo "API Health: ${AZURE_CONTAINERAPP_URL}/api/health"
