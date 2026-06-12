@@ -38,5 +38,11 @@
     "higher-education"
   ],
   "author": "Microsoft Higher Education",
+  "contributors": [
+    {
+      "name": "Sean Gillespie",
+      "url": "https://github.com/msftsean"
+    }
+  ],
   "license": "MIT"
 }
