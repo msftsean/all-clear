@@ -5,6 +5,9 @@
 behind the custom `allclear-guardrails` content filter.
 
 Open in the portal: **Azure AI Foundry -> project `allclear-redteam` -> Red teaming**.
+Verified present: the project's `redTeams/runs` collection holds the `all-clear-redteam-demo`
+run with status **Completed** and an ASR scorecard. Direct deep link:
+https://ai.azure.com/resource/build/redteaming/c73c5d72-d071-4c51-9a51-e3587b9b9ef1?wsid=/subscriptions/098ef2f6-cea4-4839-8093-ef90622e1b8c/resourceGroups/rg-allclear/providers/Microsoft.CognitiveServices/accounts/allclear-foundry/projects/allclear-redteam&tid=8251a5cb-be5c-4a08-b918-4ebc01628829
 
 ## Headline
 
