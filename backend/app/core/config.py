@@ -6,7 +6,7 @@ Supports both environment variables and .env files.
 from functools import lru_cache
 from typing import Literal
 
-from pydantic import Field, model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -67,14 +67,21 @@ class Settings(BaseSettings):
     # ==========================================================================
     cosmos_db_endpoint: str = Field(
         default="",
+        validation_alias=AliasChoices(
+            "cosmos_db_endpoint", "azure_cosmos_endpoint"
+        ),
         description="Azure Cosmos DB endpoint URL"
     )
     cosmos_db_key: str = Field(
         default="",
+        validation_alias=AliasChoices("cosmos_db_key", "azure_cosmos_key"),
         description="Azure Cosmos DB primary key"
     )
     cosmos_db_database: str = Field(
         default="frontdoor",
+        validation_alias=AliasChoices(
+            "cosmos_db_database", "azure_cosmos_database"
+        ),
         description="Cosmos DB database name"
     )
     cosmos_db_sessions_container: str = Field(
