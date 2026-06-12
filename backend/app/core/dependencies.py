@@ -137,7 +137,7 @@ def get_realtime_service(settings: Settings | None = None) -> RealtimeServiceInt
         # Pass API key only if explicitly set (for local dev), otherwise use managed identity
         api_key = settings.azure_openai_api_key if settings.azure_openai_api_key else None
         return AzureRealtimeService(
-            endpoint=settings.azure_openai_endpoint,
+            endpoint=settings.realtime_endpoint,
             deployment=settings.azure_openai_realtime_deployment,
             api_version=settings.azure_openai_realtime_api_version,
             api_key=api_key,
@@ -159,7 +159,7 @@ def get_phone_service(settings: Settings | None = None) -> PhoneServiceInterface
         connection_string = settings.azure_acs_connection_string if settings.azure_acs_connection_string else None
         return AzurePhoneService(
             acs_endpoint=settings.azure_acs_endpoint,
-            openai_endpoint=settings.azure_openai_endpoint,
+            openai_endpoint=settings.realtime_endpoint,
             openai_deployment=settings.azure_openai_realtime_deployment,
             connection_string=connection_string,
         )

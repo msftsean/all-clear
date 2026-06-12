@@ -122,7 +122,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         token = await _token_mgr.get_token()
 
         openai_url = (
-            f"{settings.azure_openai_endpoint.replace('https://', 'wss://')}"
+            f"{settings.realtime_endpoint.replace('https://', 'wss://')}"
             f"/openai/realtime"
             f"?api-version={settings.azure_openai_realtime_api_version}"
             f"&deployment={settings.azure_openai_realtime_deployment}"

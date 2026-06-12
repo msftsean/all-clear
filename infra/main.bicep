@@ -31,6 +31,9 @@ param realtimeModel string = 'gpt-realtime'
 @description('Realtime model version')
 param realtimeModelVersion string = '2025-08-28'
 
+@description('Region for the realtime OpenAI account (realtime models are not available in eastus)')
+param realtimeLocation string = 'swedencentral'
+
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
 
@@ -99,6 +102,42 @@ resource openAiEmbeddingDeployment 'Microsoft.CognitiveServices/accounts/deploym
   sku: {
     name: 'Standard'
     capacity: 50
+  }
+}
+
+// Separate OpenAI account for the Realtime model. Realtime models (gpt-realtime)
+// are NOT available in eastus, so this account lives in realtimeLocation
+// (default swedencentral). The backend uses AZURE_OPENAI_REALTIME_ENDPOINT to
+// reach it for voice (A1) and phone (A2) while chat/embeddings stay on the
+// primary eastus account.
+resource openAiRealtime 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+  name: '${prefix}-openai-rt'
+  location: realtimeLocation
+  tags: tags
+  kind: 'OpenAI'
+  sku: {
+    name: 'S0'
+  }
+  properties: {
+    customSubDomainName: '${prefix}-openai-rt'
+    publicNetworkAccess: 'Enabled'
+    disableLocalAuth: true
+  }
+}
+
+resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = {
+  parent: openAiRealtime
+  name: realtimeModel
+  properties: {
+    model: {
+      format: 'OpenAI'
+      name: realtimeModel
+      version: realtimeModelVersion
+    }
+  }
+  sku: {
+    name: 'GlobalStandard'
+    capacity: 10
   }
 }
 
@@ -384,6 +423,14 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               value: 'preview'
             }
             {
+              name: 'AZURE_OPENAI_REALTIME_ENDPOINT'
+              value: openAiRealtime.properties.endpoint
+            }
+            {
+              name: 'AZURE_OPENAI_REALTIME_DEPLOYMENT'
+              value: openAiRealtimeDeployment.name
+            }
+            {
               name: 'AZURE_COSMOS_ENDPOINT'
               value: mockMode ? '' : cosmosAccount.properties.documentEndpoint
             }
@@ -437,6 +484,17 @@ var cognitiveServicesOpenAIUserRoleId = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
 resource backendOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(openAi.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
   scope: openAi
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesOpenAIUserRoleId)
+    principalId: backendContainerApp.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Grant backend container app access to the realtime OpenAI account via managed identity
+resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(openAiRealtime.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
+  scope: openAiRealtime
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesOpenAIUserRoleId)
     principalId: backendContainerApp.identity.principalId

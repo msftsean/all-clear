@@ -212,6 +212,13 @@ class Settings(BaseSettings):
         default="",
         description="Azure OpenAI Realtime API deployment name (e.g. gpt-realtime)"
     )
+    azure_openai_realtime_endpoint: str = Field(
+        default="",
+        description="Azure OpenAI endpoint hosting the Realtime deployment. "
+                    "Realtime models are region-limited (e.g. swedencentral/eastus2), "
+                    "so this is often a different account than the chat endpoint. "
+                    "When empty, falls back to azure_openai_endpoint."
+    )
     azure_openai_realtime_api_version: str = Field(
         default="2025-04-01-preview",
         description="API version for the Azure OpenAI Realtime endpoint"
@@ -281,6 +288,16 @@ class Settings(BaseSettings):
     def use_mock_services(self) -> bool:
         """Determine if mock services should be used."""
         return self.mock_mode or self.is_test
+
+    @property
+    def realtime_endpoint(self) -> str:
+        """Endpoint hosting the Realtime deployment.
+
+        Falls back to the chat endpoint when a dedicated realtime endpoint is
+        not configured (realtime models are region-limited and often live in a
+        separate account).
+        """
+        return self.azure_openai_realtime_endpoint or self.azure_openai_endpoint
 
 
 @lru_cache
