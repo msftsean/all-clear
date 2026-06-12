@@ -241,7 +241,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
         query = "SELECT * FROM c WHERE c.id = @id"
         params = [{"name": "@id", "value": incident_id}]
         async for doc in self._container.query_items(
-            query=query, parameters=params, enable_cross_partition_query=True
+            query=query, parameters=params
         ):
             return doc
         return None
