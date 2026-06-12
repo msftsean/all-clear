@@ -3,8 +3,8 @@ import type { DemoClearBoard } from "./types";
 export const HERO_DEMO_BOARD: DemoClearBoard = {
   mode: "loaded",
   total_signals: 1240,
-  headline: "Many signals in → few incidents out",
-  subhead: "Most signals are duplicates of a few incidents, so ClearBoard collapses the surge.",
+  headline: "Surge: many Signals in → few Incidents out",
+  subhead: "Every Signal is preserved as a Report; ClearBoard merges pins on dedup and raises Incident Magnitude.",
   incidents: [
     {
       incident_id: "AC-1240",

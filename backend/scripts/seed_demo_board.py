@@ -50,16 +50,17 @@ def main() -> int:
     duplicates = total - incident_count
 
     print("All Clear hero-board demo is ready.")
-    print(f"Readout: {total:,} signals received -> {incident_count} incidents")
-    print(f"Collapsed duplicates: {duplicates:,}")
+    print(f"Readout: {total:,} SIGNALS -> {incident_count} INCIDENTS")
+    print(f"Signals attached as Reports: {duplicates:,} (0 Signals discarded)")
     for incident in incidents:
         print(
             f"  - {incident['incident_id']}: {incident['title']} "
             f"({incident['report_count']:,} reports)"
         )
     print()
-    print(f"Blank board:  {frontend}/?demo=blank")
-    print(f"Loaded board: {frontend}/?demo=loaded")
+    print(f"Stage start:  {frontend}/?demo=blank")
+    print("Then click the in-dashboard 'simulate surge' button.")
+    print(f"Final board:  {frontend}/?demo=loaded")
     return 0
 
 

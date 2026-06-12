@@ -48,6 +48,8 @@ const SUGGESTIONS = [
   "I just want to check the status of the outage on 5th Avenue.",
 ];
 
+const SURGE_DURATION_MS = 7200;
+
 export default function BriefingRoom() {
   const [messages, setMessages] = useState<Msg[]>([
     {
@@ -71,6 +73,10 @@ export default function BriefingRoom() {
   const [demoBoard, setDemoBoard] = useState<DemoClearBoard | null>(
     () => (initialDemoMode() === "loaded" ? HERO_DEMO_BOARD : null),
   );
+  const [demoSignalsReceived, setDemoSignalsReceived] = useState(() =>
+    initialDemoMode() === "loaded" ? 0 : HERO_DEMO_BOARD.total_signals,
+  );
+  const [demoSurgeRun, setDemoSurgeRun] = useState(0);
   // Reports observed per normalized location this session — drives the map's
   // cluster so repeat reports about the same place visibly accumulate even when
   // backend dedup opens separate incidents (different category/below threshold).
@@ -98,6 +104,26 @@ export default function BriefingRoom() {
     }
   }, [demoMode]);
 
+  useEffect(() => {
+    if (demoMode !== "loaded" || !demoBoard) return;
+
+    const started = performance.now();
+    const total = demoBoard.total_signals;
+    setDemoSignalsReceived(0);
+    const timer = window.setInterval(() => {
+      const elapsed = performance.now() - started;
+      const progress = Math.min(1, elapsed / SURGE_DURATION_MS);
+      const eased = 1 - Math.pow(1 - progress, 2.6);
+      const next = Math.min(total, Math.floor(eased * total));
+      setDemoSignalsReceived(next);
+      if (next >= total) {
+        window.clearInterval(timer);
+      }
+    }, 80);
+
+    return () => window.clearInterval(timer);
+  }, [demoMode, demoBoard, demoSurgeRun]);
+
   function setDemo(mode: "blank" | "loaded" | null) {
     const url = new URL(window.location.href);
     if (mode) {
@@ -106,7 +132,13 @@ export default function BriefingRoom() {
       url.searchParams.delete("demo");
     }
     window.history.replaceState({}, "", url);
+    setDemoSignalsReceived(0);
     setDemoMode(mode);
+  }
+
+  function simulateSurge() {
+    setDemo("loaded");
+    setDemoSurgeRun((n) => n + 1);
   }
 
   async function send(text: string) {
@@ -152,7 +184,15 @@ export default function BriefingRoom() {
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {demoMode ? <DemoToggle mode={demoMode} onSetMode={setDemo} /> : null}
+            {demoMode ? (
+              <DemoToggle
+                mode={demoMode}
+                onSetMode={setDemo}
+                onSimulateSurge={simulateSurge}
+                signalsReceived={demoSignalsReceived}
+                totalSignals={demoBoard?.total_signals || HERO_DEMO_BOARD.total_signals}
+              />
+            ) : null}
             <button
               data-testid="live-calls-toggle"
               onClick={() => setLiveOpen(true)}
@@ -258,6 +298,7 @@ export default function BriefingRoom() {
             onOpenReceipt={() => setReceiptOpen(true)}
             demoBoard={demoBoard}
             demoBlank={demoMode === "blank"}
+            demoSignalsReceived={demoSignalsReceived}
             locationReports={
               latest?.classification.entities?.location
                 ? locCounts[latest.classification.entities.location.trim().toLowerCase()] || 1
@@ -297,13 +338,27 @@ export default function BriefingRoom() {
 function DemoToggle({
   mode,
   onSetMode,
+  onSimulateSurge,
+  signalsReceived,
+  totalSignals,
 }: {
   mode: "blank" | "loaded";
   onSetMode: (mode: "blank" | "loaded" | null) => void;
+  onSimulateSurge: () => void;
+  signalsReceived: number;
+  totalSignals: number;
 }) {
+  const surgeRunning = mode === "loaded" && signalsReceived < totalSignals;
   return (
     <div data-testid="demo-toggle" className="hidden items-center gap-1 sm:flex">
       <span className="font-mono text-[9px] uppercase tracking-wider text-midwarm/70">demo</span>
+      <button
+        data-testid="simulate-surge"
+        onClick={onSimulateSurge}
+        className="rounded-chip border border-voice/60 bg-voice/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft"
+      >
+        {surgeRunning ? "surge running" : "simulate surge"}
+      </button>
       <button
         onClick={() => onSetMode("blank")}
         className={`rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${

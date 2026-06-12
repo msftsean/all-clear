@@ -28,10 +28,10 @@ router = APIRouter()
 DEMO_CLEARBOARD = {
     "mode": "loaded",
     "total_signals": 1240,
-    "headline": "Many signals in → few incidents out",
+    "headline": "Surge: many Signals in → few Incidents out",
     "subhead": (
-        "Most signals are duplicates of a few incidents, so ClearBoard collapses "
-        "the surge."
+        "Every Signal is preserved as a Report; ClearBoard merges pins on dedup "
+        "and raises Incident Magnitude."
     ),
     "incidents": [
         {

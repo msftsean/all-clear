@@ -274,9 +274,40 @@ function severityVar(sev: Severity): string {
   return `var(--${sev.toLowerCase()})`;
 }
 
+function countsForSignals(board: DemoClearBoard, signalsReceived?: number): number[] {
+  if (signalsReceived == null) return board.incidents.map((i) => i.report_count);
+  const received = clamp(Math.floor(signalsReceived), 0, board.total_signals);
+  const raw = board.incidents.map((incident) => (received * incident.report_count) / board.total_signals);
+  const counts = raw.map((n, i) => Math.min(board.incidents[i].report_count, Math.floor(n)));
+  let remainder = received - counts.reduce((sum, n) => sum + n, 0);
+  const order = raw
+    .map((n, i) => ({ i, frac: n - Math.floor(n) }))
+    .sort((a, b) => b.frac - a.frac);
+  for (const { i } of order) {
+    if (remainder <= 0) break;
+    if (counts[i] < board.incidents[i].report_count) {
+      counts[i] += 1;
+      remainder -= 1;
+    }
+  }
+  return counts;
+}
+
+function boardAtSignalCount(board: DemoClearBoard, signalsReceived?: number): DemoClearBoard {
+  if (signalsReceived == null) return board;
+  const counts = countsForSignals(board, signalsReceived);
+  return {
+    ...board,
+    total_signals: Math.min(Math.floor(signalsReceived), board.total_signals),
+    incidents: board.incidents
+      .map((incident, i) => ({ ...incident, report_count: counts[i] }))
+      .filter((incident) => incident.report_count > 0),
+  };
+}
+
 function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] }) {
   return (
-    <Card title="map clusters" testid="hero-map-card" span>
+    <Card title="ClearBoard · pins merge on dedup" testid="hero-map-card" span>
       <div className="relative overflow-hidden rounded-[16px] border border-nline bg-night shadow-dark-glass">
         <svg
           viewBox="0 0 320 170"
@@ -308,6 +339,8 @@ function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] 
           {incidents.map((incident) => {
             const points = clusterPoints(incident.location, Math.min(incident.report_count, 18));
             const color = severityVar(incident.severity);
+            const anchor = points[0] || { x: 160, y: 75 };
+            const pinRadius = 9 + Math.min(26, Math.sqrt(incident.report_count) * 1.25);
             return (
               <g key={incident.incident_id}>
                 {points.map((p, i) => (
@@ -320,7 +353,16 @@ function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] 
                     opacity={i === points.length - 1 ? 1 : 0.62}
                   />
                 ))}
-                <circle cx={points[0]?.x || 160} cy={(points[0]?.y || 75) + 10} r="18" fill={color} opacity="0.12" />
+                <circle cx={anchor.x} cy={anchor.y + 10} r={pinRadius} fill={color} opacity="0.16" />
+                <circle cx={anchor.x} cy={anchor.y + 10} r="7" fill={color} opacity="0.95" />
+                <text
+                  x={anchor.x}
+                  y={anchor.y + 13}
+                  textAnchor="middle"
+                  className="fill-white font-mono text-[8px]"
+                >
+                  {incident.report_count}
+                </text>
               </g>
             );
           })}
@@ -331,35 +373,50 @@ function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] 
               key={incident.incident_id}
               className="rounded-tag border border-nline/80 bg-night/70 px-2 py-0.5 font-mono text-[10px] text-nink backdrop-blur"
             >
-              {incident.location} · ×{incident.report_count}
+              {incident.location} · Magnitude {incident.report_count}
             </span>
           ))}
         </div>
       </div>
       <div className="mt-2 eyebrow text-ndim/70">
-        offline outline · clusters show deduped report density, not separate emergencies
+        ClearBoard map · inbound Signals become Reports; duplicate pins merge into weighted Incident pins
       </div>
     </Card>
   );
 }
 
-function HeroRatioCard({ board }: { board: DemoClearBoard }) {
+function HeroRatioCard({
+  board,
+  finalSignals,
+  finalIncidents,
+}: {
+  board: DemoClearBoard;
+  finalSignals: number;
+  finalIncidents: number;
+}) {
   const incidentCount = board.incidents.length;
-  const duplicateSignals = board.total_signals - incidentCount;
+  const duplicateSignals = Math.max(0, board.total_signals - incidentCount);
+  const progress = finalSignals ? Math.min(100, (board.total_signals / finalSignals) * 100) : 0;
   return (
-    <Card title="triage by deduplication" testid="hero-ratio-card" span accent="text-clear">
+    <Card title="Surge · triage by deduplication" testid="hero-ratio-card" span accent="text-clear">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <div className="font-display text-[36px] font-medium leading-none tracking-tight text-nink">
-            {board.total_signals.toLocaleString()} signals
+          <div className="font-display text-[36px] font-medium leading-none tracking-tight text-nink" aria-label={`${board.total_signals} Signals to ${incidentCount} Incidents`}>
+            {board.total_signals.toLocaleString()} SIGNALS
             <span className="mx-3 text-clear">→</span>
-            {incidentCount} incidents
+            {incidentCount} INCIDENTS
           </div>
-          <p className="mt-2 text-[13px] text-ndim">{board.subhead}</p>
+          <p className="mt-2 text-[13px] text-ndim">
+            {board.subhead} Final target: {finalSignals.toLocaleString()} Signals → {finalIncidents} Incidents.
+          </p>
+          <div className="mt-3 h-2 overflow-hidden rounded-full border border-nline bg-night">
+            <div className="h-full bg-clear transition-all duration-100" style={{ width: `${progress}%` }} />
+          </div>
         </div>
         <div className="rounded-card border border-clear/30 bg-clear/10 px-4 py-3 text-right">
           <div className="font-mono text-[24px] text-clear">{duplicateSignals.toLocaleString()}</div>
-          <div className="eyebrow text-clear/80">duplicate signals collapsed</div>
+          <div className="eyebrow text-clear/80">Signals attached as Reports</div>
+          <div className="mt-1 font-mono text-[10px] text-clear/70">0 Signals discarded</div>
         </div>
       </div>
     </Card>
@@ -373,7 +430,7 @@ function HeroIncidentCard({ incident }: { incident: DemoClearBoardIncident }) {
         <div>
           <div className="flex items-center gap-2">
             <SeverityBadge sev={incident.severity} />
-            <span className="font-mono text-[11px] text-ndim">{incident.queue}</span>
+            <span className="font-mono text-[11px] text-ndim">Queue: {incident.queue}</span>
           </div>
           <div className="mt-2 font-sans text-[15px] font-medium text-nink">{incident.title}</div>
           <div className="mt-1 text-[12px] text-ndim">{incident.location}</div>
@@ -382,7 +439,7 @@ function HeroIncidentCard({ incident }: { incident: DemoClearBoardIncident }) {
           <div className="font-mono text-[28px] leading-none text-clear">
             {incident.report_count.toLocaleString()}
           </div>
-          <div className="eyebrow text-clear/80">reports</div>
+          <div className="eyebrow text-clear/80">Magnitude · Reports</div>
         </div>
       </div>
       <p className="mt-3 text-[12px] text-nink">{incident.summary}</p>
@@ -390,17 +447,20 @@ function HeroIncidentCard({ incident }: { incident: DemoClearBoardIncident }) {
         <MonoPill>{incident.status}</MonoPill>
         <MonoPill>SLA {incident.sla_minutes}m</MonoPill>
         <MonoPill>sim {incident.dedup_similarity.toFixed(2)}</MonoPill>
+        <MonoPill>Sitrep ready</MonoPill>
       </div>
     </Card>
   );
 }
 
-function HeroClearBoard({ board }: { board: DemoClearBoard }) {
+function HeroClearBoard({ board, signalsReceived }: { board: DemoClearBoard; signalsReceived?: number }) {
+  const projected = boardAtSignalCount(board, signalsReceived);
+  const finalIncidentCount = board.incidents.length;
   return (
     <div data-testid="hero-clearboard" className="grid grid-cols-2 gap-[14px] p-5">
-      <HeroRatioCard board={board} />
-      <CompactClusterMap incidents={board.incidents} />
-      {board.incidents.map((incident) => (
+      <HeroRatioCard board={projected} finalSignals={board.total_signals} finalIncidents={finalIncidentCount} />
+      <CompactClusterMap incidents={projected.incidents} />
+      {projected.incidents.map((incident) => (
         <HeroIncidentCard key={incident.incident_id} incident={incident} />
       ))}
     </div>
@@ -568,15 +628,17 @@ export function Canvas({
   locationReports = 1,
   demoBoard,
   demoBlank = false,
+  demoSignalsReceived,
 }: {
   result: PipelineResult | null;
   onOpenReceipt: () => void;
   locationReports?: number;
   demoBoard?: DemoClearBoard | null;
   demoBlank?: boolean;
+  demoSignalsReceived?: number;
 }) {
   if (demoBoard) {
-    return <HeroClearBoard board={demoBoard} />;
+    return <HeroClearBoard board={demoBoard} signalsReceived={demoSignalsReceived} />;
   }
   if (!result || demoBlank) {
     return (

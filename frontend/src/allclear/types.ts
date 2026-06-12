@@ -94,7 +94,7 @@ export interface DemoClearBoardIncident {
 }
 
 export interface DemoClearBoard {
-  mode: "loaded";
+  mode: "blank" | "loaded";
   total_signals: number;
   incidents: DemoClearBoardIncident[];
   headline: string;
