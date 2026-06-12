@@ -103,7 +103,7 @@ Walk out of this room with a green checkmark on every prerequisite so Stage 0 st
 - **Steps:**
   1. **Create / select an Azure AI Foundry project** (hub + project) in East US
   2. **Deploy the chat model** - gpt-4.1 (or gpt-5.1); note the deployment name
-  3. **Deploy an embeddings model** - `text-embedding-3-large` for retrieval
+  3. **Deploy an embeddings model** - `text-embedding-3-small` (1536-dim) for retrieval / dedup
   4. **Add an Azure AI Search connection** - this powers Stage 2 / Foundry IQ
   5. **Capture endpoint + auth** - endpoint, deployment name, API version
      `2025-04-01-preview` (prefer Entra ID over keys where you can)

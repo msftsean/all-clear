@@ -1,0 +1,12 @@
+[
+  { "id": "q01", "channel": "chat", "message": "I can't log into Canvas, it keeps saying my password is wrong even after I reset it twice." },
+  { "id": "q02", "channel": "chat", "message": "The wifi in the library is completely down, nobody on the third floor can connect." },
+  { "id": "q03", "channel": "chat", "message": "There's water leaking from the ceiling in the science building hallway near room 204, it's pooling on the floor." },
+  { "id": "q04", "channel": "chat", "message": "I lost my student ID card somewhere on campus and I need to get into my dorm tonight." },
+  { "id": "q05", "channel": "chat", "message": "The payment portal charged my account twice for the same parking permit." },
+  { "id": "q06", "channel": "report", "message": "Several students reported the elevator in the east wing is stuck between floors with someone possibly inside." },
+  { "id": "q07", "channel": "chat", "message": "My VPN keeps disconnecting every few minutes so I can't finish submitting my assignment before the deadline." },
+  { "id": "q08", "channel": "report", "message": "There is a strong smell of gas near the cafeteria loading dock and staff are concerned." },
+  { "id": "q09", "channel": "chat", "message": "How do I request a transcript and how long does it usually take to process?" },
+  { "id": "q10", "channel": "report", "message": "Someone left a backpack unattended in the main lobby for over an hour and people are getting nervous." }
+]

@@ -1,0 +1,4 @@
+# Eval results, scratch dirs, local judge keys
+eval_data.jsonl
+quality_results_*.json
+.eval_*/
