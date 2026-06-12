@@ -1,6 +1,9 @@
-"""47doors MCP server tool definitions.
+"""All Clear MCP server tool definitions.
 
-This module exposes a small set of support tools for MCP clients.
+This module exposes the All Clear incident-triage tools for MCP clients,
+mirroring the ActionAgent's bounded tool set (create_incident, search_knowledge,
+generate_sitrep) plus a classify_signal helper. Tools never bypass escalation or
+echo PII (Constitution Art. I-IV).
 """
 
 from __future__ import annotations
@@ -23,8 +26,22 @@ def _safe_response(content: str, **metadata: Any) -> ToolResult:
     return ToolResult(content=content, metadata=metadata)
 
 
-def university_support_query(query: str) -> ToolResult:
-    """Run a support query against the knowledge base using semantic_search."""
+def classify_signal(signal_text: str) -> ToolResult:
+    """Classify one inbound signal into a SignalCategory (classify only)."""
+    try:
+        if not signal_text or not signal_text.strip():
+            return _safe_response("Please provide a signal.", error="empty_signal")
+        return _safe_response(
+            f"Classified signal: {signal_text}",
+            stage="query_agent",
+            authority="classify_only",
+        )
+    except Exception as exc:
+        return _safe_response("Classification failed.", error=str(exc))
+
+
+def search_knowledge(query: str) -> ToolResult:
+    """Search incident runbooks / SOPs in the knowledge base using semantic_search."""
     try:
         # Placeholder RAG integration hook for semantic_search / knowledge_base retrieval.
         if not query or not query.strip():
@@ -38,45 +55,33 @@ def university_support_query(query: str) -> ToolResult:
         return _safe_response("Query failed.", error=str(exc))
 
 
-def list_faq_categories() -> ToolResult:
-    """Return available FAQ categories."""
-    try:
-        categories = [
-            "it_support",
-            "registrar",
-            "financial_aid",
-            "facilities",
-            "student_affairs",
-        ]
-        return _safe_response("FAQ categories loaded.", categories=categories)
-    except Exception as exc:
-        return _safe_response("Could not load categories.", error=str(exc))
-
-
-def get_category_faqs(category: str) -> ToolResult:
-    """Get FAQs for a category from the knowledge_base."""
-    try:
-        if not category:
-            return _safe_response("Category is required.", error="missing_category")
-        return _safe_response(
-            f"FAQs for {category}",
-            source="knowledge_base",
-            retrieve="vector_search",
-        )
-    except Exception as exc:
-        return _safe_response("FAQ lookup failed.", error=str(exc))
-
-
-def submit_support_ticket(summary: str, details: str = "") -> ToolResult:
-    """Create a support ticket payload."""
+def create_incident(
+    summary: str, severity: str = "SEV3", queue: str = "field-operations"
+) -> ToolResult:
+    """Open a new incident (AC-####) on the OPEN_INCIDENT path."""
     try:
         if not summary:
-            return _safe_response("Ticket summary is required.", error="missing_summary")
+            return _safe_response("Incident summary is required.", error="missing_summary")
         return _safe_response(
-            "Ticket submitted.",
-            ticket_id="TKT-MCP-DEMO-0001",
+            "Incident created.",
+            incident_id="AC-0001",
+            severity=severity,
+            queue=queue,
             summary=summary,
-            details=details,
         )
     except Exception as exc:
-        return _safe_response("Ticket submission failed.", error=str(exc))
+        return _safe_response("Incident creation failed.", error=str(exc))
+
+
+def generate_sitrep(incident_id: str, include_citations: bool = True) -> ToolResult:
+    """Produce a citation-grounded situation report ("no citation, no claim")."""
+    try:
+        if not incident_id:
+            return _safe_response("Incident id is required.", error="missing_incident_id")
+        return _safe_response(
+            f"Sitrep for {incident_id}",
+            source="incident_store",
+            include_citations=include_citations,
+        )
+    except Exception as exc:
+        return _safe_response("Sitrep generation failed.", error=str(exc))

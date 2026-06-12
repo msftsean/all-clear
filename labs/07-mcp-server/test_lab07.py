@@ -63,10 +63,10 @@ class MCPServerAnalyzer:
     """Analyzes MCP server implementation."""
 
     REQUIRED_TOOLS = [
-        "university_support_query",
-        "list_faq_categories",
-        "get_category_faqs",
-        "submit_support_ticket",
+        "create_incident",
+        "search_knowledge",
+        "generate_sitrep",
+        "classify_signal",
     ]
 
     @staticmethod
@@ -389,18 +389,19 @@ class TestRunner:
         try:
             content = json.loads(config_file.read_text(encoding='utf-8'))
 
-            # Check for 47doors server configuration
+            # Check for all-clear server configuration
             servers = content.get("mcpServers", content.get("servers", {}))
             has_47doors = (
-                "47doors" in servers or
-                "47doors" in str(content).lower()
+                "all-clear" in servers or
+                "all-clear" in str(content).lower() or
+                "allclear" in str(content).lower()
             )
 
             if has_47doors:
                 return TestResult(
                     name="VS Code MCP configuration exists",
                     passed=True,
-                    message=f"Found 47doors server in {config_file.name}",
+                    message=f"Found all-clear server in {config_file.name}",
                     points=1.0,
                     max_points=1.0
                 )
@@ -408,7 +409,7 @@ class TestRunner:
             return TestResult(
                 name="VS Code MCP configuration exists",
                 passed=False,
-                message="Config exists but missing '47doors' server entry",
+                message="Config exists but missing 'all-clear' server entry",
                 points=0.5,
                 max_points=1.0
             )
@@ -579,8 +580,8 @@ class TestRunner:
         print("\nTo test VS Code integration:")
         print("  1. Open VS Code with this project")
         print("  2. Open Copilot Chat (Ctrl+Shift+I)")
-        print("  3. Type '@' and look for '47doors'")
-        print("  4. Try: @47doors What is the deadline for housing applications?")
+        print("  3. Type '@' and look for 'all-clear'")
+        print("  4. Try: @all-clear Power line down across Main St, sparking on the road")
         print("=" * 60)
 
 

@@ -374,8 +374,8 @@ class TestRunner:
             content, SpecAnalyzer.CONSTITUTION_SECTIONS
         )
 
-        # Check for FERPA and accessibility
-        has_ferpa = "ferpa" in content.lower() or "privacy" in content.lower()
+        # Check for compliance/privacy and accessibility
+        has_ferpa = "compliance" in content.lower() or "privacy" in content.lower() or "pii" in content.lower()
         has_accessibility = "accessib" in content.lower() or "a11y" in content.lower()
 
         points = len(found) * 0.5
@@ -387,7 +387,7 @@ class TestRunner:
         message = f"Found: {', '.join(found)}"
         extras = []
         if has_ferpa:
-            extras.append("FERPA")
+            extras.append("compliance/PII")
         if has_accessibility:
             extras.append("accessibility")
         if extras:

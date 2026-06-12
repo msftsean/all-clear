@@ -2,33 +2,33 @@
 
 ## What "Done" Looks Like
 
-Lab 06 is complete when your AI agent application is successfully deployed to Azure using Azure Developer CLI (azd). You should be able to:
+Lab 06 is complete when your All Clear incident-triage application is successfully deployed to Azure using Azure Developer CLI (azd). You should be able to:
 
-1. Run your application locally using Docker Compose and verify all services are healthy
+1. Run All Clear locally using Docker Compose and verify all services are healthy
 2. Execute `azd up` to provision Azure infrastructure and deploy your containers
 3. Access the deployed application via the Azure-provided URLs
 4. Verify the health check endpoint responds with a healthy status
 5. View application logs in Azure for monitoring and debugging
 
-A successfully completed Lab 06 means your agent from Labs 04 and 05 is now running in production on Azure, accessible to users, and ready for real-world usage.
+A successfully completed Lab 06 means the All Clear pipeline from Labs 04 and 05 is now running in production on Azure, accessible to users, and ready for real-world usage.
 
 ---
 
 ## Checkable Deliverables
 
-### 1. Agent Deployed to Azure
+### 1. All Clear Deployed to Azure
 
 **What it verifies:**
 - Azure infrastructure is provisioned correctly
 - Docker containers are built and pushed to Azure Container Registry
-- Container Apps are running your application
+- Container Apps are running All Clear
 - All environment variables and secrets are configured
 
 **Acceptance Criteria:**
 - [ ] `azd up` completes without errors
 - [ ] Azure Container Registry contains your backend image
 - [ ] Container App is in "Running" state
-- [ ] Static Web App is deployed (if frontend included)
+- [ ] frontend Container App is deployed (if frontend included)
 - [ ] Environment variables are set correctly in Container App
 - [ ] Resource group contains all expected resources
 
@@ -40,15 +40,17 @@ azd show
 
 # Expected output shows all services with endpoints:
 # Service           Endpoint
-# backend           https://ca-backend-xxxx.azurecontainerapps.io
-# frontend          https://xxx.azurestaticapps.net
+# backend           https://<prefix>-backend.<region>.azurecontainerapps.io
+# frontend          https://<prefix>-frontend.<region>.azurecontainerapps.io
 ```
 
 ```bash
-# Verify container is running
+# Verify the backend Container App created by azd is running
+RG=$(azd env get-value AZURE_RESOURCE_GROUP)
+BACKEND_APP=$(az containerapp list --resource-group "$RG" --query '[?tags."azd-service-name"==`backend`].name | [0]' -o tsv)
 az containerapp show \
-  --name ca-backend \
-  --resource-group rg-university-front-door-agent-dev \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --query "properties.runningStatus"
 
 # Expected: "Running"
@@ -56,8 +58,9 @@ az containerapp show \
 
 ```bash
 # List all resources in the resource group
+RG=$(azd env get-value AZURE_RESOURCE_GROUP)
 az resource list \
-  --resource-group rg-university-front-door-agent-dev \
+  --resource-group "$RG" \
   --output table
 
 # Expected: Container App, Container Registry, Log Analytics, etc.
@@ -74,6 +77,7 @@ echo "=== Verifying Azure Deployment ==="
 # Get environment values
 BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL 2>/dev/null)
 RESOURCE_GROUP=$(azd env get-value AZURE_RESOURCE_GROUP 2>/dev/null)
+BACKEND_APP=$(az containerapp list --resource-group "$RESOURCE_GROUP" --query '[?tags."azd-service-name"==`backend`].name | [0]' -o tsv 2>/dev/null)
 
 if [ -z "$BACKEND_URL" ]; then
     echo "FAIL: Backend URL not found. Run 'azd up' first."
@@ -84,8 +88,8 @@ echo "Backend URL: $BACKEND_URL"
 
 # Check container status
 STATUS=$(az containerapp show \
-  --name ca-backend \
-  --resource-group $RESOURCE_GROUP \
+  --name "$BACKEND_APP" \
+  --resource-group "$RESOURCE_GROUP" \
   --query "properties.runningStatus" \
   -o tsv 2>/dev/null)
 
@@ -112,8 +116,8 @@ echo "=== Deployment Verified ==="
 **Acceptance Criteria:**
 - [ ] `/api/health` endpoint returns HTTP 200
 - [ ] Response includes status: "healthy"
-- [ ] Response includes version information
-- [ ] Response includes environment indicator
+- [ ] Response includes domain: "all-clear-incident-triage"
+- [ ] Response includes mock/live mode indicator
 - [ ] Response time under 5 seconds
 - [ ] Azure health probe reports container as healthy
 
@@ -128,7 +132,7 @@ curl -s -w "\nHTTP Status: %{http_code}\nTime: %{time_total}s\n" \
   $BACKEND_URL/api/health
 
 # Expected output:
-# {"status": "healthy", "timestamp": "...", "services": {...}}
+# {"status":"healthy","mock_mode":false,"domain":"all-clear-incident-triage"}
 # HTTP Status: 200
 # Time: 0.234s
 ```
@@ -164,13 +168,9 @@ def test_health_endpoint(backend_url: str) -> bool:
             f"Expected healthy status, got {data.get('status')}"
 
         # Check required fields
-        assert "timestamp" in data, "Missing timestamp in response"
-        assert "services" in data, "Missing services in response"
-
-        # Check that all services are up
-        for service_name, service_info in data.get("services", {}).items():
-            assert service_info.get("status") == "up", \
-                f"Service {service_name} is not up: {service_info}"
+        assert data.get("domain") == "all-clear-incident-triage", \
+            f"Unexpected domain: {data.get('domain')}"
+        assert "mock_mode" in data, "Missing mock_mode in response"
 
         print(f"PASS: Health check returned: {data}")
         return True
@@ -198,9 +198,8 @@ if __name__ == "__main__":
 |------|-----------------|
 | GET /api/health | HTTP 200 with JSON body |
 | Response has "status" | Value is "healthy" |
-| Response has "timestamp" | ISO 8601 timestamp string |
-| Response has "services" | Dictionary with service statuses |
-| All services "status" | Value is "up" |
+| Response has "domain" | Value is "all-clear-incident-triage" |
+| Response has "mock_mode" | Boolean indicating mock/live service mode |
 | Response time | Under 5 seconds |
 | Repeated requests | Consistent healthy response |
 
@@ -253,7 +252,7 @@ azd up
 # ✓ Container App deployed
 #
 # Deployment complete!
-# Backend URL: https://ca-backend-xxxx.azurecontainerapps.io
+# Backend URL: https://<prefix>-backend.<region>.azurecontainerapps.io
 ```
 
 ### Step 3: Production Health Verification
@@ -266,22 +265,18 @@ BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL)
 curl -s $BACKEND_URL/api/health | jq .
 
 # Expected output:
-# {
-#   "status": "healthy",
-#   "timestamp": "2024-01-15T10:30:00.000Z",
-#   "services": { "llm": {"status": "up"}, ... }
-# }
+# { "status": "healthy", "mock_mode": false, "domain": "all-clear-incident-triage" }
 ```
 
 ### Step 4: Full Integration Verification
 
 ```bash
-# Test the chat endpoint
-curl -X POST $BACKEND_URL/api/chat \
+# Test the signals endpoint
+curl -X POST $BACKEND_URL/api/signals \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!", "session_id": null}' | jq .
+  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}' | jq .
 
-# Expected: Agent response with content and session_id
+# Expected: PipelineResult with an AC-#### incident id, SEV1 severity, and queue field-operations
 ```
 
 ---
@@ -292,7 +287,7 @@ curl -X POST $BACKEND_URL/api/chat \
 
 | Criteria | Points | Description |
 |----------|--------|-------------|
-| **Local Docker Test** | 3 | Application runs correctly in Docker Compose |
+| **Local Docker Test** | 3 | All Clear runs correctly in Docker Compose |
 | **azd Deployment** | 5 | Successfully deploys to Azure with `azd up` |
 | **Health Check** | 4 | Health endpoint responds correctly in production |
 | **Monitoring Access** | 3 | Can view logs and verify container status |
@@ -379,7 +374,7 @@ azd env set AZURE_SUBSCRIPTION_ID <subscription-id>
 ```bash
 # Check container logs
 az containerapp logs show \
-  --name ca-backend \
+  --name "$BACKEND_APP" \
   --resource-group <resource-group> \
   --follow
 
@@ -390,7 +385,7 @@ az containerapp logs show \
 
 # Check environment variables
 az containerapp show \
-  --name ca-backend \
+  --name "$BACKEND_APP" \
   --resource-group <resource-group> \
   --query "properties.template.containers[0].env"
 ```
@@ -403,9 +398,10 @@ az containerapp show \
 
 **Resolution:**
 
-The default health endpoint checks all services which may cause timeouts. If you experience health check timeouts, you can either:
+The `/api/health` endpoint is intentionally lightweight. If it times out, first inspect
+startup logs and Container App readiness; if startup is slow, you can:
 1. Increase the health probe timeout settings (see below)
-2. Or create a simplified liveness probe that doesn't check external services
+2. Or add a separate `/api/liveness` probe for process-only checks
 
 ```python
 # Alternative: Simple liveness endpoint in app/api/routes.py
@@ -423,7 +419,7 @@ async def liveness():
 ```bash
 # Adjust health probe settings if needed
 az containerapp update \
-  --name ca-backend \
+  --name "$BACKEND_APP" \
   --resource-group <resource-group> \
   --set configuration.ingress.probes.liveness.initialDelaySeconds=30
 ```
@@ -443,7 +439,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "https://*.azurestaticapps.net",
+        "https://*.azurecontainerapps.io",
         os.getenv("FRONTEND_URL", "*")
     ],
     allow_methods=["*"],
@@ -453,7 +449,7 @@ app.add_middleware(
 
 ```bash
 # Verify backend URL is set in frontend environment
-az staticwebapp appsettings set \
+az containerapp appsettings set \
   --name <static-web-app-name> \
   --setting-names VITE_API_BASE_URL=<backend-url>
 ```
@@ -471,7 +467,7 @@ Before marking Lab 06 complete, verify all items:
 - [ ] `azd up` completes without errors
 - [ ] Azure Container App shows "Running" status
 - [ ] Production health endpoint returns HTTP 200
-- [ ] Health response includes status, version, and environment
+- [ ] Health response includes status, domain, and mock/live mode
 - [ ] Can view container logs in Azure
 - [ ] Can access the deployed frontend (if applicable)
 
@@ -485,4 +481,4 @@ Before marking Lab 06 complete, verify all items:
 - Azure subscription with Contributor access
 - Azure CLI and azd CLI installed
 
-**Next Step:** Boot Camp complete! Present your working AI agent to the group.
+**Next Step:** Boot Camp complete! Present your working All Clear incident-triage pipeline to the group.

@@ -2,14 +2,15 @@
 
 ## What "Done" Looks Like
 
-Lab 02 is complete when you have a fully configured Model Context Protocol (MCP) server that enables natural language interactions with Azure resources. You should be able to:
+Lab 02 is complete when you have a fully configured Model Context Protocol (MCP) server that enables natural language interactions with the Azure resources behind All Clear. You should be able to:
 
 1. Query Azure resources using @azure mentions in your AI assistant
 2. List, describe, and explore Azure resources through natural language commands
-3. Have a properly configured MCP settings file that persists across sessions
-4. Understand the MCP architecture and how it bridges AI assistants with Azure services
+3. Confirm the Azure OpenAI model that can power QueryAgent classification, the Azure AI Search service behind `search_knowledge`, and the Azure Container Apps target for the backend
+4. Have a properly configured MCP settings file that persists across sessions
+5. Understand the MCP architecture and how it bridges AI assistants with Azure services
 
-A successfully completed Lab 02 means you have established the foundational infrastructure for AI-powered Azure resource management and can proceed to building more complex integrations in subsequent labs.
+A successfully completed Lab 02 means you have established the foundational infrastructure for AI-powered Azure resource management and can proceed to building more complex All Clear integrations in subsequent labs.
 
 ---
 
@@ -56,18 +57,18 @@ cat ~/.mcp/logs/azure-mcp.log | tail -20
 
 ---
 
-### 2. Can List Azure Resources via Natural Language
+### 2. Can List All Clear Azure Resources via Natural Language
 
 **What it verifies:**
 - Natural language processing correctly interprets resource queries
 - Azure Resource Manager API integration is working
 - Results are formatted in a human-readable manner
-- Multiple resource types can be queried
+- Multiple resource types can be queried for the incident-triage platform
 
 **Acceptance Criteria:**
 - [ ] Can list all resource groups in a subscription
 - [ ] Can list resources within a specific resource group
-- [ ] Can filter resources by type (e.g., "show me all storage accounts")
+- [ ] Can filter resources by type (for example, Azure OpenAI, Azure AI Search, or Azure Container Apps)
 - [ ] Can describe individual resources with details
 - [ ] Results include relevant metadata (name, type, location, tags)
 - [ ] Handles empty results gracefully ("No resources found matching...")
@@ -80,53 +81,46 @@ cat ~/.mcp/logs/azure-mcp.log | tail -20
 @azure List all resource groups in my subscription
 
 # Query 2: List resources in a group
-@azure What resources are in the "rg-dev-eastus" resource group?
+@azure What resources are in the "[your-resource-group]" resource group?
 
 # Query 3: Filter by resource type
-@azure Show me all storage accounts
+@azure Show me the Azure OpenAI resources that can power QueryAgent classification
 
 # Query 4: Describe a specific resource
-@azure Describe the storage account named "mystorageaccount"
+@azure Describe the Azure AI Search service named "[your-search-service]"
 
 # Query 5: Search across subscriptions
-@azure Find all resources tagged with "environment=production"
+@azure Find all Azure Container Apps resources tagged with "environment=production"
 ```
 
 **Expected Output Examples:**
 
 *Resource Groups Query:*
 ```
-Found 5 resource groups in subscription "My Subscription":
+Found resource groups in subscription "[your-subscription]":
 
-1. rg-dev-eastus (East US)
-   - Resources: 12
-   - Tags: environment=dev
+1. [your-resource-group] ([region])
+   - Resources: [count]
+   - Tags: environment=[value]
 
-2. rg-prod-westus (West US 2)
-   - Resources: 28
-   - Tags: environment=prod, team=platform
-
-3. rg-shared-services (Central US)
-   - Resources: 8
-   - Tags: environment=shared
+2. [shared-resource-group] ([region])
+   - Resources: [count]
+   - Tags: environment=[value], workload=all-clear
 ...
 ```
 
 *Resource Details Query:*
 ```
-Storage Account: mystorageaccount
+Azure AI Search Service: [your-search-service]
 
-- Resource Group: rg-dev-eastus
-- Location: East US
-- SKU: Standard_LRS
-- Kind: StorageV2
-- Created: 2024-01-15
+- Resource Group: [your-resource-group]
+- Location: [region]
+- SKU: [sku]
+- Endpoint: https://[your-search-service].search.windows.net
+- Intended use: incident runbooks and SOPs for ActionAgent.search_knowledge
 - Tags:
-  - environment: dev
-  - owner: team-alpha
-- Endpoints:
-  - Blob: https://mystorageaccount.blob.core.windows.net/
-  - File: https://mystorageaccount.file.core.windows.net/
+  - environment: [value]
+  - workload: all-clear
 ```
 
 ---
@@ -168,7 +162,7 @@ cat ~/.mcp/config.json
   "mcpServers": {
     "azure": {
       "command": "npx",
-      "args": ["-y", "@azure/mcp-server"],
+      "args": ["-y", "@azure/mcp@latest"],
       "env": {
         "AZURE_SUBSCRIPTION_ID": "${AZURE_SUBSCRIPTION_ID}",
         "AZURE_TENANT_ID": "${AZURE_TENANT_ID}"
@@ -220,7 +214,7 @@ printenv | grep AZURE_
 **Expected Results:**
 - Azure CLI version 2.50+ installed
 - Logged into Azure with `az login`
-- Node.js 18+ installed
+- Node.js 20+ installed
 - Required environment variables are set
 
 ---
@@ -229,7 +223,7 @@ printenv | grep AZURE_
 
 ```bash
 # Start the MCP server manually to verify it works
-npx -y @azure/mcp-server --health-check
+npx -y @azure/mcp@latest --version
 
 # Or check server logs
 tail -f ~/.mcp/logs/azure-mcp.log
@@ -237,7 +231,7 @@ tail -f ~/.mcp/logs/azure-mcp.log
 
 **Expected Results:**
 - Server starts without errors
-- Health check returns OK status
+- Version or health output is returned
 - No authentication errors in logs
 
 ---
@@ -251,8 +245,9 @@ Perform these tests in sequence in your AI assistant:
 | 1. Basic connectivity | `@azure ping` | Server responds with status |
 | 2. List subscriptions | `@azure list subscriptions` | At least one subscription returned |
 | 3. List resource groups | `@azure list resource groups` | Resource groups listed with details |
-| 4. Query specific resource | `@azure describe resource group rg-dev-eastus` | Detailed resource group info |
-| 5. Error handling | `@azure describe nonexistent-resource-12345` | Clear error message, not a crash |
+| 4. Query model resource | `@azure describe Azure OpenAI resources in [your-resource-group]` | Model resources or clear empty result |
+| 5. Query knowledge resource | `@azure describe Azure AI Search services in [your-resource-group]` | Search service details or clear empty result |
+| 6. Error handling | `@azure describe nonexistent-resource-12345` | Clear error message, not a crash |
 
 ---
 
@@ -288,9 +283,9 @@ Perform these tests in sequence in your AI assistant:
 - **0 points:** Server fails to start
 
 #### Natural Language Queries (4 points)
-- **4 points:** All 5 test queries work correctly with formatted output
-- **3 points:** 4/5 queries work, minor formatting issues
-- **2 points:** 3/5 queries work
+- **4 points:** All 6 test queries work correctly with formatted output
+- **3 points:** 5/6 queries work, minor formatting issues
+- **2 points:** 4/6 queries work
 - **1 point:** Only basic queries work
 - **0 points:** Natural language queries not functional
 
@@ -315,11 +310,11 @@ Perform these tests in sequence in your AI assistant:
 **Resolution:**
 ```bash
 # Check Node.js version
-node --version  # Should be 18+
+node --version  # Should be 20+
 
 # Clear npm cache and retry
 npm cache clean --force
-npx -y @azure/mcp-server
+npx -y @azure/mcp@latest
 
 # Check for port conflicts
 lsof -i :3000  # Or whatever port MCP uses
@@ -413,6 +408,9 @@ Before proceeding to Lab 03, ensure all items are checked:
 - [ ] Can list resource groups via natural language
 - [ ] Can list resources filtered by type
 - [ ] Can describe individual resources
+- [ ] Can identify Azure OpenAI resources for QueryAgent classification
+- [ ] Can identify Azure AI Search resources for incident runbooks and SOPs
+- [ ] Can identify Azure Container Apps resources for the backend deploy target
 - [ ] Configuration file exists and is valid
 - [ ] Configuration persists across restarts
 - [ ] No secrets stored in plain text
@@ -425,6 +423,7 @@ Before proceeding to Lab 03, ensure all items are checked:
 **Prerequisites:**
 - Azure subscription with at least one resource group
 - Azure CLI installed and authenticated
-- Node.js 18+ installed
+- Node.js 20+ installed
 
 **Next Step:** Proceed to Lab 03 - Spec-Driven Development
+

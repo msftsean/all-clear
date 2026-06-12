@@ -63,8 +63,8 @@ List specific, implementable requirements. Use clear, actionable language.
 
 ### Core Requirements
 
-| ID | Requirement | Priority | Notes |
-|----|-------------|----------|-------|
+| ID | Requirement | Importance | Notes |
+|----|-------------|------------|-------|
 | FR-001 | [Requirement description] | Must Have | [Additional context] |
 | FR-002 | [Requirement description] | Must Have | [Additional context] |
 | FR-003 | [Requirement description] | Should Have | [Additional context] |
@@ -90,8 +90,8 @@ List specific, implementable requirements. Use clear, actionable language.
 
 ### Error Handling
 
-| Error Condition | Expected Behavior | User Message |
-|-----------------|-------------------|--------------|
+| Error Condition | Expected Behavior | Reporter Message |
+|-----------------|-------------------|------------------|
 | [condition] | [system response] | [user-facing message] |
 
 ---
@@ -109,12 +109,12 @@ Define measurable criteria to determine if the feature works correctly.
 ### Performance Success Criteria
 
 - [ ] Response time: [target, e.g., "<500ms for 95th percentile"]
-- [ ] Throughput: [target, e.g., "100 requests/second"]
+- [ ] Throughput: [target, e.g., "100 signals/second"]
 - [ ] Accuracy: [target, e.g., "95% precision for detection"]
 
 ### User Experience Success Criteria
 
-- [ ] [UX criterion, e.g., "User can complete task in <3 clicks"]
+- [ ] [UX criterion, e.g., "Reporter receives acknowledgment without PII echo"]
 - [ ] [Accessibility criterion, e.g., "Passes WCAG 2.1 AA"]
 
 ---
@@ -127,24 +127,24 @@ Document limitations, restrictions, and boundaries for this feature.
 
 - **Language/Framework:** [e.g., "Must be implemented in Python 3.11+"]
 - **Dependencies:** [e.g., "Cannot introduce new external dependencies"]
-- **Infrastructure:** [e.g., "Must run on Azure Functions consumption plan"]
+- **Infrastructure:** [e.g., "Must run in mock mode without Azure dependencies"]
 
 ### Compliance Constraints
 
-- **Data Privacy:** [e.g., "Must not store PII beyond session duration"]
-- **Regulatory:** [e.g., "Must comply with FERPA requirements"]
+- **Data Privacy:** [e.g., "Must not echo PII from signals in responses"]
+- **Regulatory:** [e.g., "Must force SEV1 for statutory-clock references"]
 - **Accessibility:** [e.g., "Must meet WCAG 2.1 AA standards"]
 
-### Business Constraints
+### Operational Constraints
 
 - **Timeline:** [e.g., "Must be completed within current sprint"]
-- **Budget:** [e.g., "API costs must not exceed $X/month"]
+- **Cost:** [e.g., "Must not add LLM calls to RouterExecutor"]
 - **Scope:** [e.g., "This version will not include feature X"]
 
 ### Integration Constraints
 
-- **APIs:** [e.g., "Must integrate with existing authentication service"]
-- **Data Sources:** [e.g., "Must use data from SIS API only"]
+- **APIs:** [e.g., "Must integrate with existing AllClearPipeline adapter"]
+- **Data Sources:** [e.g., "Must use open incident data only through approved interfaces"]
 - **Compatibility:** [e.g., "Must maintain backward compatibility with v1 API"]
 
 ---

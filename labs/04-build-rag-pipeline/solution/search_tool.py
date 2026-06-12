@@ -1,9 +1,10 @@
 """
-Search Tool for RAG Pipeline - Lab 04 Solution
+Search Tool for All Clear RAG Pipeline - Lab 04 Solution
 
 This module implements a hybrid search tool that combines vector (semantic) search
-with traditional keyword search using Azure AI Search. Hybrid search provides
-better recall than either approach alone.
+with traditional keyword search using Azure AI Search. It powers the
+ActionAgent.search_knowledge path over incident runbooks, SOPs, and response
+procedures.
 
 Key Concepts:
 - Vector search: Uses embeddings to find semantically similar content
@@ -29,7 +30,7 @@ class SearchResult:
     Attributes:
         content: The text content of the document chunk
         score: Relevance score (higher is better, combines vector + keyword scores)
-        metadata: Additional document information (source, page number, etc.)
+        metadata: Additional document information (article id, queue, category, etc.)
     """
     content: str
     score: float
@@ -140,7 +141,7 @@ class SearchTool:
         4. Return top-k results sorted by combined score
 
         Args:
-            query: The user's search query in natural language
+            query: The incident-triage search query in natural language
             top_k: Maximum number of results to return (default: 5)
             vector_field: Name of the field containing document vectors
             content_field: Name of the field containing document text
@@ -173,7 +174,7 @@ class SearchTool:
                 results = self.search_client.search(
                     search_text=query,  # Enables keyword search component
                     vector_queries=[vector_query],  # Enables vector search component
-                    select=["id", "title", "content", "snippet", "department", "category"],
+                    select=["id", "title", "content", "snippet", "queue", "category"],
                     top=top_k,
                 )
             else:
@@ -181,7 +182,7 @@ class SearchTool:
                 results = self.search_client.search(
                     search_text=None,
                     vector_queries=[vector_query],
-                    select=["id", "title", "content", "snippet", "department", "category"],
+                    select=["id", "title", "content", "snippet", "queue", "category"],
                     top=top_k,
                 )
 
@@ -227,14 +228,14 @@ class SearchTool:
         Perform hybrid search with an OData filter expression.
 
         Filters are useful for:
-        - Restricting results to specific document sources
+        - Restricting results to specific queues or source records
         - Date range filtering
         - Category/tag-based filtering
         - Multi-tenant isolation
 
         Args:
             query: The user's search query
-            filter_expression: OData filter (e.g., "source eq 'manual.pdf'")
+            filter_expression: OData filter (e.g., "queue eq 'field-operations'")
             top_k: Maximum results to return
             vector_field: Field containing document vectors
             content_field: Field containing document text
@@ -244,8 +245,8 @@ class SearchTool:
 
         Example:
             results = tool.search_with_filter(
-                query="installation steps",
-                filter_expression="category eq 'setup' and version gt 2.0"
+                query="downed power line exclusion zone",
+                filter_expression="queue eq 'field-operations'"
             )
         """
         try:
@@ -263,7 +264,7 @@ class SearchTool:
                 search_text=query,
                 vector_queries=[vector_query],
                 filter=filter_expression,
-                select=["id", "title", "content", "snippet", "department", "category"],
+                select=["id", "title", "content", "snippet", "queue", "category"],
                 top=top_k,
             )
 

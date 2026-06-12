@@ -14,13 +14,13 @@
 Lab Progress: [░░░░░░░░░░] 0% - Not Started
 
 Checkpoints:
-□ Step 1: Define Data Contracts
+□ Step 1: Define Data Contracts (SignalClassification, RoutingDecision, IncidentAction)
 □ Step 2: Implement Session Context
-□ Step 3: Implement QueryAgent
-□ Step 4: Implement RouterAgent
-□ Step 5: Implement ActionAgents
-□ Step 6: Wire Up the Pipeline
-□ Step 7: Test Multi-Turn Conversations
+□ Step 3: Build the QueryAgent (classify only)
+□ Step 4: Build the RouterExecutor (deterministic: dedup → severity → SLA → escalation)
+□ Step 5: Build the ActionAgent (create_incident, search_knowledge, generate_sitrep)
+□ Step 6: Wire the MAF workflow (QueryStage → RouterExecutor → ActionExecutor)
+□ Step 7: Run a SURGE and watch dedup attach reports
 ```
 
 ---
@@ -29,87 +29,72 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. 🔗 **Wire up a three-agent pipeline** - Connect QueryAgent, RouterAgent, and ActionAgent into a cohesive orchestration system
-2. 🤝 **Implement handoff protocols** - Define clear contracts for passing data between agents with proper error handling
-3. 💬 **Add session context for multi-turn conversations** - Maintain conversation state across multiple user interactions
+1. 🔗 **Assemble the three-stage pipeline** — chain QueryAgent → RouterExecutor → ActionAgent into one MAF workflow that turns a **signal** into an **incident**
+2. 🚦 **Implement deterministic routing** — dedup, severity/SLA mapping, and escalation with **zero LLM calls** (auditable, un-spoofable)
+3. 🌊 **Survive a surge** — feed a burst of duplicate signals and watch dedup `ATTACH_TO_INCIDENT` keep one incident per real-world event
 
 ---
 
 > 💡 **Extension:** Once your pipeline is working, Exercise 05x shows how the same three-agent architecture handles voice and phone input—no agent changes needed.
 
-## 🔁 Recap: The Three-Agent Pattern
+## 🔁 Recap: The Three-Stage Pipeline
 
-In Lab 01, you learned about the three-agent architecture. Now you will implement it:
+In Lab 01 you learned the bounded-authority model. Now you implement it. The
+reference implementation is real: see
+[`backend/app/agents/pipeline.py`](../../backend/app/agents/pipeline.py).
 
 ```
-+------------------+     +------------------+     +------------------+
-|   User Query     |     |   QueryAgent     |     |   RouterAgent    |
-|   "How do I      | --> |  (Understand &   | --> |   (Classify &    |
-|    reset pwd?"   |     |   Structure)     |     |    Dispatch)     |
-+------------------+     +------------------+     +------------------+
-                                                          |
-                         +--------------------------------+
-                         |
-                         v
-              +--------------------+
-              |    ActionAgent     |
-              |  (Execute & Reply) |
-              +--------------------+
-                         |
-                         v
-              +--------------------+
-              |     Response       |
-              |  "To reset your    |
-              |   password..." [1] |
-              +--------------------+
+   signal: "Power line down across Main St, sparking near a school"
+            │
+            ▼
+   ┌─────────────────┐     ┌──────────────────┐     ┌────────────────────────┐
+   │   QueryAgent     │──▶  │  RouterExecutor   │──▶  │      ActionAgent        │
+   │  classify ONLY   │     │ ZERO LLM calls    │     │  create_incident        │
+   │                  │     │ dedup→sev→SLA→esc │     │  search_knowledge       │
+   │ SignalClassif.   │     │ RoutingDecision   │     │  generate_sitrep        │
+   └─────────────────┘     └──────────────────┘     └────────────────────────┘
+            │                                                    │
+            ▼                                                    ▼
+   INFRASTRUCTURE_OUTAGE              OPEN_INCIDENT AC-0001, SEV1, field-operations,
+   sev indicators: ["sparking",       15-min SLA, escalate=true (life_safety)
+   "near a school"]                  → citation-grounded sitrep to the reporter
 ```
 
 ### 🔄 Pipeline Flow
 
 ```
-UserQuery --> QueryAgent --> RouterAgent --> ActionAgent --> Response
-    ^                                                            |
-    |                                                            |
-    +------------------- Session Context ------------------------+
+signal --> QueryAgent --> RouterExecutor --> ActionAgent --> PipelineResult
 ```
 
-> The orchestration pipeline is modality-agnostic. Text, voice (WebRTC), and phone (ACS) all enter through different endpoints but converge at the QueryAgent.
+> The pipeline is modality-agnostic. Text, voice (WebRTC), and phone (ACS) all
+> enter through different endpoints but converge at the QueryAgent. Lifecycle
+> events publish to the transcript bus so the **ClearBoard** updates live.
 
-### 👥 Agent Responsibilities Recap
+### 👥 Stage Responsibilities Recap
 
-| 🤖 Agent | 📥 Input | 📤 Output | 🎯 Responsibility |
+| 🤖 Stage | 📥 Input | 📤 Output | 🎯 Responsibility |
 |-------|-------|--------|----------------|
-| 🔍 **QueryAgent** | Raw user message + session context | Structured query with intent, entities | Parse, extract, normalize, enrich |
-| 🚦 **RouterAgent** | Structured query | Routing decision with selected agent | Classify intent, select action path |
-| ⚡ **ActionAgent** | Routing decision + parameters | Final user response | Execute task, generate response |
+| 🔍 **QueryAgent** | Raw signal + channel | `SignalClassification` | Classify intent/category, extract entities, flag PII — **classify only** |
+| 🚦 **RouterExecutor** | `SignalClassification` | `RoutingDecision` | Dedup, severity/SLA, escalation — **deterministic, zero LLM** |
+| ⚡ **ActionAgent** | `RoutingDecision` | `IncidentAction` | Create/attach incident, search KB, generate cited sitrep — **3 tools only** |
 
 ---
 
 ## 🏗️ Architecture Overview
 
-In this lab, you will build the following components:
+In this lab, you assemble the pipeline. The canonical implementation lives in
+[`backend/app/agents/`](../../backend/app/agents/) — study it as your reference:
 
 ```
-labs/05-agent-orchestration/
-  📁 start/
-    📄 query_agent.py         # QueryAgent implementation (skeleton)
-    📄 router_agent.py        # RouterAgent implementation (skeleton)
-    📄 action_agents.py       # ActionAgent implementations (skeleton)
-    📄 pipeline.py            # Orchestration pipeline (skeleton)
-    📄 session.py             # Session context management (skeleton)
-    📄 models.py              # Pydantic models for data contracts
-    📄 config.py              # Configuration settings
-  📁 solution/
-    📄 query_agent.py         # Complete QueryAgent
-    📄 router_agent.py        # Complete RouterAgent
-    📄 action_agents.py       # Complete ActionAgents
-    📄 pipeline.py            # Complete orchestration pipeline
-    📄 session.py             # Complete session management
-    📄 models.py              # Complete data models
-    📄 config.py              # Complete configuration
-  📁 tests/
-    📄 test_pipeline.py       # Pipeline integration tests
-    📄 test_session.py        # Session management tests
+backend/app/agents/
+  📄 schemas.py        # Data contracts: SignalClassification, RoutingDecision, IncidentAction
+  📄 query_agent.py    # QueryAgent (MAF agent) — classify only
+  📄 router_agent.py   # RouterExecutor (MAF executor) — deterministic, zero LLM
+  📄 action_agent.py   # ActionExecutor + ActionToolbox (3 tools)
+  📄 envelopes.py      # ClassifiedSignal / RoutedSignal hand-off envelopes
+  📄 pipeline.py       # build_workflow(): QueryStage → RouterExecutor → ActionExecutor
+  📄 escalation_rules.py  # Escalation logic (safety control)
+  📄 safety.py         # PII / harm safety net
 ```
 
 ---
@@ -118,58 +103,84 @@ labs/05-agent-orchestration/
 
 ### 🔹 Step 1: Define Data Contracts
 
-Before implementing agents, establish clear contracts for data flowing between them. Open `start/models.py`:
+Before implementing stages, establish the typed contracts that flow between
+them. These mirror [`backend/app/agents/schemas.py`](../../backend/app/agents/schemas.py)
+(Constitution Art. IV: structured output, never free-text parsing). Open
+`start/models.py`:
 
-#### 1a: 📋 Query Model
+#### 1a: 📋 QueryAgent output — `SignalClassification`
 
 ```python
-from pydantic import BaseModel, Field
-from typing import Optional
 from enum import Enum
+from typing import Optional
+from pydantic import BaseModel, Field
 
-class Intent(str, Enum):
-    """Supported intents for routing."""
-    KNOWLEDGE_QUERY = "knowledge_query"
-    PASSWORD_RESET = "password_reset"
-    TICKET_STATUS = "ticket_status"
-    GENERAL_CHAT = "general_chat"
-    ESCALATION = "escalation"
-    UNKNOWN = "unknown"
+class SignalCategory(str, Enum):
+    INFRASTRUCTURE_OUTAGE = "INFRASTRUCTURE_OUTAGE"
+    FIELD_HAZARD = "FIELD_HAZARD"
+    PUBLIC_SAFETY = "PUBLIC_SAFETY"
+    CUSTOMER_INQUIRY = "CUSTOMER_INQUIRY"
+    SERVICE_REQUEST = "SERVICE_REQUEST"
+    COMPLIANCE_REPORT = "COMPLIANCE_REPORT"
+    STATUS_CHECK = "STATUS_CHECK"
+    HUMAN_REQUEST = "HUMAN_REQUEST"
+    GENERAL_INQUIRY = "GENERAL_INQUIRY"
 
-class StructuredQuery(BaseModel):
-    """Output from QueryAgent - structured representation of user input."""
-    original_text: str = Field(..., description="Original user message")
-    intent: Intent = Field(..., description="Classified intent")
-    entities: dict = Field(default_factory=dict, description="Extracted entities")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Classification confidence")
-    requires_clarification: bool = Field(default=False)
-    clarification_question: Optional[str] = None
-```
+class SignalEntities(BaseModel):
+    location: Optional[str] = None
+    system: Optional[str] = None
+    severity_indicators: list[str] = Field(default_factory=list)
 
-#### 1b: 🚦 Routing Decision Model
-
-```python
-class RoutingDecision(BaseModel):
-    """Output from RouterAgent - which action to take."""
-    target_agent: str = Field(..., description="Name of ActionAgent to invoke")
-    parameters: dict = Field(default_factory=dict, description="Parameters for the agent")
-    fallback_agent: Optional[str] = Field(None, description="Backup if primary fails")
-    reasoning: str = Field(..., description="Why this routing was chosen")
-```
-
-#### 1c: 💬 Response Model
-
-```python
-class AgentResponse(BaseModel):
-    """Output from ActionAgent - final response to user."""
-    content: str = Field(..., description="Response text")
-    sources: list[dict] = Field(default_factory=list, description="Citations if applicable")
+class SignalClassification(BaseModel):
+    """QueryAgent output. Authority: classify only."""
+    intent: str
+    intent_category: SignalCategory
     confidence: float = Field(..., ge=0.0, le=1.0)
-    requires_followup: bool = Field(default=False)
-    suggested_actions: list[str] = Field(default_factory=list)
+    entities: SignalEntities = Field(default_factory=SignalEntities)
+    pii_detected: bool = False
+    pii_types: list[str] = Field(default_factory=list)
+    urgency_indicators: list[str] = Field(default_factory=list)
 ```
 
-**Task:** Complete the data models in `start/models.py`. 📝
+#### 1b: 🚦 RouterExecutor output — `RoutingDecision`
+
+```python
+class Severity(str, Enum):
+    SEV1 = "SEV1"  # life safety / total outage / statutory clock — 15-min SLA, always escalates
+    SEV2 = "SEV2"  # major, public-facing, spreading — 1-hour SLA
+    SEV3 = "SEV3"  # contained, single-party — 4-hour SLA
+    SEV4 = "SEV4"  # informational — next business day
+
+class RoutingDecision(BaseModel):
+    """RouterExecutor output. Deterministic — zero LLM calls."""
+    outcome: str                 # "OPEN_INCIDENT" | "ATTACH_TO_INCIDENT"
+    target_queue: str            # field-operations | customer-comms | compliance-desk | engineering | escalations
+    severity: Severity
+    sla_minutes: int
+    escalate: bool = False
+    escalation_reason: Optional[str] = None
+    matched_incident_id: Optional[str] = None   # set on ATTACH_TO_INCIDENT
+    dedup_similarity: Optional[float] = None
+    routing_rules_applied: list[str] = Field(default_factory=list)
+```
+
+#### 1c: ⚡ ActionAgent output — `IncidentAction`
+
+```python
+class IncidentAction(BaseModel):
+    """ActionAgent / attach-path output."""
+    status: str                  # opened | attached | escalated | error
+    incident_id: Optional[str]   # AC-####
+    queue: str
+    severity: Severity
+    citations: list[dict] = Field(default_factory=list)  # every claim cites a source record
+    estimated_response_time: str
+    escalated: bool = False
+    user_message: str            # acknowledgment shown to the reporter (never echoes PII)
+```
+
+**Task:** Complete the data models in `start/models.py` to match
+[`schemas.py`](../../backend/app/agents/schemas.py). 📝
 
 ### 🔹 Step 2: Implement Session Context
 
@@ -282,7 +293,7 @@ The QueryAgent transforms raw user input into structured data. Open `start/query
 
 ```python
 from openai import AsyncAzureOpenAI
-from models import StructuredQuery, Intent
+from models import SignalClassification, SignalCategory, SignalEntities
 from session import Session
 import json
 
@@ -305,7 +316,7 @@ class QueryAgent:
         self,
         user_message: str,
         session: Session
-    ) -> StructuredQuery:
+    ) -> SignalClassification:
         """
         Process user message into structured query.
 
@@ -314,43 +325,51 @@ class QueryAgent:
             session: Current conversation session
 
         Returns:
-            StructuredQuery with intent, entities, and metadata
+            SignalClassification with intent, entities, and metadata
         """
-        system_prompt = """You are a query understanding agent. Your job is to:
-1. 🎯 Classify the user's intent into one of these categories:
-   - knowledge_query: Questions about policies, procedures, how-to
-   - password_reset: Requests to reset password or account access
-   - ticket_status: Checking status of existing support tickets
-   - general_chat: Casual conversation, greetings
-   - escalation: User is frustrated, asking for human, or issue is complex
-   - unknown: Cannot determine intent
+        system_prompt = """You are the QueryAgent for All Clear incident triage.
+Your ONLY job is to classify one inbound signal. You do not route, create, or
+search. Classify the signal and return structured JSON.
 
-2. 🏷️ Extract relevant entities:
-   - ticket_id: If mentioned (e.g., "TKT-12345")
-   - user_name: If the user identifies themselves
-   - topic: Main subject of the query
-   - urgency: low, medium, high based on language
+1. 🎯 Classify intent_category into one of:
+   - INFRASTRUCTURE_OUTAGE: downed lines, power/water/network outages
+   - FIELD_HAZARD: on-the-ground hazard (debris, flooding, spill)
+   - PUBLIC_SAFETY: life-safety threat (fire, gas leak, people in danger)
+   - CUSTOMER_INQUIRY: status/info request ("when will power return?")
+   - SERVICE_REQUEST: routine, non-urgent service
+   - COMPLIANCE_REPORT: statutory/recall/NFIRS-NIBRS reporting
+   - STATUS_CHECK: follow-up on an existing incident
+   - HUMAN_REQUEST: explicit request for a human
+   - GENERAL_INQUIRY: uncategorized
 
-3. ❓ Determine if clarification is needed
+2. 🏷️ Extract entities:
+   - location: place referenced (street, block, building)
+   - system: asset referenced (grid, line, app, main)
+   - severity_indicators: phrases signalling danger ("fire", "no power", "injured", "sparking")
+
+3. 🚩 Detect PII (names, phone numbers, addresses tied to a person). Flag it;
+   NEVER echo it back.
 
 Respond with JSON only:
 {
-    "intent": "<intent>",
+    "intent": "<short intent label>",
+    "intent_category": "<one of the categories above>",
     "confidence": <0.0-1.0>,
-    "entities": { ... },
-    "requires_clarification": <bool>,
-    "clarification_question": "<question if needed>"
+    "entities": {"location": "...", "system": "...", "severity_indicators": [...]},
+    "pii_detected": <bool>,
+    "pii_types": [...],
+    "urgency_indicators": [...]
 }"""
 
-        # 📚 Include conversation context
+        # 📚 Include recent signals from this session/channel for context
         context_summary = session.get_context_summary()
 
-        user_prompt = f"""Conversation context:
+        user_prompt = f"""Session context:
 {context_summary}
 
-Current message: {user_message}
+Current signal: {user_message}
 
-Analyze this message and respond with JSON."""
+Classify this signal and respond with JSON."""
 
         response = await self.client.chat.completions.create(
             model=self.model,
@@ -364,212 +383,218 @@ Analyze this message and respond with JSON."""
 
         result = json.loads(response.choices[0].message.content)
 
-        return StructuredQuery(
-            original_text=user_message,
-            intent=Intent(result["intent"]),
-            entities=result.get("entities", {}),
+        return SignalClassification(
+            intent=result["intent"],
+            intent_category=SignalCategory(result["intent_category"]),
             confidence=result["confidence"],
-            requires_clarification=result.get("requires_clarification", False),
-            clarification_question=result.get("clarification_question")
+            entities=SignalEntities(**result.get("entities", {})),
+            pii_detected=result.get("pii_detected", False),
+            pii_types=result.get("pii_types", []),
+            urgency_indicators=result.get("urgency_indicators", []),
         )
 ```
 
-**Task:** Complete the QueryAgent in `start/query_agent.py`. 📝
+**Task:** Complete the QueryAgent in `start/query_agent.py`. It **classifies only** — it must never create or route. 📝
 
-### 🔹 Step 4: Implement RouterAgent
+### 🔹 Step 4: Implement the RouterExecutor
 
-The RouterAgent decides which ActionAgent should handle the query. Open `start/router_agent.py`:
+> 🚨 **This is the most important stage.** The RouterExecutor makes **zero LLM
+> calls** — by design and by test (Constitution Art. II & III). Severity, SLA,
+> and escalation are safety-critical and must be deterministic and auditable, so
+> a caller (or an attacker) can never *talk* the system into a lower severity.
+> It takes no `AsyncAzureOpenAI` client. It is pure code.
+
+The RouterExecutor runs three deterministic phases: **dedup → severity/SLA →
+escalation**. Open `start/router_agent.py`:
 
 ```python
-from openai import AsyncAzureOpenAI
-from models import StructuredQuery, RoutingDecision, Intent
+from models import SignalClassification, RoutingDecision, Severity
 
-class RouterAgent:
-    """
-    🚦 Determines the best action path for a given query.
+# Severity → response SLA (minutes). CONTEXT.md severity/SLA matrix.
+SLA_MINUTES = {Severity.SEV1: 15, Severity.SEV2: 60, Severity.SEV3: 240, Severity.SEV4: 1440}
 
-    Responsibilities:
-    - 🗺️ Map intents to ActionAgents
-    - 📋 Apply business rules
-    - ⚠️ Handle edge cases and fallbacks
-    """
+# intent_category → destination queue.
+QUEUE_FOR = {
+    "INFRASTRUCTURE_OUTAGE": "engineering",
+    "FIELD_HAZARD": "field-operations",
+    "PUBLIC_SAFETY": "field-operations",
+    "CUSTOMER_INQUIRY": "customer-comms",
+    "SERVICE_REQUEST": "customer-comms",
+    "COMPLIANCE_REPORT": "compliance-desk",
+    "STATUS_CHECK": "customer-comms",
+    "HUMAN_REQUEST": "escalations",
+    "GENERAL_INQUIRY": "customer-comms",
+}
 
-    # 🗺️ Routing table: intent -> (primary_agent, fallback_agent)
-    ROUTING_TABLE = {
-        Intent.KNOWLEDGE_QUERY: ("retrieve_agent", "general_agent"),
-        Intent.PASSWORD_RESET: ("password_agent", "escalation_agent"),
-        Intent.TICKET_STATUS: ("ticket_agent", "general_agent"),
-        Intent.GENERAL_CHAT: ("general_agent", None),
-        Intent.ESCALATION: ("escalation_agent", None),
-        Intent.UNKNOWN: ("clarification_agent", "general_agent"),
-    }
+DEDUP_THRESHOLD = 0.83  # cosine; from config
 
-    def __init__(self, openai_client: AsyncAzureOpenAI, model_deployment: str):
-        self.client = openai_client
-        self.model = model_deployment
+class RouterExecutor:
+    """Deterministic routing. NO LLM. NO tools. Touches no records."""
 
-    async def route(self, query: StructuredQuery) -> RoutingDecision:
-        """
-        Route the structured query to appropriate ActionAgent.
+    def __init__(self, incident_store, embedder):
+        self.incidents = incident_store   # read-only lookup of open incidents
+        self.embed = embedder             # embedding function for dedup
 
-        Args:
-            query: Structured query from QueryAgent
+    def route(self, sig: SignalClassification, signal_text: str) -> RoutingDecision:
+        rules = []
 
-        Returns:
-            RoutingDecision with target agent and parameters
-        """
-        # ❓ Handle clarification requests immediately
-        if query.requires_clarification:
+        # Phase 1 — DEDUP: compare against open incidents in the SAME category.
+        match_id, similarity = self._best_match(signal_text, sig.intent_category)
+        if similarity is not None and similarity >= DEDUP_THRESHOLD:
+            rules.append(f"dedup>={DEDUP_THRESHOLD}")
+            sev = self._severity(sig)
             return RoutingDecision(
-                target_agent="clarification_agent",
-                parameters={
-                    "question": query.clarification_question,
-                    "original_query": query.original_text
-                },
-                reasoning="Query requires clarification before proceeding"
+                outcome="ATTACH_TO_INCIDENT",
+                target_queue=QUEUE_FOR[sig.intent_category.value],
+                severity=sev, sla_minutes=SLA_MINUTES[sev],
+                matched_incident_id=match_id, dedup_similarity=similarity,
+                routing_rules_applied=rules,
             )
 
-        # ⚠️ Low confidence? Ask for clarification
-        if query.confidence < 0.6:
-            return RoutingDecision(
-                target_agent="clarification_agent",
-                parameters={
-                    "intent_guess": query.intent.value,
-                    "confidence": query.confidence
-                },
-                fallback_agent="general_agent",
-                reasoning=f"Low confidence ({query.confidence:.2f}) - requesting clarification"
-            )
+        # Phase 2 — SEVERITY / SLA (rules, not vibes).
+        sev = self._severity(sig)
+        rules.append(f"severity={sev.value}")
 
-        # 🗺️ Look up routing
-        primary, fallback = self.ROUTING_TABLE.get(
-            query.intent,
-            ("general_agent", None)
-        )
-
-        # 🔧 Build parameters based on intent
-        parameters = self._build_parameters(query)
+        # Phase 3 — ESCALATION (safety control). SEV1 and statutory clocks
+        # ALWAYS escalate; no model output can downgrade them.
+        escalate, reason = False, None
+        if sev == Severity.SEV1:
+            escalate, reason = True, "sev1_incident"
+        elif "statutory" in " ".join(sig.urgency_indicators).lower():
+            escalate, reason = True, "statutory_clock"
+        elif sig.confidence < 0.70:
+            escalate, reason = True, "confidence_too_low"
+        elif sig.pii_detected:
+            rules.append("pii_flagged")
+        if escalate:
+            rules.append(f"escalate:{reason}")
 
         return RoutingDecision(
-            target_agent=primary,
-            parameters=parameters,
-            fallback_agent=fallback,
-            reasoning=f"Intent '{query.intent.value}' with confidence {query.confidence:.2f}"
+            outcome="OPEN_INCIDENT",
+            target_queue=QUEUE_FOR[sig.intent_category.value],
+            severity=sev, sla_minutes=SLA_MINUTES[sev],
+            escalate=escalate, escalation_reason=reason,
+            routing_rules_applied=rules,
         )
 
-    def _build_parameters(self, query: StructuredQuery) -> dict:
-        """🔧 Build agent-specific parameters from query."""
-        params = {
-            "query": query.original_text,
-            "entities": query.entities
-        }
-
-        # 🎯 Add intent-specific parameters
-        if query.intent == Intent.TICKET_STATUS:
-            params["ticket_id"] = query.entities.get("ticket_id")
-
-        elif query.intent == Intent.KNOWLEDGE_QUERY:
-            params["topic"] = query.entities.get("topic")
-            params["search_query"] = query.original_text
-
-        return params
+    def _severity(self, sig: SignalClassification) -> Severity:
+        """Map severity indicators to SEV1..SEV4 deterministically."""
+        text = " ".join(sig.severity_indicators_all()).lower()
+        if any(k in text for k in ("fire", "gas", "injured", "trapped", "no power", "statutory")):
+            return Severity.SEV1
+        if sig.intent_category.value in ("INFRASTRUCTURE_OUTAGE", "FIELD_HAZARD"):
+            return Severity.SEV2
+        if sig.intent_category.value in ("CUSTOMER_INQUIRY", "SERVICE_REQUEST", "STATUS_CHECK"):
+            return Severity.SEV4
+        return Severity.SEV3
 ```
 
-**Task:** Complete the RouterAgent in `start/router_agent.py`. 📝
+**Task:** Complete the RouterExecutor in `start/router_agent.py`. Verify with a
+test that it imports **no** OpenAI client and makes zero network calls. 📝
 
-### 🔹 Step 5: Implement ActionAgents
+> Compare your implementation against the real
+> [`router_agent.py`](../../backend/app/agents/router_agent.py) — note how it is
+> a MAF `Executor`, not an `Agent`, precisely because it never calls a model.
 
-ActionAgents execute specific tasks. Open `start/action_agents.py` and implement:
+### 🔹 Step 5: Implement the ActionAgent
 
-- 📚 **RetrieveAgent** - RAG-powered KB search
-- 💬 **GeneralAgent** - Conversational responses
-- ❓ **ClarificationAgent** - Ask clarifying questions
-- 🚨 **EscalationAgent** - Escalate to humans
+The ActionAgent acts on the `RoutingDecision` through **exactly three tools** and
+nothing else (Constitution Art. II). Open `start/action_agents.py`:
 
-**Task:** Complete the ActionAgents in `start/action_agents.py`. 📝
+- 🆕 **create_incident** — on `OPEN_INCIDENT`, mint a new incident `AC-####` in the target queue at the decided severity
+- 📚 **search_knowledge** — RAG over incident runbooks/SOPs (Lab 04); returns `KnowledgeArticle`s used to ground the response
+- 📝 **generate_sitrep** — produce a **citation-grounded** situation report; every factual claim cites a source record (Art. IV)
 
-### 🔹 Step 6: Wire Up the Pipeline
+Path rules:
+- **`OPEN_INCIDENT`** → `create_incident` → `search_knowledge` → `generate_sitrep` → return `IncidentAction(status="opened")` with citations.
+- **`ATTACH_TO_INCIDENT`** → **no** knowledge search (keeps surge latency flat) → increment the matched incident's magnitude → return a short acknowledgment `IncidentAction(status="attached")`.
+- **`escalate=True`** → hand off to the `escalations` queue; never suppress it.
 
-Connect all agents in the orchestration pipeline. Open `start/pipeline.py`:
+**Task:** Complete the ActionAgent + its toolbox in `start/action_agents.py`.
+Reference [`action_agent.py`](../../backend/app/agents/action_agent.py). 📝
+
+### 🔹 Step 6: Wire Up the MAF Workflow
+
+Connect the three stages into one Microsoft Agent Framework workflow. Open
+`start/pipeline.py`:
 
 ```python
-class AgentPipeline:
+class AllClearPipeline:
     """
-    🔄 Orchestrates the three-agent pipeline.
-
-    Flow: UserQuery --> QueryAgent --> RouterAgent --> ActionAgent --> Response
+    🔄 Orchestrates: QueryAgent → RouterExecutor → ActionAgent.
+    Flow: signal --> SignalClassification --> RoutingDecision --> IncidentAction
     """
 
-    async def process(
+    async def process_signal(
         self,
-        user_message: str,
-        session_id: str = None
-    ) -> tuple[AgentResponse, str]:
-        """
-        Process a user message through the full pipeline.
-
-        Args:
-            user_message: Raw user input
-            session_id: Optional session ID for multi-turn
-
-        Returns:
-            Tuple of (AgentResponse, session_id)
-        """
-        # 💾 Get or create session
+        signal_text: str,
+        session_id: str = None,
+        channel: str = "chat",
+    ) -> "PipelineResult":
         session = self.session_manager.get_or_create(session_id)
 
-        # 🔍 Stage 1: QueryAgent - Understand the query
-        structured_query = await self.query_agent.process(user_message, session)
+        # 🔍 Stage 1: QueryAgent — classify the signal (LLM)
+        classification = await self.query_agent.process(signal_text, session)
 
-        # 🚦 Stage 2: RouterAgent - Decide where to route
-        routing_decision = await self.router_agent.route(structured_query)
+        # 🚦 Stage 2: RouterExecutor — decide deterministically (NO LLM)
+        routing = self.router.route(classification, signal_text)
 
-        # ⚡ Stage 3: ActionAgent - Execute and respond
-        response = await self._execute_action(routing_decision, session)
+        # ⚡ Stage 3: ActionAgent — act through its three tools
+        action = await self.action_agent.execute(routing, classification, signal_text)
 
-        # 📝 Record turn in session
-        session.add_turn(
-            user_message=user_message,
-            agent_response=response.content,
-            intent=structured_query.intent.value,
-            entities=structured_query.entities
+        session.add_turn(signal_text, action.user_message,
+                         classification.intent_category.value, {})
+
+        return PipelineResult(
+            session_id=session.session_id, channel=channel, signal_text=signal_text,
+            classification=classification, routing=routing, action=action,
         )
-
-        return response, session.session_id
 ```
 
-**Task:** Complete the pipeline orchestration in `start/pipeline.py`. 📝
+In the real codebase this is assembled with a MAF `WorkflowBuilder`
+(`QueryStage → RouterExecutor → ActionExecutor`); the adapter above and the
+workflow share the same three stages so they produce identical incidents and
+audit entries (Constitution Art. V). See
+[`pipeline.py`](../../backend/app/agents/pipeline.py).
 
-### 🔹 Step 7: Test Multi-Turn Conversations
+**Task:** Complete the pipeline in `start/pipeline.py`. 📝
 
-Create a test script to verify the complete pipeline handles multi-turn conversations:
+### 🔹 Step 7: Run a Surge
+
+The hero scenario: a burst of signals where most are **duplicates** of a few
+real incidents. A correct pipeline opens *one* incident per real-world event and
+**attaches** the rest, incrementing magnitude.
 
 ```python
-# test_pipeline.py
-async def test_multi_turn():
-    """🧪 Test multi-turn conversation flow."""
-    pipeline = AgentPipeline(...)
+# test_surge.py
+async def test_surge():
+    """🌊 40 callers, one downed line — expect 1 incident, 40 reports."""
+    pipeline = AllClearPipeline(...)
 
-    conversations = [
-        "Hi there!",                                    # 👋 Greeting
-        "How do I reset my password?",                  # 🔑 Knowledge query
-        "What if that doesn't work?",                   # 🔄 Follow-up
-        "Can you check the status of my ticket TKT-12345?",  # 🎫 Ticket status
-        "I need to speak to a human please"             # 🚨 Escalation
+    surge = [
+        "Power line down across Main St, sparking near the school",   # OPEN_INCIDENT (SEV1)
+        "There's a downed power line on Main Street, wires on the road",  # ATTACH
+        "Main St has a line down, looks dangerous",                   # ATTACH
+        "When will the power be back on Elm St?",                     # CUSTOMER_INQUIRY (SEV4)
+        "Smell of gas near the community center",                     # OPEN_INCIDENT (SEV1, new event)
     ]
 
     session_id = None
-    for message in conversations:
-        response, session_id = await pipeline.process(message, session_id)
-        print(f"User: {message}")
-        print(f"Agent: {response.content}\n")
+    for signal in surge:
+        result = await pipeline.process_signal(signal, session_id)
+        session_id = result.session_id
+        print(f"signal : {signal}")
+        print(f"outcome: {result.routing.outcome}  "
+              f"{result.action.incident_id}  {result.routing.severity}\n")
 ```
-
-Run your tests:
 
 ```bash
-python test_pipeline.py
+python test_surge.py
 ```
+
+✅ Expect the three "Main St line down" signals to share **one** incident id
+(the 2nd and 3rd `ATTACH_TO_INCIDENT`), the gas-leak signal to `OPEN_INCIDENT` a
+new SEV1, and the Elm St question to be a SEV4 customer inquiry.
 
 ---
 
@@ -579,12 +604,12 @@ By the end of this lab, you should have:
 
 | 📋 Deliverable | ✅ Success Criteria |
 |-------------|------------------|
-| 🔍 QueryAgent | Parses messages into structured queries with intent and entities |
-| 🚦 RouterAgent | Routes queries to correct ActionAgent based on intent |
-| ⚡ ActionAgent(s) | At least 3 working ActionAgents (Retrieve, General, Escalation) |
-| 🔄 Pipeline | Full orchestration working end-to-end |
-| 💾 Session Management | Multi-turn conversations maintain context |
-| 🧪 Test Results | All test conversations complete successfully |
+| 🔍 QueryAgent | Classifies signals into a typed `SignalClassification` (classify only) |
+| 🚦 RouterExecutor | Deterministic dedup + severity/SLA + escalation, **zero LLM calls** |
+| ⚡ ActionAgent | Acts through exactly three tools (create_incident, search_knowledge, generate_sitrep) |
+| 🔄 Pipeline | QueryAgent → RouterExecutor → ActionAgent working end-to-end → `PipelineResult` |
+| 🌊 Surge handling | Duplicate signals `ATTACH_TO_INCIDENT`; one incident per real-world event |
+| 🧪 Test Results | Surge test passes; SEV1 always escalates |
 
 - **(Optional) Exercise 05x:** [Voice & Phone Extensions](exercises/05x-voice-phone-extensions.md) — See your pipeline respond to spoken queries and phone calls
 
@@ -594,30 +619,30 @@ By the end of this lab, you should have:
 
 ### ⚠️ Common Issues
 
-**Issue:** Intent classification is inconsistent
+**Issue:** Signal classification is inconsistent
 - ✅ **Solution:** Lower temperature in QueryAgent (use 0.1 or lower)
-- ✅ **Solution:** Add more explicit examples in the system prompt
+- ✅ **Solution:** Add explicit signal examples per `SignalCategory` in the system prompt
 - ✅ **Solution:** Use structured output format (JSON mode)
 
-**Issue:** Router selects wrong ActionAgent
-- ✅ **Solution:** Verify QueryAgent is extracting correct intent
-- ✅ **Solution:** Check routing table mappings
-- ✅ **Solution:** Add logging to trace the decision path
+**Issue:** RouterExecutor produces the wrong severity or queue
+- ✅ **Solution:** Verify QueryAgent extracted the right `severity_indicators` and `intent_category`
+- ✅ **Solution:** Check the deterministic severity/queue maps — never let the model decide severity
+- ✅ **Solution:** Confirm SEV1 / statutory-clock signals always set `escalate=True`
 
-**Issue:** Context lost between turns
-- ✅ **Solution:** Verify session_id is being passed correctly
-- ✅ **Solution:** Check that session.add_turn() is called after each response
-- ✅ **Solution:** Ensure history is included in agent prompts
+**Issue:** Surge opens duplicate incidents instead of attaching
+- ✅ **Solution:** Verify dedup compares within the same `intent_category`
+- ✅ **Solution:** Check `DEDUP_THRESHOLD` (default 0.83) and your embedding function
+- ✅ **Solution:** Ensure matched signals return `ATTACH_TO_INCIDENT` with a `matched_incident_id`
 
 ### 📋 Debugging Checklist
 
-1. [ ] 📄 All data models (StructuredQuery, RoutingDecision, AgentResponse) are valid
-2. [ ] 🎯 QueryAgent returns valid Intent enum values
-3. [ ] 🗺️ RouterAgent routing table covers all intents
-4. [ ] 📦 All ActionAgents are registered in the pipeline
-5. [ ] 🔑 Session ID is consistent across turns
-6. [ ] 📝 Logging is enabled to trace pipeline flow
-7. [ ] ⚠️ Error handling returns graceful responses
+1. [ ] 📄 Data contracts (SignalClassification, RoutingDecision, IncidentAction) match `schemas.py`
+2. [ ] 🎯 QueryAgent returns valid `SignalCategory` values and never creates/routes
+3. [ ] 🚫 RouterExecutor imports **no** OpenAI client (zero LLM calls)
+4. [ ] 🆙 SEV1 and statutory-clock incidents always escalate
+5. [ ] 🔁 Dedup attaches duplicates; magnitude increments; no signal is deleted
+6. [ ] 📝 Sitreps cite a source record for every factual claim
+7. [ ] 🚩 Detected PII is never echoed in responses or logs
 
 ---
 
@@ -645,7 +670,7 @@ In the next lab, you will containerize your agent system and deploy it to Azure 
 | Component | Required Version | Tested Version |
 |-----------|-----------------|----------------|
 | 🐍 Python | 3.11+ | 3.12.10 |
-| 🤖 Azure OpenAI | GPT-4.1 | 2025-01-01-preview |
+| 🤖 Azure OpenAI | GPT-5.1 | 2025-01-01-preview |
 | 🔧 Pydantic | 2.5+ | 2.10+ |
 | 🔄 asyncio | 3.11+ | Built-in |
 

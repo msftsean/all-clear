@@ -1,17 +1,17 @@
-// University Front Door Support Agent - Azure Infrastructure
+// All Clear Incident Triage - Azure Infrastructure
 // Deploy with: azd provision
 
 @description('Name prefix for all resources')
-param resourcePrefix string = 'frontdoor'
+param resourcePrefix string = 'allclear'
 
 @description('Location for all resources')
 param location string = resourceGroup().location
 
 @description('Azure OpenAI deployment model')
-param openAiModel string = 'gpt-4.1'
+param openAiModel string = 'gpt-5.1'
 
 @description('OpenAI model version')
-param openAiModelVersion string = '2025-04-14'
+param openAiModelVersion string = '2025-11-13'
 
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
@@ -26,7 +26,7 @@ var prefix = '${resourcePrefix}-${resourceToken}'
 // Tags for all resources
 var tags = {
   'azd-env-name': resourcePrefix
-  'solution-accelerator': 'university-front-door-agent'
+  'solution-accelerator': 'all-clear'
   'deployment-date': deploymentDate
 }
 
@@ -90,10 +90,10 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' = {
 
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-11-15' = {
   parent: cosmosAccount
-  name: 'frontdoor'
+  name: 'allclear'
   properties: {
     resource: {
-      id: 'frontdoor'
+      id: 'allclear'
     }
   }
 }
@@ -106,7 +106,7 @@ resource sessionsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
       id: 'sessions'
       partitionKey: {
         paths: [
-          '/student_id_hash'
+          '/signal_id_hash'
         ]
         kind: 'Hash'
       }

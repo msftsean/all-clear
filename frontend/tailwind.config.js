@@ -5,18 +5,20 @@ export default {
     extend: {
       colors: {
         // Paper world (conversation column)
-        paper: "#F2EDE3",
-        paper2: "#FFFDF7",
-        paperline: "#E0D8C8",
-        inkwarm: "#2E2A22",
-        midwarm: "#6E6657",
-        voice: "#B0541F",
+        paper: "#f8f9fc",
+        paper2: "#ffffff",
+        paperline: "#dfe3ea",
+        inkwarm: "#1b2540",
+        midwarm: "#6b7184",
+        voice: "#0050f8",
         // Night world (canvas)
-        night: "#10161F",
-        panel: "#161E2A",
-        nline: "#27324A",
-        nink: "#C6D2E4",
-        ndim: "#7C8CA6",
+        night: "#001033",
+        panel: "#14213f",
+        nline: "#26345c",
+        nink: "#e0f6ff",
+        ndim: "#9fb6d8",
+        cta: "#d0f100",
+        ctaink: "#1b2540",
         // Status (both worlds)
         sev1: "#E25555",
         sev2: "#E59A3A",
@@ -25,14 +27,28 @@ export default {
         clear: "#37C281",
       },
       fontFamily: {
-        display: ["Archivo", "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        display: ["Fraunces", "Georgia", "serif"],
+        sans: ["DM Sans", "system-ui", "sans-serif"],
         mono: ["JetBrains Mono", "Menlo", "monospace"],
       },
       borderRadius: {
-        card: "10px",
-        bubble: "12px",
-        chip: "5px",
+        card: "20px",
+        bubble: "14px",
+        chip: "9999px",
+        tag: "6px",
+      },
+      boxShadow: {
+        "antimetal-card":
+          "rgba(0,39,80,0.03) 0px 56px 72px -16px, rgba(0,39,80,0.03) 0px 32px 32px -16px, rgba(0,39,80,0.04) 0px 6px 12px -3px, rgba(0,39,80,0.04) 0px 0px 0px 1px",
+        "antimetal-soft":
+          "rgba(255,255,255,0.72) 0px 1px 1px 0px inset, rgba(4,33,80,0.02) 0px 8px 16px 0px, rgba(4,33,80,0.03) 0px 4px 12px 0px, rgba(4,33,80,0.06) 0px 1px 2px 0px, rgba(4,33,80,0.04) 0px 0px 0px 1px",
+        "antimetal-cta":
+          "rgba(24,37,66,0.32) 0px 1px 3px 0px, rgba(24,37,66,0.12) 0px 0.5px 0.5px 0px, rgba(24,37,66,0.44) 0px 12px 24px -12px, rgba(219,247,255,0.06) 0px 8px 16px 0px inset, rgba(219,247,255,0.48) 0px 0.5px 0.5px 0px inset",
+        "dark-glass":
+          "rgba(24,37,66,0.32) 0px 1px 3px 0px, rgba(24,37,66,0.44) 0px 12px 24px -12px, rgba(219,247,255,0.48) 0px 0.5px 0.5px 0px inset, rgba(219,247,255,0.04) 0px -4px 8px 0px inset",
+      },
+      backgroundImage: {
+        "antimetal-hero": "linear-gradient(180deg,#001033 0%,#0050f8 55%,#5fbdf7 100%)",
       },
       keyframes: {
         bar: {

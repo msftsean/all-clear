@@ -4,13 +4,13 @@
 | -------------------- | ---------------- |
 | ⏱️ **Duration**      | 90 minutes       |
 | 📊 **Difficulty**    | ⭐⭐⭐ Advanced  |
-| 🎯 **Prerequisites** | None required for the AJCU workshop (deeper labs optional) |
+| 🎯 **Prerequisites** | None required for the All Clear workshop (deeper labs optional) |
 
 ---
 
-> 🚀 **In the 3-hour AJCU workshop, `azd up` is step one — not the last lab.** You
+> 🚀 **In the 3-hour All Clear workshop, `azd up` is step one — not the last lab.** You
 > do **not** need to complete Labs 00–05 before provisioning. Run the azd-first
-> flow in the [README **Start here** section](../../README.md#-start-here-3-hour-ajcu-workshop)
+> flow in the [README **Start here** section](../../README.md#-start-here-3-hour-all-clear-workshop)
 > at the very beginning of the session. Treat the content below as the **take-home
 > deep dive** that explains what `azd up` does under the hood.
 
@@ -36,22 +36,22 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. 🐳 **Containerize your agent with Docker** - Package your application into Docker containers for consistent deployment
-2. ☁️ **Deploy with azd up** - Use Azure Developer CLI to provision infrastructure and deploy your application in a single command
-3. 📊 **Configure monitoring and health checks** - Set up application health monitoring and view logs in Azure
+1. 🐳 **Containerize the All Clear pipeline with Docker** - Package All Clear into Docker containers for consistent deployment
+2. ☁️ **Deploy with azd up** - Use Azure Developer CLI to provision infrastructure and deploy All Clear in a single command
+3. 📊 **Configure monitoring and health checks** - Set up All Clear health monitoring and view logs in Azure
 
 ---
 
 ## 🤔 What is Azure Developer CLI (azd)?
 
-**Azure Developer CLI (azd)** is a developer-centric command-line tool that accelerates the time it takes to get your application running in Azure. It provides:
+**Azure Developer CLI (azd)** is a developer-centric command-line tool that accelerates the time it takes to get All Clear running in Azure. It provides:
 
 ### 🌟 Key Benefits
 
 | ✨ Feature                    | 📝 Description                                                |
 | ----------------------------- | ------------------------------------------------------------- |
 | **Single Command Deployment** | `azd up` provisions infrastructure AND deploys your code      |
-| **Template-Based**            | Uses `azure.yaml` to define your application structure        |
+| **Template-Based**            | Uses `azure.yaml` to define All Clear service structure        |
 | **Infrastructure as Code**    | Integrates with Bicep/Terraform for repeatable infrastructure |
 | **Environment Management**    | Manage multiple environments (dev, staging, prod)             |
 | **CI/CD Pipeline Generation** | Auto-generate GitHub Actions or Azure DevOps pipelines        |
@@ -72,10 +72,12 @@ By the end of this lab, you will be able to:
 
 ### 📄 The azure.yaml File
 
-The `azure.yaml` file describes your application to azd:
+The `azure.yaml` file describes All Clear to azd:
 
 ```yaml
-name: university-front-door-agent
+name: all-clear
+metadata:
+  template: all-clear@0.1.0
 
 services:
   backend:
@@ -84,24 +86,34 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
+      remoteBuild: true
+
+  frontend:
+    project: ./frontend
+    language: js
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
 
 infra:
   provider: bicep
   path: ./infra
+  module: main
 ```
 
 This tells azd:
 
-- 📦 What services make up your application
+- 📦 What services make up All Clear
 - 🐍 What language/runtime each service uses
-- 🏠 How to host each service (Container Apps, Static Web Apps, etc.)
+- 🏠 How to host each service (backend and frontend on Azure Container Apps)
 - 🏗️ Where to find infrastructure definitions
 
 ---
 
 ## 🏗️ Architecture Overview
 
-In this lab, you will deploy your agent system to Azure:
+In this lab, you will deploy the All Clear incident-triage system to Azure:
 
 ```
 +------------------+     +------------------+     +------------------+
@@ -121,14 +133,16 @@ In this lab, you will deploy your agent system to Azure:
 
 | 🔧 Resource                       | 📝 Purpose                       |
 | --------------------------------- | -------------------------------- |
-| 📦 **Container Apps Environment** | Hosts your containerized backend |
+| 📦 **Container Apps Environment** | Hosts backend and frontend Container Apps |
 | 🗄️ **Azure Container Registry**   | Stores your Docker images        |
-| 🤖 **Azure OpenAI**               | LLM inference for your agent     |
-| 🔍 **Azure AI Search**            | Vector search for RAG            |
-| 💾 **Cosmos DB**                  | Session and conversation storage |
-| 📊 **Log Analytics**              | Monitoring and logging           |
+| 🤖 **Azure OpenAI**               | QueryAgent and ActionAgent model inference |
+| 🔍 **Azure AI Search**            | Citation-grounded `search_knowledge` for runbooks/SOPs |
+| 💾 **Cosmos DB**                  | Incident, report, session, and audit storage |
+| 📊 **Log Analytics**              | Container logs and monitoring |
+| 🔐 **Key Vault**                  | Stores Cosmos, Search, and ACS secrets |
+| 📞 **Azure Communication Services** | Optional voice/phone channel support |
 
-> ℹ️ **Lab note:** The reference `azd` path deploys the backend service first (Container Apps). Frontend static hosting can be added as a follow-up once subscription provider registration allows it.
+> ℹ️ **Lab note:** The real All Clear `azure.yaml` deploys both `backend` and `frontend` services to Azure Container Apps using remote Docker builds. `infra/main.bicep` names the backend Container App `${prefix}-backend` and frontend `${prefix}-frontend`, where `prefix` is derived from the `resourcePrefix` and deployment token.
 
 ---
 
@@ -136,7 +150,7 @@ In this lab, you will deploy your agent system to Azure:
 
 ### 🔹 Step 1: Verify Docker Setup
 
-Before deploying to Azure, ensure your application runs correctly in Docker locally.
+Before deploying to Azure, ensure All Clear runs correctly in Docker locally.
 
 #### 1a: 🔍 Check Docker Installation
 
@@ -227,8 +241,8 @@ docker compose ps
 
 # Expected output:
 # NAME                    STATUS              PORTS
-# 47doors-backend-1      Up (healthy)        0.0.0.0:8000->8000/tcp
-# 47doors-frontend-1     Up                  0.0.0.0:3000->80/tcp
+# allclear-backend-1      Up (healthy)        0.0.0.0:8000->8000/tcp
+# allclear-frontend-1     Up                  0.0.0.0:3000->80/tcp
 ```
 
 #### 2d: 🧪 Test the Health Endpoint
@@ -338,10 +352,10 @@ This single command:
 
 ```
 Provisioning Azure resources (azd provision)
-  (✓) Done: Resource group: rg-university-front-door-agent-dev
-  (✓) Done: Azure OpenAI: aoai-frontdoor-dev
-  (✓) Done: Container Apps Environment: cae-frontdoor-dev
-  (✓) Done: Container Registry: acrfrontdoordev
+  (✓) Done: Resource group: rg-<azd-env>
+  (✓) Done: Azure OpenAI: <prefix>-openai
+  (✓) Done: Container Apps Environment: <prefix>-env
+  (✓) Done: Container Registry: <prefix-without-dashes>acr
   ...
 
 Deploying services (azd deploy)
@@ -350,7 +364,7 @@ Deploying services (azd deploy)
   (✓) Done: Deploying backend
   (✓) Done: Deploying frontend
 
-SUCCESS: Your application was provisioned and deployed to Azure. 🎉
+SUCCESS: All Clear was provisioned and deployed to Azure. 🎉
 ```
 
 #### 5c: 🔗 Get Deployment URLs
@@ -361,8 +375,8 @@ azd show
 
 # Output:
 # Service           Endpoint
-# backend           https://ca-backend-xxxx.azurecontainerapps.io
-# frontend          https://xxx.azurestaticapps.net
+# backend           https://<prefix>-backend.<region>.azurecontainerapps.io
+# frontend          https://<prefix>-frontend.<region>.azurecontainerapps.io
 ```
 
 ### 🔹 Step 6: Verify Deployment
@@ -371,19 +385,19 @@ azd show
 
 ```bash
 # 🔗 Get the backend URL
-BACKEND_URL=$(azd env get-values | grep AZURE_CONTAINERAPP_URL | cut -d= -f2)
+BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL)
 
 # 💚 Test health endpoint
 curl $BACKEND_URL/api/health
 ```
 
-#### 6b: 💬 Test the Chat Endpoint
+#### 6b: 🛰️ Submit an Incident Signal
 
 ```bash
-# 💬 Test the chat endpoint
-curl -X POST $BACKEND_URL/api/chat \
+# 🛰️ Test the signals endpoint
+curl -X POST $BACKEND_URL/api/signals \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!", "session_id": null}'
+  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}'
 ```
 
 ### 🔹 Step 7: View Logs and Monitoring
@@ -391,10 +405,12 @@ curl -X POST $BACKEND_URL/api/chat \
 #### 7a: 📋 View Container Logs
 
 ```bash
-# 📋 Stream logs from backend container
+# 📋 Stream logs from the backend Container App created by azd
+RG=$(azd env get-value AZURE_RESOURCE_GROUP)
+BACKEND_APP=$(az containerapp list --resource-group "$RG" --query '[?tags."azd-service-name"==`backend`].name | [0]' -o tsv)
 az containerapp logs show \
-  --name ca-backend \
-  --resource-group rg-university-front-door-agent-dev \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --follow
 ```
 
@@ -402,7 +418,7 @@ az containerapp logs show \
 
 1. 🌐 Navigate to Azure Portal
 2. 🔍 Find your Log Analytics workspace
-3. 📝 Run queries to analyze your application
+3. 📝 Run queries to analyze All Clear
 
 ### 🔹 Step 8: Clean Up (When Done)
 
@@ -424,7 +440,7 @@ By the end of this lab, you should have:
 
 | 📋 Deliverable       | ✅ Success Criteria                                    |
 | -------------------- | ------------------------------------------------------ |
-| 🐳 Local Docker Test | Application runs successfully with `docker compose up` |
+| 🐳 Local Docker Test | All Clear runs successfully with `docker compose up` |
 | 📄 azd Configuration | `azure.yaml` properly configured for your services     |
 | ☁️ Azure Deployment  | Application deployed with `azd up`                     |
 | 💚 Health Check      | `/api/health` endpoint returns healthy status          |
@@ -505,26 +521,26 @@ By the end of this lab, you should have:
 
 In this lab, you learned how to:
 
-1. 🐳 **Test locally with Docker Compose** - Verify your application works in containers
-2. 📄 **Configure azure.yaml** - Define your application structure for azd
+1. 🐳 **Test locally with Docker Compose** - Verify All Clear works in containers
+2. 📄 **Configure azure.yaml** - Define All Clear service structure for azd
 3. 🚀 **Deploy with azd up** - Provision infrastructure and deploy in one command
 4. ✅ **Verify deployment** - Test health checks and endpoints in Azure
-5. 📊 **Monitor your application** - View logs and set up alerts
+5. 📊 **Monitor All Clear** - View logs and set up alerts
 
-Your AI support agent is now running in production on Azure Container Apps, ready to handle user requests at scale. 🎉
+Your All Clear incident-triage system is now running in production on Azure Container Apps, ready to handle incident signals at surge scale. 🎉
 
 ---
 
 ## 🏆 Congratulations!
 
-You have successfully deployed your AI agent to Azure. Your agent pipeline from Labs 04 and 05 is now:
+You have successfully deployed your All Clear incident-triage pipeline to Azure. The All Clear pipeline from Labs 04 and 05 is now:
 
 - 🐳 Containerized and portable
 - ☁️ Running in Azure Container Apps
 - 💚 Monitored with health checks
 - 🌐 Accessible via public endpoints
 
-This completes the deployment phase of the boot camp. You now have a fully functional AI support agent running in the cloud.
+This completes the deployment phase of the builder lab. You now have a fully functional All Clear incident-triage system running in the cloud.
 
 ---
 

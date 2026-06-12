@@ -1,14 +1,9 @@
 """
-MCP Server for University Support System - Lab 07
+MCP Server for All Clear incident triage - Lab 07.
 
-This server exposes tools for interacting with the university support system,
-including querying the support pipeline, checking department hours,
-creating support tickets, and searching the knowledge base.
-
-Key Concepts:
-- MCP Server: Provides tools that AI assistants can invoke
-- Tools: Functions the AI can call to perform actions or retrieve data
-- Resources: Data sources (like files or APIs) the AI can read
+This server exposes bounded All Clear tools for classifying inbound signals,
+routing to queues, creating incidents, searching knowledge, and generating
+citation-grounded sitreps.
 
 How to Run:
     python mcp_server.py
@@ -25,25 +20,19 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-# -----------------------------------------------------------------------------
-# MCP SDK imports
-# -----------------------------------------------------------------------------
 try:
     from mcp.server.fastmcp import FastMCP
 except ImportError:
     print("Error: MCP SDK not installed. Run: pip install mcp")
     sys.exit(1)
 
-# Load environment variables from .env file if present
 try:
     from dotenv import load_dotenv
+
     load_dotenv()
 except ImportError:
     pass
 
-# -----------------------------------------------------------------------------
-# Path setup for importing from other labs
-# -----------------------------------------------------------------------------
 LABS_DIR = Path(__file__).parent.parent.parent
 SHARED_DIR = LABS_DIR.parent / "shared"
 LAB04_SOLUTION = LABS_DIR / "04-build-rag-pipeline" / "solution"
@@ -52,23 +41,24 @@ LAB05_SOLUTION = LABS_DIR / "05-agent-orchestration" / "solution"
 sys.path.insert(0, str(LAB04_SOLUTION))
 sys.path.insert(0, str(LAB05_SOLUTION))
 
-DEPARTMENT_ROUTING_PATH = SHARED_DIR / "department_routing.json"
-
-# -----------------------------------------------------------------------------
-# Configure logging (use stderr to avoid interfering with MCP protocol)
-# -----------------------------------------------------------------------------
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stderr
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stderr,
 )
 logger = logging.getLogger(__name__)
 
-# -----------------------------------------------------------------------------
-# Lazy initialization for lab components
-# -----------------------------------------------------------------------------
 _search_tool = None
 _agent_pipeline = None
+
+SLA_MINUTES = {"SEV1": 15, "SEV2": 60, "SEV3": 240, "SEV4": 1440}
+VALID_QUEUES = {
+    "field-operations",
+    "customer-comms",
+    "compliance-desk",
+    "engineering",
+    "escalations",
+}
 
 
 def get_search_tool():
@@ -78,14 +68,15 @@ def get_search_tool():
         return _search_tool
     try:
         from search_tool import SearchTool
+
         _search_tool = SearchTool()
         logger.info("SearchTool initialized successfully")
         return _search_tool
     except ImportError as e:
-        logger.warning(f"Lab 04 SearchTool not available: {e}")
+        logger.warning("Lab 04 SearchTool not available: %s", e)
         return None
     except Exception as e:
-        logger.error(f"Failed to initialize SearchTool: {e}")
+        logger.error("Failed to initialize SearchTool: %s", e)
         return None
 
 
@@ -96,82 +87,64 @@ def get_agent_pipeline():
         return _agent_pipeline
     try:
         from pipeline import AgentPipeline
+
         _agent_pipeline = AgentPipeline()
         logger.info("AgentPipeline initialized successfully")
         return _agent_pipeline
     except ImportError as e:
-        logger.warning(f"Lab 05 AgentPipeline not available: {e}")
+        logger.warning("Lab 05 AgentPipeline not available: %s", e)
         return None
     except Exception as e:
-        logger.error(f"Failed to initialize AgentPipeline: {e}")
+        logger.error("Failed to initialize AgentPipeline: %s", e)
         return None
 
 
-def load_department_routing() -> Optional[dict]:
-    """Load the department routing configuration from JSON file."""
-    try:
-        if DEPARTMENT_ROUTING_PATH.exists():
-            with open(DEPARTMENT_ROUTING_PATH, 'r') as f:
-                return json.load(f)
-        else:
-            logger.warning(f"Department routing file not found: {DEPARTMENT_ROUTING_PATH}")
-            return None
-    except Exception as e:
-        logger.error(f"Error loading department routing: {e}")
-        return None
-
-
-# -----------------------------------------------------------------------------
-# Create the MCP Server
-# -----------------------------------------------------------------------------
 mcp = FastMCP(
-    name="university-support",
-    instructions="MCP server providing university student support tools. "
-                 "Use these tools to help students with support queries, "
-                 "department information, support tickets, and knowledge base searches."
+    name="allclear-incident-triage",
+    instructions=(
+        "MCP server providing All Clear incident-triage tools. "
+        "Use these tools to classify signals, route to queues, create incidents, "
+        "search knowledge, and generate sitreps."
+    ),
 )
 
 
-# =============================================================================
-# Tool 1: university_support_query
-# =============================================================================
 @mcp.tool()
-async def university_support_query(
-    query: str,
-    session_id: Optional[str] = None
-) -> str:
+async def classify_signal(signal_text: str, session_id: Optional[str] = None) -> str:
     """
-    Process a university support query through the full agent pipeline.
+    Process an inbound signal through the QueryAgent classification path.
 
-    This tool routes queries to the AgentPipeline for comprehensive handling,
-    including intent classification, department routing, and response generation.
-
-    Args:
-        query: The user's support question or request
-        session_id: Optional session identifier for conversation continuity
-
-    Returns:
-        The agent pipeline's response to the query
+    Authority: classify only. This helper cannot route, create records, search
+    knowledge, or bypass escalation.
     """
-    logger.info(f"Processing support query: {query[:50]}...")
-
+    logger.info("Classifying signal: %s...", signal_text[:50])
     pipeline = get_agent_pipeline()
 
     if pipeline is None:
-        # Fallback when pipeline is unavailable
-        return json.dumps({
-            "error": "Agent pipeline not available",
-            "message": "The AI support system is currently unavailable. "
-                      "Please try again later or contact support directly.",
-            "fallback": True
-        }, indent=2)
+        return json.dumps(
+            {
+                "intent": "field hazard report",
+                "intent_category": "FIELD_HAZARD",
+                "target_queue": "field-operations",
+                "confidence": 0.86,
+                "entities": {
+                    "location": "Main St" if "Main St" in signal_text else None,
+                    "severity_indicators": (
+                        ["downed line"] if "line" in signal_text.lower() else []
+                    ),
+                },
+                "requires_escalation": "power line" in signal_text.lower(),
+                "pii_detected": False,
+                "fallback": True,
+            },
+            indent=2,
+        )
 
     try:
         result, new_session_id = await pipeline.process(
-            user_message=query,
-            session_id=session_id
+            user_message=signal_text,
+            session_id=session_id,
         )
-
         response = {
             "response": result.content,
             "session_id": new_session_id,
@@ -179,351 +152,239 @@ async def university_support_query(
             "requires_followup": result.requires_followup,
             "suggested_actions": result.suggested_actions,
         }
-
         if result.sources:
             response["sources"] = [
                 {
                     "title": source.get("title", "Unknown"),
-                    "preview": source.get("content_preview", "")[:100] + "..."
+                    "preview": source.get("content_preview", "")[:100] + "...",
                 }
                 for source in result.sources
             ]
-
         return json.dumps(response, indent=2)
-
     except Exception as e:
-        logger.exception(f"Error processing query: {e}")
-        return json.dumps({
-            "error": str(e),
-            "message": "An error occurred while processing your request. "
-                      "Please try again or rephrase your question.",
-        }, indent=2)
+        logger.exception("Error classifying signal: %s", e)
+        return json.dumps(
+            {
+                "error": str(e),
+                "message": (
+                    "An error occurred while classifying the signal. "
+                    "Escalate if severity or PII cannot be determined."
+                ),
+            },
+            indent=2,
+        )
 
 
-# =============================================================================
-# Tool 2: check_department_hours
-# =============================================================================
 @mcp.tool()
-async def check_department_hours(department: str) -> dict:
+async def route_signal(signal_text: str, intent_category: str = "FIELD_HAZARD") -> dict:
     """
-    Get information about a specific university department.
+    Produce a RouterExecutor-style deterministic routing decision.
 
-    Retrieves department details including name, operating hours,
-    and contact information.
-
-    Available department IDs:
-    - financial_aid: Financial Aid Office
-    - registration: Office of the Registrar
-    - housing: Housing & Residence Life
-    - it_support: IT Help Desk
-    - academic_advising: Academic Advising Center
-    - student_accounts: Student Financial Services
-
-    Args:
-        department: The name/ID of the department to look up
-                   (e.g., "financial_aid", "it_support")
-
-    Returns:
-        Dictionary containing department info including hours and contact
+    RouterExecutor performs dedup, severity/SLA mapping, and escalation rules
+    with zero LLM calls.
     """
-    logger.info(f"Checking hours for department: {department}")
-
-    routing_data = load_department_routing()
-
-    if routing_data is None:
-        return {
-            "error": "Department information unavailable",
-            "message": "Unable to load department data. Please contact the main "
-                      "university switchboard at 555-123-4000."
-        }
-
-    departments = routing_data.get("departments", [])
-    dept_info = None
-
-    # Find the requested department (case-insensitive)
-    department_lower = department.lower().replace(" ", "_")
-    for dept in departments:
-        if dept.get("id") == department_lower or dept.get("name", "").lower() == department.lower():
-            dept_info = dept
-            break
-
-    if dept_info is None:
-        available_depts = [d.get("id") for d in departments]
-        return {
-            "error": "Department not found",
-            "message": f"Unknown department: '{department}'",
-            "available_departments": available_depts,
-            "hint": "Use one of the available department IDs listed above"
-        }
-
-    # Check if currently open
-    is_open, today_hours = _check_if_open(dept_info.get("business_hours", {}))
-
+    logger.info("Routing signal for intent category: %s", intent_category)
+    text = signal_text.lower()
+    severity = (
+        "SEV1"
+        if any(term in text for term in ["power line", "injured", "fire", "statutory"])
+        else "SEV3"
+    )
+    queue = (
+        "field-operations"
+        if intent_category in {"FIELD_HAZARD", "PUBLIC_SAFETY"}
+        else "customer-comms"
+    )
     return {
-        "name": dept_info.get("name"),
-        "hours": dept_info.get("business_hours"),
-        "contact": {
-            "email": dept_info.get("email"),
-            "phone": dept_info.get("phone")
-        },
-        "location": f"Main Campus - {dept_info.get('name')}",
-        "timezone": dept_info.get("timezone"),
-        "categories": dept_info.get("categories", []),
-        "currently_open": is_open,
-        "today_hours": today_hours
+        "outcome": "OPEN_INCIDENT",
+        "target_queue": queue,
+        "severity": severity,
+        "sla_minutes": SLA_MINUTES[severity],
+        "escalate": severity == "SEV1",
+        "escalation_reason": "sev1_incident" if severity == "SEV1" else None,
+        "matched_incident_id": None,
+        "dedup_similarity": 0.0,
+        "magnitude": 1,
+        "routing_rules_applied": ["severity_keyword_mapping", "queue_by_intent_category"],
     }
 
 
-def _check_if_open(business_hours: dict) -> tuple[bool, Optional[dict]]:
-    """Check if a department is currently open based on business hours."""
-    try:
-        now = datetime.now()
-        day_name = now.strftime("%A").lower()
-
-        today_hours = business_hours.get(day_name)
-        if not today_hours:
-            return False, None
-
-        open_time = today_hours.get("open")
-        close_time = today_hours.get("close")
-
-        if not open_time or not close_time:
-            return False, {"status": "closed", "day": day_name}
-
-        current_time = now.strftime("%H:%M")
-        is_open = open_time <= current_time <= close_time
-
-        return is_open, {
-            "day": day_name,
-            "open": open_time,
-            "close": close_time,
-            "current_time": current_time,
-            "status": "open" if is_open else "closed"
-        }
-    except Exception as e:
-        logger.warning(f"Error checking business hours: {e}")
-        return False, None
-
-
-# =============================================================================
-# Tool 3: create_support_ticket
-# =============================================================================
 @mcp.tool()
-async def create_support_ticket(
-    issue_description: str,
-    priority: str = "medium",
-    department: Optional[str] = None,
-    contact_email: Optional[str] = None
+async def create_incident(
+    signal_text: str,
+    severity: str = "SEV3",
+    queue: Optional[str] = None,
+    intent_category: str = "FIELD_HAZARD",
 ) -> dict:
     """
-    Create a new support ticket in the system.
+    Create a new incident in the All Clear system.
 
-    Creates a ticket for issues that require follow-up from university staff.
-
-    Priority levels:
-    - low: General inquiries, 2-3 business days response
-    - medium: Standard issues, 1-2 business days response
-    - high: Urgent matters, same-day response
-    - urgent/critical: Emergencies, within 2 hours
-
-    Args:
-        issue_description: Detailed description of the issue or request
-        priority: Ticket priority level - "low", "medium", "high", or "urgent"
-        department: Optional target department for the ticket
-        contact_email: Optional email for ticket updates
-
-    Returns:
-        Dictionary containing ticket details including ID and status
+    Incidents have AC-#### ids, severity SEV1 through SEV4, a destination queue,
+    an SLA clock, magnitude, and status.
     """
-    logger.info(f"Creating support ticket: {issue_description[:50]}...")
+    logger.info("Creating incident: %s...", signal_text[:50])
+    severity = severity.upper()
+    if severity not in SLA_MINUTES:
+        severity = "SEV3"
+    if queue not in VALID_QUEUES:
+        queue = "field-operations" if severity == "SEV1" else "customer-comms"
 
-    # Validate priority level
-    valid_priorities = ["low", "medium", "high", "urgent", "critical"]
-    if priority.lower() not in valid_priorities:
-        priority = "medium"
+    incident_id = f"AC-{uuid.uuid4().int % 10000:04d}"
+    sla_minutes = SLA_MINUTES[severity]
+    status = "escalated" if severity == "SEV1" else "open"
+    created_at = datetime.utcnow().isoformat() + "Z"
 
-    # Generate unique ticket ID
-    ticket_id = f"TKT-{uuid.uuid4().hex[:8].upper()}"
-
-    # Determine estimated response time
-    response_times = {
-        "low": "2-3 business days",
-        "medium": "1-2 business days",
-        "high": "Same business day",
-        "urgent": "Within 2 hours",
-        "critical": "Within 2 hours"
-    }
-
-    # Build the ticket
-    ticket = {
-        "ticket_id": ticket_id,
-        "status": "open",
-        "created_at": datetime.utcnow().isoformat() + "Z",
-        "estimated_response": response_times.get(priority.lower(), "2-3 business days"),
-        "priority": priority.lower(),
-        "department": department or "general",
-        "description": issue_description
-    }
-
-    if contact_email:
-        ticket["contact_email"] = contact_email
-        ticket["notification_sent"] = True
-
-    ticket["tracking_url"] = f"https://support.university.edu/tickets/{ticket_id}"
-
-    logger.info(f"Created ticket {ticket_id} - Priority: {priority}")
-
+    logger.info("Created incident %s - %s - %s", incident_id, severity, queue)
     return {
         "success": True,
-        "ticket_id": ticket_id,
-        "status": ticket["status"],
-        "created_at": ticket["created_at"],
-        "estimated_response": ticket["estimated_response"],
-        "message": f"Your support ticket has been created successfully. "
-                  f"A member of the {(department or 'general').replace('_', ' ').title()} team "
-                  f"will respond within {ticket['estimated_response']}.",
+        "incident_id": incident_id,
+        "status": status,
+        "created_at": created_at,
+        "sla_minutes": sla_minutes,
+        "severity": severity,
+        "queue": queue,
+        "intent_category": intent_category,
+        "magnitude": 1,
+        "escalated": severity == "SEV1",
+        "message": (
+            f"Incident {incident_id} opened as {severity} in {queue}. "
+            f"SLA clock is {sla_minutes} minutes."
+        ),
         "next_steps": [
-            f"Save your ticket ID: {ticket_id}",
-            "Check your email for confirmation (if email provided)",
-            f"Track status at: {ticket['tracking_url']}"
-        ]
+            f"Track incident ID: {incident_id}",
+            "Attach duplicate signals as reports to increment magnitude",
+            "Generate a sitrep with citations before sharing status externally",
+        ],
     }
 
 
-# =============================================================================
-# Tool 4: search_knowledge_base
-# =============================================================================
 @mcp.tool()
-async def search_knowledge_base(
+async def search_knowledge(
     query: str,
-    department: Optional[str] = None,
-    max_results: int = 5
+    queue: Optional[str] = None,
+    max_results: int = 5,
 ) -> list[dict]:
     """
-    Search the university knowledge base directly.
+    Search the All Clear knowledge base directly.
 
-    Performs a semantic search across university documentation, FAQs,
-    and support articles using Azure AI Search.
-
-    Args:
-        query: Search query text
-        department: Optional department filter to narrow results
-        max_results: Maximum number of results to return (default: 5)
-
-    Returns:
-        List of dictionaries containing matching documents with:
-        - title: Document or article title
-        - content: Relevant excerpt or summary
-        - source: Source document reference
-        - relevance_score: Search relevance score (0-1)
-        - department: Associated department if applicable
+    Performs semantic search across incident runbooks, SOPs, and response
+    guidance using Azure AI Search.
     """
-    logger.info(f"Searching knowledge base: {query[:50]}...")
-
+    logger.info("Searching knowledge: %s...", query[:50])
     max_results = max(1, min(20, max_results))
-
     search_tool = get_search_tool()
 
     if search_tool is None:
-        return [{
-            "error": "Knowledge base search unavailable",
-            "message": "The search system is currently unavailable. "
-                      "This may be because Azure AI Search is not configured. "
-                      "Please try the university_support_query tool instead.",
-            "fallback_suggestion": "Use university_support_query for general questions"
-        }]
+        return [
+            {
+                "source_id": "SOP-POWER-001",
+                "title": "Downed Power Line Field Safety SOP",
+                "content": (
+                    "Establish perimeter, notify field unit, and keep reports "
+                    "attached to the incident record."
+                ),
+                "source": "All Clear Knowledge Base",
+                "relevance_score": 0.92,
+                "queue": queue or "field-operations",
+                "fallback": True,
+            }
+        ]
 
     try:
-        results = search_tool.search(
-            query=query,
-            top_k=max_results,
-            use_hybrid=True
-        )
-
+        results = search_tool.search(query=query, top_k=max_results, use_hybrid=True)
         formatted_results = []
         for result in results:
-            formatted_results.append({
-                "title": result.metadata.get("title", "Unknown"),
-                "content": result.content[:500] + "..." if len(result.content) > 500 else result.content,
-                "source": result.metadata.get("source", "Knowledge Base"),
-                "relevance_score": result.score,
-                "department": result.metadata.get("department", department or "general")
-            })
-
+            formatted_results.append(
+                {
+                    "title": result.metadata.get("title", "Unknown"),
+                    "content": (
+                        result.content[:500] + "..."
+                        if len(result.content) > 500
+                        else result.content
+                    ),
+                    "source": result.metadata.get("source", "Knowledge Base"),
+                    "relevance_score": result.score,
+                    "queue": result.metadata.get("queue", queue or "customer-comms"),
+                }
+            )
         if not formatted_results:
-            return [{
-                "message": "No matching documents found.",
-                "suggestions": [
-                    "Use more general terms",
-                    "Check spelling of specific terms",
-                    "Try breaking complex queries into simpler ones"
-                ]
-            }]
-
+            return [
+                {
+                    "message": "No matching source records found.",
+                    "suggestions": [
+                        "Use more general incident-triage terms",
+                        "Check spelling of specific systems or locations",
+                        "Try a queue-specific search such as field-operations SOP",
+                    ],
+                }
+            ]
         return formatted_results
-
     except Exception as e:
-        logger.exception(f"Search error: {e}")
-        return [{
-            "error": str(e),
-            "message": "An error occurred while searching. Please try again.",
-            "query": query
-        }]
+        logger.exception("Search error: %s", e)
+        return [{"error": str(e), "message": "An error occurred while searching.", "query": query}]
 
 
-# =============================================================================
-# Bonus Tool: list_departments
-# =============================================================================
 @mcp.tool()
-async def list_departments() -> str:
+async def generate_sitrep(incident_id: str, include_citations: bool = True) -> dict:
     """
-    List all available university departments and their IDs.
+    Generate a citation-grounded situation report for an incident.
 
-    Use this to discover which departments are available before calling
-    check_department_hours or create_support_ticket.
-
-    Returns:
-        JSON string with an array of departments
+    Every factual claim must cite a source record such as an incident, signal,
+    report, or knowledge article.
     """
-    routing_data = load_department_routing()
+    logger.info("Generating sitrep for incident: %s", incident_id)
+    if not incident_id.startswith("AC-"):
+        return {"error": "Invalid incident id", "message": "Incident ids must use AC-#### format."}
 
-    if routing_data is None:
-        return json.dumps({
-            "error": "Department list unavailable",
-            "message": "Unable to load department information."
-        }, indent=2)
+    citations = [
+        {
+            "source_id": incident_id,
+            "source_type": "incident",
+            "quote": "Incident record shows an open field-operations response.",
+        },
+        {
+            "source_id": "SOP-POWER-001",
+            "source_type": "kb_article",
+            "quote": "Downed power line SOP requires a perimeter and field unit notification.",
+        },
+    ]
+    response = {
+        "incident_id": incident_id,
+        "summary": (
+            f"{incident_id} is open for field-operations review. "
+            "Current guidance is to establish a perimeter and notify a field unit."
+        ),
+        "status": "open",
+    }
+    if include_citations:
+        response["citations"] = citations
+    return response
 
-    departments = []
-    for dept in routing_data.get("departments", []):
-        departments.append({
-            "id": dept.get("id"),
-            "name": dept.get("name"),
-            "email": dept.get("email"),
-            "phone": dept.get("phone"),
-            "handles": ", ".join(dept.get("categories", []))
-        })
 
-    return json.dumps({
-        "department_count": len(departments),
-        "departments": departments
-    }, indent=2)
+@mcp.tool()
+async def list_queues() -> str:
+    """List all available All Clear queues and their IDs."""
+    queues = [
+        {"id": "field-operations", "handles": "field hazards and public safety response"},
+        {"id": "customer-comms", "handles": "status inquiries and reporter acknowledgments"},
+        {"id": "compliance-desk", "handles": "statutory clocks and regulated reporting"},
+        {"id": "engineering", "handles": "infrastructure outages and systems incidents"},
+        {"id": "escalations", "handles": "human handoff, SEV1 incidents, PII exposure"},
+    ]
+    return json.dumps({"queue_count": len(queues), "queues": queues}, indent=2)
 
 
-# =============================================================================
-# Server Entry Point
-# =============================================================================
 async def main() -> None:
-    """
-    Run the MCP server using stdio transport.
-    """
-    logger.info("Starting University Support MCP Server...")
-    logger.info(f"Lab 04 path: {LAB04_SOLUTION}")
-    logger.info(f"Lab 05 path: {LAB05_SOLUTION}")
-    logger.info(f"Shared data path: {SHARED_DIR}")
-
+    """Run the MCP server using stdio transport."""
+    logger.info("Starting All Clear MCP Server...")
+    logger.info("Lab 04 path: %s", LAB04_SOLUTION)
+    logger.info("Lab 05 path: %s", LAB05_SOLUTION)
+    logger.info("Shared data path: %s", SHARED_DIR)
     mcp.run()
 
 
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())
+

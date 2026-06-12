@@ -3,16 +3,16 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourcePrefix": {
-      "value": "frontdoor"
+      "value": "allclear"
     },
     "location": {
       "value": "eastus"
     },
     "openAiModel": {
-      "value": "gpt-4.1"
+      "value": "gpt-5.1"
     },
     "openAiModelVersion": {
-      "value": "2025-04-14"
+      "value": "2025-11-13"
     },
     "mockMode": {
       "value": false

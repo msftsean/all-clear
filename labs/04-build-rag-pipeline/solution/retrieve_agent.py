@@ -1,16 +1,16 @@
 """
-Retrieve Agent for RAG Pipeline - Lab 04 Solution
+Retrieve Agent for All Clear RAG Pipeline - Lab 04 Solution
 
 This module implements a Retrieval-Augmented Generation (RAG) agent that:
-1. Uses SearchTool to retrieve relevant documents
+1. Uses SearchTool to retrieve relevant incident runbooks/SOPs
 2. Builds context from search results
 3. Sends context + query to Azure OpenAI for generation
 4. Formats the response with proper citations
 
 RAG Pattern Benefits:
-- Grounds LLM responses in actual documents (reduces hallucination)
+- Grounds LLM responses in actual source records (reduces hallucination)
 - Provides traceable citations for verification
-- Allows the LLM to answer questions about private/recent data
+- Allows the LLM to answer questions about current incident-triage data
 """
 
 import os
@@ -29,7 +29,7 @@ class RAGResponse:
 
     Attributes:
         answer: The generated answer with inline citations [1], [2], etc.
-        sources: List of source documents used to generate the answer
+        sources: List of source records used to generate the answer
         token_usage: Dictionary with prompt_tokens, completion_tokens, total_tokens
     """
     answer: str
@@ -39,29 +39,29 @@ class RAGResponse:
 
 class RetrieveAgent:
     """
-    RAG Agent that retrieves relevant context and generates grounded responses.
+    RAG Agent that retrieves relevant All Clear context and generates grounded responses.
 
     The RAG pipeline flow:
-    1. User asks a question
-    2. SearchTool finds relevant document chunks
+    1. A signal or incident creates a search_knowledge question
+    2. SearchTool finds relevant runbook/SOP chunks
     3. Agent builds a prompt with retrieved context
     4. Azure OpenAI generates an answer using only the provided context
-    5. Response includes citations mapping to source documents
+    5. Response includes citations mapping to source records
 
     This approach ensures:
-    - Answers are grounded in actual documents
+    - Answers are grounded in actual source records
     - Users can verify claims by checking citations
     - The model doesn't rely solely on its training data
     """
 
     # System prompt instructs the LLM how to behave
     # Key elements: use only provided context, cite sources, admit uncertainty
-    DEFAULT_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on the provided context.
+    DEFAULT_SYSTEM_PROMPT = """You support All Clear ActionAgent.search_knowledge and answer questions based on the provided context.
 
 IMPORTANT INSTRUCTIONS:
 1. Only use information from the provided context to answer questions
-2. If the context doesn't contain enough information, say "I don't have enough information to answer this question"
-3. Always cite your sources using [1], [2], etc. corresponding to the context chunks
+2. If the context doesn't contain enough information, say "I don't have enough information to answer this question" and escalate uncertainty
+3. Always cite your sources using [1], [2], etc. corresponding to the context chunks; no citation, no claim
 4. Be concise but thorough in your answers
 5. If multiple sources support a point, cite all of them
 
@@ -111,7 +111,7 @@ Context chunks are numbered [1], [2], [3], etc. Reference them in your answer.""
         Build a formatted context string from search results.
 
         Each result is numbered [1], [2], etc. so the LLM can reference them.
-        We include metadata (like source document) to help the model understand
+        We include metadata (like source record) to help the model understand
         where information comes from.
 
         Args:
@@ -127,7 +127,7 @@ Context chunks are numbered [1], [2], [3], etc. Reference them in your answer.""
         for i, result in enumerate(search_results, start=1):
             # Format each chunk with its number and metadata
             # The score helps us understand relevance (useful for debugging)
-            source_info = result.metadata.get("source", "Unknown source")
+            source_info = result.metadata.get("title") or result.metadata.get("id", "Unknown source record")
 
             context_parts.append(
                 f"[{i}] (Source: {source_info}, Relevance: {result.score:.3f})\n"
@@ -147,7 +147,7 @@ Context chunks are numbered [1], [2], [3], etc. Reference them in your answer.""
         3. Explicit instruction to use citations
 
         Args:
-            query: The user's original question
+            query: The incident-triage question
             context: Formatted context string from _build_context
 
         Returns:
@@ -161,7 +161,7 @@ Context chunks are numbered [1], [2], [3], etc. Reference them in your answer.""
 
 {query}
 
-Please answer the question using only the information from the context above. Include citations [1], [2], etc. to indicate which sources support your answer."""
+Please answer the question using only the information from the context above. Include citations [1], [2], etc. to indicate which source records support your answer."""
 
     def query(
         self,
@@ -175,14 +175,14 @@ Please answer the question using only the information from the context above. In
         Execute the full RAG pipeline: retrieve context and generate response.
 
         Pipeline steps:
-        1. Search for relevant documents using hybrid search
+        1. Search for relevant runbooks/SOPs using hybrid search
         2. Build context from top-k results
         3. Construct prompt with context and question
         4. Call Azure OpenAI to generate answer
         5. Return answer with sources and usage stats
 
         Args:
-            question: The user's question in natural language
+            question: The incident-triage question in natural language
             top_k: Number of search results to include in context
             temperature: LLM temperature (lower = more focused, higher = more creative)
             max_tokens: Maximum tokens in the generated response
@@ -193,7 +193,7 @@ Please answer the question using only the information from the context above. In
 
         Example:
             response = agent.query(
-                question="What are the installation requirements?",
+                question="What is the downed power line exclusion zone?",
                 top_k=5,
                 temperature=0.3
             )
@@ -201,7 +201,7 @@ Please answer the question using only the information from the context above. In
             for i, source in enumerate(response.sources, 1):
                 print(f"[{i}] {source.metadata.get('source')}")
         """
-        # Step 1: Retrieve relevant documents
+        # Step 1: Retrieve relevant source records
         # We use hybrid search for best results (vector + keyword)
         if filter_expression:
             search_results = self.search_tool.search_with_filter(
@@ -265,7 +265,7 @@ Please answer the question using only the information from the context above. In
         but the LLM has context from previous exchanges.
 
         Args:
-            question: The user's current question
+            question: The current incident-triage question
             conversation_history: List of previous messages [{"role": "user"|"assistant", "content": "..."}]
             top_k: Number of search results to include
             temperature: LLM temperature setting
@@ -341,7 +341,7 @@ Please answer the question using only the information from the context above. In
 
         # Add numbered source list
         for i, source in enumerate(rag_response.sources, start=1):
-            source_name = source.metadata.get("source", "Unknown")
+            source_name = source.metadata.get("title") or source.metadata.get("id", "Unknown")
             # Truncate long content for display
             content_preview = source.content[:150] + "..." if len(source.content) > 150 else source.content
             output_parts.append(
@@ -369,7 +369,7 @@ if __name__ == "__main__":
     agent = RetrieveAgent()
 
     # Simple query
-    question = "What are the system requirements for installation?"
+    question = "What is the downed power line exclusion zone?"
     response = agent.query(question)
 
     # Print formatted response
@@ -377,9 +377,9 @@ if __name__ == "__main__":
 
     # Example with conversation history
     history = [
-        {"role": "user", "content": "What is the product about?"},
-        {"role": "assistant", "content": "Based on the documentation, the product is..."},
+        {"role": "user", "content": "What should customer-comms say during an outage surge?"},
+        {"role": "assistant", "content": "Based on the cited template, customer-comms should acknowledge the incident and avoid uncited restoration estimates [1]."},
     ]
-    follow_up = "How do I get started with it?"
+    follow_up = "When can we send the all-clear message?"
     response = agent.query_with_history(follow_up, history)
     print(agent.format_response_with_sources(response))

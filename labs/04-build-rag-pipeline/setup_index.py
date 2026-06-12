@@ -1,6 +1,7 @@
 """
 Lab 04 - Index Setup Script
-Creates the Azure AI Search index and indexes KB articles with embeddings.
+Creates the Azure AI Search index and indexes All Clear incident runbooks/SOPs
+with embeddings for ActionAgent.search_knowledge.
 """
 
 import json
@@ -28,12 +29,23 @@ from openai import AzureOpenAI
 
 # Configuration from environment
 SEARCH_ENDPOINT = os.environ.get("AZURE_SEARCH_ENDPOINT")
-SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY")
-INDEX_NAME = os.environ.get("AZURE_SEARCH_INDEX_NAME", "university-kb")
+SEARCH_KEY = os.environ.get("AZURE_SEARCH_KEY") or os.environ.get(
+    "AZURE_SEARCH_API_KEY"
+)
+INDEX_NAME = os.environ.get("AZURE_SEARCH_INDEX_NAME", "allclear-kb")
 
 OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT")
 OPENAI_KEY = os.environ.get("AZURE_OPENAI_API_KEY")
 EMBEDDING_MODEL = "text-embedding-ada-002"
+
+KB_FILES = [
+    "field_operations_sops.json",
+    "outage_response_kb.json",
+    "compliance_reporting_kb.json",
+    "customer_comms_templates.json",
+    "public_safety_sops.json",
+]
+
 
 def create_index(index_client: SearchIndexClient) -> None:
     """Create the search index with vector and semantic search support."""
@@ -44,8 +56,18 @@ def create_index(index_client: SearchIndexClient) -> None:
         SearchableField(name="content", type=SearchFieldDataType.String),
         SimpleField(name="url", type=SearchFieldDataType.String),
         SimpleField(name="snippet", type=SearchFieldDataType.String),
-        SimpleField(name="department", type=SearchFieldDataType.String, filterable=True, facetable=True),
-        SimpleField(name="category", type=SearchFieldDataType.String, filterable=True, facetable=True),
+        SimpleField(
+            name="queue",
+            type=SearchFieldDataType.String,
+            filterable=True,
+            facetable=True,
+        ),
+        SimpleField(
+            name="category",
+            type=SearchFieldDataType.String,
+            filterable=True,
+            facetable=True,
+        ),
         SearchField(
             name="tags",
             type=SearchFieldDataType.Collection(SearchFieldDataType.String),
@@ -96,13 +118,16 @@ def create_index(index_client: SearchIndexClient) -> None:
 
 
 def load_kb_articles(data_dir: Path) -> list[dict]:
-    """Load all KB articles from JSON files."""
+    """Load All Clear incident runbooks, SOPs, and response procedures."""
     articles = []
-    for file_path in data_dir.glob("*.json"):
+    for file_name in KB_FILES:
+        file_path = data_dir / file_name
         with open(file_path) as f:
             data = json.load(f)
             if isinstance(data, list):
                 articles.extend(data)
+            elif isinstance(data, dict) and "articles" in data:
+                articles.extend(data["articles"])
             else:
                 articles.append(data)
     print(f"Loaded {len(articles)} articles from {data_dir}")
@@ -119,7 +144,7 @@ def generate_embedding(text: str, client: AzureOpenAI) -> list[float]:
 
 
 def index_documents(articles: list[dict], search_client: SearchClient, openai_client: AzureOpenAI) -> None:
-    """Index KB articles with embeddings."""
+    """Index incident KB articles with embeddings."""
     documents = []
 
     for i, article in enumerate(articles):
@@ -135,7 +160,7 @@ def index_documents(articles: list[dict], search_client: SearchClient, openai_cl
             "content": content,
             "url": article.get("url", ""),
             "snippet": article.get("snippet", ""),
-            "department": article.get("department", ""),
+            "queue": article.get("queue", ""),
             "category": article.get("category", ""),
             "tags": article.get("tags", []),
             "last_updated": article.get("last_updated", ""),

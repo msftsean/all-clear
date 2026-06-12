@@ -2,14 +2,14 @@
 
 ## What "Done" Looks Like
 
-Lab 04 is complete when you have built a working RAG (Retrieval-Augmented Generation) pipeline that retrieves relevant knowledge base articles using hybrid search and generates responses with proper source citations. You should be able to:
+Lab 04 is complete when you have built a working RAG (Retrieval-Augmented Generation) pipeline that retrieves relevant incident runbooks, SOPs, and response procedures using hybrid search and generates responses with proper source citations. Per Constitution Article IV: no citation, no claim. You should be able to:
 
 1. Configure and create an Azure AI Search index with both vector and keyword search capabilities
-2. Index knowledge base articles with embeddings for semantic search
+2. Index incident runbooks, SOPs, and response procedures with embeddings for semantic search
 3. Implement hybrid search that combines vector similarity and keyword matching
 4. Build a RetrieveAgent that generates grounded responses with inline citations
 
-A successfully completed Lab 04 means you have a functional RAG system that can answer questions based on your knowledge base with proper attribution, ready to be integrated into a larger agent architecture.
+A successfully completed Lab 04 means you have a functional RAG system that can answer questions based on your incident knowledge base with proper attribution, ready to be integrated into the ActionAgent.search_knowledge path.
 
 ---
 
@@ -24,23 +24,23 @@ A successfully completed Lab 04 means you have a functional RAG system that can 
 - Results are relevant to the query and properly ranked
 
 **Acceptance Criteria:**
-- [ ] Azure AI Search index exists with all required fields (id, title, content, contentVector, category, tags, lastUpdated)
+- [ ] Azure AI Search index exists with all required fields (id, title, content, content_vector, queue, category, tags, last_updated)
 - [ ] Vector field is configured with correct dimensions (1536 for text-embedding-3-small)
-- [ ] All KB articles are indexed with their embeddings
-- [ ] Hybrid search returns top-k relevant documents for test queries
+- [ ] All incident KB articles are indexed with their embeddings
+- [ ] Hybrid search returns top-k relevant source records for test queries
 - [ ] Search results include relevance scores
 - [ ] Search completes within 2 seconds for typical queries
-- [ ] Category filtering works correctly when specified
+- [ ] Queue/category filtering works correctly when specified
 
 **How to Test:**
 
 ```bash
 # Verify index exists and has documents
-az search index show --service-name <your-service> --name kb-index
+az search index show --service-name <your-service> --name allclear-kb
 
 # Check document count
 az search document search --service-name <your-service> \
-    --index-name kb-index --search "*" --count
+    --index-name allclear-kb --search "*" --count
 
 # Test hybrid search with a sample query
 python -m pytest tests/test_search.py -v
@@ -50,10 +50,10 @@ python -m pytest tests/test_search.py -v
 
 | Query | Expected Behavior |
 |-------|-------------------|
-| "How do I reset my password?" | Returns password-related KB articles |
-| "vacation policy" | Returns HR/policy articles about PTO |
-| "Error code E-1234" | Finds exact match even if semantically unrelated |
-| "working from home guidelines" | Returns remote work articles (semantic match) |
+| "What should field-operations do for a downed power line?" | Returns downed-line field-operations SOPs |
+| "outage surge update" | Returns customer-comms outage templates |
+| "NFIRS NIBRS" | Finds exact match even if semantically unrelated |
+| "caller smells rotten eggs" | Returns gas-leak SOPs (semantic match) |
 | "asdfghjkl" (gibberish) | Returns empty or low-confidence results |
 
 **Verification Script:**
@@ -66,36 +66,36 @@ from search_tool import hybrid_search
 @pytest.mark.asyncio
 async def test_hybrid_search_returns_results():
     """Verify hybrid search returns relevant results."""
-    results = await hybrid_search("password reset", top_k=5)
+    results = await hybrid_search("downed power line", top_k=5)
 
     assert len(results) > 0, "Search should return results"
     assert results[0]["score"] > 0.5, "Top result should have good relevance"
-    assert "password" in results[0]["content"].lower() or \
-           "password" in results[0]["title"].lower(), \
-           "Top result should be about passwords"
+    assert "downed line" in results[0]["content"].lower() or \
+           "downed line" in results[0]["title"].lower(), \
+           "Top result should be about downed lines"
 
 @pytest.mark.asyncio
 async def test_hybrid_search_with_filter():
     """Verify category filtering works."""
     results = await hybrid_search(
-        "policy",
+        "public update",
         top_k=5,
-        filter_category="HR"
+        filter_category="customer_comms"
     )
 
     for result in results:
-        assert result["category"] == "HR", \
-            "All results should be in HR category"
+        assert result["category"] == "customer_comms", \
+            "All results should be customer-comms templates"
 
 @pytest.mark.asyncio
 async def test_vector_search_semantic_matching():
     """Verify vector search finds semantically similar content."""
-    # Search for synonym - "WFH" should find "remote work"
-    results = await hybrid_search("WFH guidelines", top_k=5)
+    # Search for synonym - "rotten egg smell" should find "gas leak"
+    results = await hybrid_search("rotten egg smell guidelines", top_k=5)
 
     titles = [r["title"].lower() for r in results]
-    assert any("remote" in t or "home" in t for t in titles), \
-        "Should find remote work articles for WFH query"
+    assert any("gas" in t or "leak" in t for t in titles), \
+        "Should find gas-leak SOPs for odor reports"
 ```
 
 ---
@@ -103,11 +103,11 @@ async def test_vector_search_semantic_matching():
 ### 2. Citations Included in Responses
 
 **What it verifies:**
-- RetrieveAgent correctly builds context from retrieved documents
+- RetrieveAgent correctly builds context from retrieved source records
 - Generated responses include inline citations [1], [2], etc.
 - Source list is included at the end of responses
-- Citations correspond to actually retrieved documents
-- Responses are grounded in the knowledge base (no hallucination)
+- Citations correspond to actually retrieved source records
+- Responses are grounded in the incident knowledge base (no hallucination)
 
 **Acceptance Criteria:**
 - [ ] Responses include inline citations in [N] format
@@ -128,17 +128,15 @@ python -m pytest tests/test_citations.py -v
 **Expected Response Format:**
 
 ```
-Query: How do I reset my password?
+Query: What should field-operations do for a downed power line?
 
 Response:
-To reset your password, navigate to the login page and click "Forgot Password" [1].
-You will receive an email with a reset link that expires in 24 hours [1].
-For security reasons, your new password must be at least 12 characters and include
-a number and special character [2].
+Treat every downed line as energized until engineering confirms isolation [1].
+Establish an exclusion zone and escalate SEV1 when there is fire, injury, or blocked emergency access [1].
+Do not announce all-clear until the line is de-energized and the SLA clock is satisfied [1].
 
 Sources:
-[1] Password Reset Procedure (kb-001)
-[2] Password Security Requirements (kb-015)
+[1] Downed Power Line Field-Operations SOP (kb-field-001)
 ```
 
 **Test Cases:**
@@ -148,7 +146,7 @@ Sources:
 | Direct match query | Multiple relevant citations |
 | Partial match query | Citations for relevant parts, acknowledgment of gaps |
 | No match query | Clear statement that information not found, no citations |
-| Multi-topic query | Citations from multiple documents |
+| Multi-topic query | Citations from multiple source records |
 
 **Verification Script:**
 
@@ -162,7 +160,7 @@ from retrieve_agent import RetrieveAgent
 async def test_response_includes_citations():
     """Verify responses include inline citations."""
     agent = RetrieveAgent(...)  # Initialize
-    response = await agent.answer("How do I reset my password?")
+    response = await agent.answer("What should field-operations do for a downed power line?")
 
     # Check for inline citations [1], [2], etc.
     citation_pattern = r'\[\d+\]'
@@ -174,7 +172,7 @@ async def test_response_includes_citations():
 async def test_sources_list_present():
     """Verify sources list is included."""
     agent = RetrieveAgent(...)
-    response = await agent.answer("What is the vacation policy?")
+    response = await agent.answer("What should customer-comms say during an outage surge?")
 
     assert len(response.sources) > 0, "Response should include sources"
     assert all("id" in s and "title" in s for s in response.sources), \
@@ -184,7 +182,7 @@ async def test_sources_list_present():
 async def test_citations_match_sources():
     """Verify inline citations correspond to sources list."""
     agent = RetrieveAgent(...)
-    response = await agent.answer("How do I submit expenses?")
+    response = await agent.answer("Which facts are needed for NFIRS/NIBRS reporting?")
 
     # Extract citation numbers from answer
     citation_numbers = set(
@@ -199,7 +197,7 @@ async def test_citations_match_sources():
 async def test_no_hallucinated_citations():
     """Verify citations reference actual content."""
     agent = RetrieveAgent(...)
-    response = await agent.answer("password requirements")
+    response = await agent.answer("statutory clock requirements")
 
     # For each citation, verify the claim appears in the source
     # This is a simplified check - production would be more thorough
@@ -219,7 +217,7 @@ async def test_handles_no_results_gracefully():
         "no relevant",
         "not found",
         "cannot find",
-        "knowledge base does not contain"
+        "incident knowledge base does not contain"
     ]), "Should acknowledge when information is not available"
 ```
 
@@ -231,14 +229,14 @@ async def test_handles_no_results_gracefully():
 
 ```bash
 # 1. Verify Azure AI Search index exists
-az search index show --service-name <service> --name kb-index --query "name"
+az search index show --service-name <service> --name allclear-kb --query "name"
 
 # 2. Check field configuration
-az search index show --service-name <service> --name kb-index --query "fields[].{name:name, type:type}"
+az search index show --service-name <service> --name allclear-kb --query "fields[].{name:name, type:type}"
 
 # 3. Verify document count matches KB articles
 az search document search --service-name <service> \
-    --index-name kb-index --search "*" --count
+    --index-name allclear-kb --search "*" --count
 
 # Expected: Document count matches number of KB articles in data/ directory
 ```
@@ -264,15 +262,14 @@ python -m pytest tests/test_search.py -v --tb=short
 python test_rag.py
 
 # Sample interaction:
-# Query: How do I reset my password?
+# Query: What should field-operations do for a downed power line?
 # --------------------------------------------------
-# Answer: To reset your password, go to the login page and click
-# "Forgot Password" [1]. Enter your email address and you'll receive
-# a reset link within 5 minutes [1]. The link expires after 24 hours [2].
+# Answer: Treat every downed line as energized until engineering confirms isolation [1].
+# Establish an exclusion zone and escalate SEV1 when there is fire, injury, or blocked emergency access [1].
+# Do not announce all-clear until the line is de-energized and the SLA clock is satisfied [1].
 #
 # Sources:
-#   - [kb-001] Password Reset Procedure
-#   - [kb-002] Account Security FAQ
+#   - [kb-field-001] Downed Power Line Field-Operations SOP
 ```
 
 ### Step 4: Citation Accuracy Verification
@@ -284,7 +281,7 @@ python -m pytest tests/test_citations.py -v
 # Manual verification:
 # 1. Run a query
 # 2. Note the citations [1], [2], etc.
-# 3. Read the corresponding source documents
+# 3. Read the corresponding source records
 # 4. Verify the cited claims appear in those documents
 ```
 
@@ -327,7 +324,7 @@ python -m pytest tests/test_citations.py -v
 - **0-1 points:** Search not functional
 
 #### Citation Quality (6 points)
-- **6 points:** All responses cited, citations accurate, sources listed, handles no-match gracefully
+- **6 points:** All responses cited, citations accurate, sources listed, handles no-match gracefully and escalates uncertainty
 - **5 points:** Citations present but occasional accuracy issues
 - **4 points:** Citations present but frequently missing or inaccurate
 - **3 points:** Some citations but inconsistent format
@@ -355,8 +352,8 @@ python -m pytest tests/test_citations.py -v
 az search service show --name <service> --query "sku.name"
 # Vector search requires Basic tier or higher
 
-# Verify field definitions
-cat index_schema.json | jq '.fields[] | select(.type == "Collection(Edm.Single)")'
+# Verify field definitions in setup_index.py
+python -c "from pathlib import Path; print('content_vector' in Path('setup_index.py').read_text())"
 
 # Check dimensions match embedding model
 # text-embedding-3-small = 1536 dimensions
@@ -385,13 +382,13 @@ print(f"Embedding dimensions: {len(embedding)}")
 
 ### Search Returns Irrelevant Results
 
-**Symptom:** Top results don't match query intent
+**Symptom:** Top results don't match incident intent
 
 **Resolution:**
 1. Verify hybrid search is using both vector AND keyword
 2. Check if semantic ranking is enabled
 3. Review the embedding model - try a newer version
-4. Ensure content field contains meaningful text
+4. Ensure content field contains meaningful runbook/SOP text
 
 ```python
 # Debug search scores
@@ -409,17 +406,17 @@ for r in results:
 
 ### Citations Missing or Incorrect
 
-**Symptom:** Responses don't include [1], [2] citations or cite wrong sources
+**Symptom:** Responses don't include [1], [2] citations or cite wrong source records
 
 **Resolution:**
 ```python
 # Verify system prompt instructs citation format
 system_prompt = """
-IMPORTANT: Always cite sources using [1], [2] format.
+IMPORTANT: Always cite sources using [1], [2] format. No citation, no claim.
 Include a Sources: section at the end listing all cited documents.
 """
 
-# Verify context includes document identifiers
+# Verify context includes source record identifiers
 def _build_context(self, documents):
     context_parts = []
     for i, doc in enumerate(documents, 1):
@@ -468,10 +465,10 @@ for i in range(0, len(articles), BATCH_SIZE):
 Before proceeding to Lab 05, ensure all items are checked:
 
 - [ ] Azure AI Search index created with vector and keyword fields
-- [ ] All KB articles indexed with embeddings
+- [ ] All incident KB articles indexed with embeddings
 - [ ] `hybrid_search()` function returns relevant results
 - [ ] Search combines vector similarity and keyword matching
-- [ ] Category filtering works correctly
+- [ ] Queue/category filtering works correctly
 - [ ] `RetrieveAgent.answer()` generates responses with citations
 - [ ] Inline citations [1], [2] appear in responses
 - [ ] Sources list included with document titles and IDs

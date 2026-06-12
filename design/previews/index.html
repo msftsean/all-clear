@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>All Clear — UI style options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0c1118; --panel:#141b26; --line:#26303f; --ink:#e7edf6; --dim:#8c9bb2;
+    --accent:#5b8fe8; --clear:#37c281;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(1200px 600px at 70% -10%, #16243a 0%, var(--bg) 60%);color:var(--ink);font-family:'Inter',system-ui,sans-serif;min-height:100vh;padding:64px 40px}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+  h1{font-family:'Archivo',sans-serif;font-weight:700;font-size:34px;margin:8px 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--dim);font-size:15px;max-width:680px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:44px;max-width:1180px}
+  .card{display:flex;flex-direction:column;background:linear-gradient(180deg,var(--panel),#10161f);border:1px solid var(--line);border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+  .card:hover{transform:translateY(-4px);border-color:var(--accent);box-shadow:0 18px 40px rgba(0,20,50,.5)}
+  .swatch{height:128px;display:flex;align-items:flex-end;padding:14px}
+  .s1{background:linear-gradient(135deg,#001033 0%,#1b2540 55%,#f8f9fc 56%)}
+  .s1 .dot{background:#d0f100}
+  .s2{background:radial-gradient(120px 80px at 30% 30%,#1affc6 0%,transparent 60%),linear-gradient(135deg,#04221f,#0a121a)}
+  .s2 .dot{background:#1affc6}
+  .s3{background:linear-gradient(135deg,#e9e3d6,#d8cfbd)}
+  .s3 .dot{background:#9a3b2e}
+  .dot{width:16px;height:16px;border-radius:50%;box-shadow:0 0 0 4px rgba(255,255,255,.15)}
+  .body{padding:18px 20px 22px}
+  .name{font-family:'Archivo',sans-serif;font-weight:600;font-size:20px;margin-bottom:4px}
+  .tag{color:var(--dim);font-size:13px;font-style:italic;line-height:1.45;min-height:38px}
+  .open{margin-top:16px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.06em;color:var(--accent)}
+  footer{margin-top:48px;color:var(--dim);font-size:12.5px;max-width:1180px;line-height:1.6}
+  code{font-family:'JetBrains Mono',monospace;color:var(--ink)}
+</style>
+</head>
+<body>
+  <div class="eyebrow">All Clear · ClearBoard</div>
+  <h1>Choose a UI style</h1>
+  <p class="sub">Each option renders the same live-surge ClearBoard screen — conversation column on the left, operational canvas on the right — skinned in one of the three style references in <code>design/</code>. Open each, then pick one to take into the React build.</p>
+
+  <div class="grid">
+    <a class="card" href="./antimetal.html" data-testid="open-antimetal">
+      <div class="swatch s1"><span class="dot"></span></div>
+      <div class="body">
+        <div class="name">Antimetal</div>
+        <div class="tag">Electric storm over a blueprint — neon signal cutting through deep navy, snapping to technical daylight.</div>
+        <div class="open">Open preview →</div>
+      </div>
+    </a>
+    <a class="card" href="./integrated-biosciences.html" data-testid="open-biosciences">
+      <div class="swatch s2"><span class="dot"></span></div>
+      <div class="body">
+        <div class="name">Integrated Biosciences</div>
+        <div class="tag">Bioluminescent laboratory at midnight — luminous accents glowing on deep lab-dark surfaces.</div>
+        <div class="open">Open preview →</div>
+      </div>
+    </a>
+    <a class="card" href="./structured.html" data-testid="open-structured">
+      <div class="swatch s3"><span class="dot"></span></div>
+      <div class="body">
+        <div class="name">Structured</div>
+        <div class="tag">Renaissance gallery on putty paper — warm, editorial composition with refined restraint.</div>
+        <div class="open">Open preview →</div>
+      </div>
+    </a>
+  </div>
+
+  <footer>
+    Sources: <code>design/DESIGN&nbsp;(1).md</code> (Antimetal), <code>design/DESIGN&nbsp;(2).md</code> (Integrated Biosciences), <code>design/DESIGN&nbsp;(3).md</code> (Structured). Previews are static mockups for selection only — the chosen style maps into <code>tailwind.config</code> tokens for the real React build.
+  </footer>
+</body>
+</html>

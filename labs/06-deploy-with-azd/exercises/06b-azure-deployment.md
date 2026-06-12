@@ -7,7 +7,7 @@
 
 ## Overview
 
-In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy your application with a single command. By the end, your AI agent will be running in Azure Container Apps.
+In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy All Clear with a single command. By the end, your All Clear incident-triage pipeline will be running in Azure Container Apps.
 
 ---
 
@@ -134,9 +134,9 @@ cat azure.yaml
 **Expected contents:**
 
 ```yaml
-name: university-front-door-agent
+name: all-clear
 metadata:
-  template: university-front-door-agent@0.0.1
+  template: all-clear@0.1.0
 
 services:
   backend:
@@ -145,6 +145,15 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
+      remoteBuild: true
+
+  frontend:
+    project: ./frontend
+    language: js
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
 
 infra:
   provider: bicep
@@ -189,7 +198,7 @@ Azure resource names must be globally unique. Set a unique prefix:
 
 ```bash
 # Use your initials or team name
-azd env set AZURE_ENV_NAME frontdoor-<your-initials>
+azd env set AZURE_ENV_NAME allclear-<your-initials>
 ```
 
 ### Voice & Phone Configuration (Optional)
@@ -228,7 +237,7 @@ This shows the Bicep deployment plan without executing it.
 
 ### 4.2 Run azd up
 
-The `azd up` command provisions infrastructure AND deploys your application:
+The `azd up` command provisions infrastructure AND deploys All Clear:
 
 ```bash
 azd up
@@ -249,11 +258,11 @@ Provisioning Azure resources (azd provision)
 
 Provisioning Azure resources can take some time.
 
-  (✓) Done: Resource group: rg-frontdoor-dev-eastus
-  (✓) Done: Log Analytics workspace: log-frontdoor-dev
-  (✓) Done: Container Apps Environment: cae-frontdoor-dev
-  (✓) Done: Container Registry: acrfrontdoordev
-  (✓) Done: Azure OpenAI: aoai-frontdoor-dev
+  (✓) Done: Resource group: rg-<azd-env>
+  (✓) Done: Log Analytics workspace: <prefix>-logs
+  (✓) Done: Container Apps Environment: <prefix>-env
+  (✓) Done: Container Registry: <prefix-without-dashes>acr
+  (✓) Done: Azure OpenAI: <prefix>-openai
   ...
 
 Deploying services (azd deploy)
@@ -262,7 +271,7 @@ Deploying services (azd deploy)
   (✓) Done: Pushing to registry
   (✓) Done: Service backend
 
-SUCCESS: Your application was provisioned and deployed to Azure.
+SUCCESS: All Clear was provisioned and deployed to Azure.
 ```
 
 **Note:** This process takes 10-15 minutes on first run.
@@ -308,7 +317,7 @@ azd show
 Showing deployed resources for environment: dev
 
 Service           Endpoint
-backend           https://ca-backend-xxxxx.azurecontainerapps.io
+backend           https://<prefix>-backend.<region>.azurecontainerapps.io
 ```
 
 ### 5.2 Store Backend URL
@@ -331,26 +340,21 @@ curl -s "$BACKEND_URL/api/health" | jq .
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "services": {
-    "llm": { "status": "up", "latency_ms": 50 },
-    "ticketing": { "status": "up", "latency_ms": 30 },
-    "knowledge_base": { "status": "up", "latency_ms": 25 },
-    "session_store": { "status": "up", "latency_ms": 10 }
-  }
+  "mock_mode": false,
+  "domain": "all-clear-incident-triage"
 }
 ```
 
-### 5.4 Test Chat Endpoint
+### 5.4 Test Signals Endpoint
 
 ```bash
-# Test the chat API
-curl -s -X POST "$BACKEND_URL/api/chat" \
+# Test the signals API
+curl -s -X POST "$BACKEND_URL/api/signals" \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!", "session_id": null}' | jq .
+  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}' | jq .
 ```
 
-**Expected:** JSON response with agent reply and session_id.
+**Expected:** JSON `PipelineResult` with classification, routing, action, an `AC-####` incident id, SEV1 severity, and queue `field-operations` for this example signal.
 
 ### Verify Voice & Phone (Optional)
 
@@ -366,19 +370,19 @@ Both should return `{"available": true}` when properly configured, or `{"availab
 
 ### 5.5 Access Frontend (Optional)
 
-The baseline deployment path in this lab validates backend deployment first. Add frontend static hosting once your subscription supports the required provider registrations and infra targets.
+Open the frontend URL from `azd show` or `azd env get-value AZURE_FRONTEND_URL`. The frontend is also deployed as an Azure Container App in the real All Clear `azure.yaml`.
 
 ### 5.6 Verify in Azure Portal
 
 1. Navigate to [Azure Portal](https://portal.azure.com)
-2. Find your resource group: `rg-frontdoor-dev-eastus`
+2. Find your resource group from `azd env get-value AZURE_RESOURCE_GROUP`
 3. Verify all resources are created:
    - Container Apps Environment
    - Container App (backend)
    - Container Registry
    - Log Analytics Workspace
 
-- Static Web App (optional)
+- frontend Container App (optional)
 
 **Additional Resources for Voice/Phone (Optional):**
 - Azure OpenAI: `gpt-realtime` deployment (for voice)
@@ -395,13 +399,14 @@ The baseline deployment path in this lab validates backend deployment first. Add
 ### 6.1 Stream Container Logs
 
 ```bash
-# Get resource group name
+# Get resource group and backend Container App name
 RG=$(azd env get-value AZURE_RESOURCE_GROUP)
+BACKEND_APP=$(az containerapp list --resource-group "$RG" --query '[?tags."azd-service-name"==`backend`].name | [0]' -o tsv)
 
 # Stream logs from backend
 az containerapp logs show \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --follow
 ```
 
@@ -411,8 +416,8 @@ Press `Ctrl+C` to stop streaming.
 
 ```bash
 az containerapp logs show \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --type system
 ```
 
@@ -420,8 +425,8 @@ az containerapp logs show \
 
 ```bash
 az containerapp show \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --query "properties.runningStatus"
 ```
 
@@ -437,12 +442,12 @@ az containerapp show \
    - Response time
    - CPU/Memory usage
 
-### 6.5 Query Logs in Log Analytics
+### 6.5 Search Logs in Log Analytics
 
 1. Go to Azure Portal
 2. Find your Log Analytics workspace
 3. Click "Logs"
-4. Run query:
+4. Run a KQL query:
 
 ```kusto
 ContainerAppConsoleLogs_CL
@@ -460,15 +465,16 @@ ContainerAppConsoleLogs_CL
 
 ### 7.1 Make a Small Change
 
-Edit `backend/app/main.py` to update the version:
+Edit `backend/app/api/routes.py` to temporarily add a build marker to the health response:
 
 ```python
 @app.get("/api/health")
 async def health():
     return {
         "status": "healthy",
-        "version": "1.0.1",  # Changed from 1.0.0
-        "environment": os.getenv("ENVIRONMENT", "development")
+        "mock_mode": settings.use_mock_services,
+        "domain": "all-clear-incident-triage",
+        "build": "lab06-redeploy"
     }
 ```
 
@@ -484,10 +490,10 @@ This is faster than `azd up` because it only rebuilds and deploys the container.
 ### 7.3 Verify the Change
 
 ```bash
-curl -s "$BACKEND_URL/api/health" | jq .version
+curl -s "$BACKEND_URL/api/health" | jq .build
 ```
 
-**Expected:** `"1.0.1"`
+**Expected:** `"lab06-redeploy"`
 
 ---
 
@@ -543,8 +549,8 @@ az login
 ```bash
 # Check container logs
 az containerapp logs show \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --type console
 
 # Verify the app starts correctly by checking startup logs
@@ -573,14 +579,14 @@ az acr task logs --registry <acr-name>
 ```bash
 # Check current environment variables
 az containerapp show \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --query "properties.template.containers[0].env"
 
 # Update manually if needed
 az containerapp update \
-  --name ca-backend \
-  --resource-group $RG \
+  --name "$BACKEND_APP" \
+  --resource-group "$RG" \
   --set-env-vars "KEY=value"
 ```
 
@@ -597,7 +603,7 @@ You have successfully:
 5. Verified the deployment with health checks
 6. Accessed monitoring and logs
 
-Your AI support agent is now running in production on Azure Container Apps.
+Your All Clear incident-triage system is now running in production on Azure Container Apps.
 
 ---
 
@@ -619,7 +625,7 @@ Your AI support agent is now running in production on Azure Container Apps.
 
 ## Congratulations!
 
-You have completed Lab 06 and successfully deployed your AI agent to Azure. Your agent pipeline is now:
+You have completed Lab 06 and successfully deployed your All Clear incident-triage pipeline to Azure. The All Clear pipeline is now:
 
 - Running in Azure Container Apps
 - Accessible via public HTTPS endpoint

@@ -45,13 +45,13 @@ Add a header comment referencing your spec:
 
 ```python
 """
-Escalation Detection Agent
+All Clear Escalation Detector
 
 Implementation based on:
 - Specification: your-spec.md
 - Constitution: your-constitution.md
 
-This module implements the escalation detection functionality
+This module implements deterministic escalation detection
 as defined in the feature specification.
 """
 ```
@@ -70,10 +70,10 @@ Use the `Agent Mode` command to reference your specification:
 
 ```
 Agent Mode Based on the specification in your-spec.md, generate a Python class
-for the Escalation Detection Agent. Include:
-1. The core detection method that analyzes text for escalation signals
-2. Classification into the categories defined in my spec
-3. Confidence scoring for detections
+for the All Clear statutory-clock escalation detector. Include:
+1. The core detection method that analyzes signal text for escalation triggers
+2. Classification into the EscalationReason values defined in my spec
+3. Severity, target queue, and confidence scoring for detections
 Follow the constraints in your-constitution.md for what the agent must NOT do.
 ```
 
@@ -82,7 +82,7 @@ Follow the constraints in your-constitution.md for what the agent must NOT do.
 Copilot will generate an initial implementation. Before accepting, review:
 
 - [ ] Does it address the core functional requirements?
-- [ ] Does it include the detection categories from your spec?
+- [ ] Does it include the escalation reasons from your spec?
 - [ ] Does it return the output format you specified?
 - [ ] Does it respect the constraints from your constitution?
 
@@ -91,13 +91,13 @@ Copilot will generate an initial implementation. Before accepting, review:
 Insert the generated code into your file. Add comments noting which spec requirements are addressed:
 
 ```python
-def detect_escalation(self, message: str) -> EscalationResult:
+def detect_escalation(self, signal_text: str) -> EscalationResult:
     """
-    Analyze message for escalation signals.
+    Analyze signal text for escalation triggers.
 
     Implements:
-    - FR-001: Process incoming student communications
-    - FR-002: Detect escalation keywords and patterns
+    - FR-001: Process incoming All Clear signals
+    - FR-002: Detect statutory-clock and life-safety patterns
     - SC-001: Return result within 500ms (target)
     """
     # Generated code here...
@@ -113,8 +113,9 @@ Review your spec's functional requirements. For any missing ones, prompt Copilot
 
 ```
 Agent Mode The current escalation_detector.py is missing FR-003 from my spec
-(categorize escalations by urgency level). Add a method that assigns urgency
-levels: Critical, High, Medium, Low based on the criteria in my specification.
+(return structured output with escalate, severity, target_queue, and reasons).
+Add a dataclass or Pydantic model that returns those fields using the All Clear
+severity values SEV1-SEV4 and queue values from my specification.
 ```
 
 #### Iteration 2: Enforce Constitution Constraints
@@ -123,9 +124,9 @@ Check if the generated code respects your constitution's prohibited actions:
 
 ```
 Agent Mode Review escalation_detector.py against the prohibited actions in
-your-constitution.md. Add safeguards to ensure the agent cannot:
-1. [First prohibited action from your constitution]
-2. [Second prohibited action from your constitution]
+your-constitution.md. Add safeguards to ensure the detector cannot:
+1. Downgrade a statutory-clock or SEV1 signal
+2. Echo PII into user-facing responses
 Add validation or guards to prevent these actions.
 ```
 
@@ -136,7 +137,7 @@ Ensure the code handles the error conditions from your spec:
 ```
 Agent Mode Add error handling to escalation_detector.py for the error
 conditions defined in my specification. Each error should return the
-user-facing message I specified.
+user-facing message I specified and escalate when the system does not know.
 ```
 
 ### Part 4: Validate Against Success Criteria (3 minutes)
@@ -205,7 +206,7 @@ Generate the additional code needed to meet these requirements.
 
 ### Effective Prompts
 
-**Good:** "Based on FR-002 in my spec, implement detection for the specific keyword categories I defined: mental health, academic distress, discrimination, and financial emergency"
+**Good:** "Based on FR-002 in my spec, implement detection for the specific All Clear trigger categories I defined: statutory clock, life safety, total outage, PII exposure, and explicit human request"
 
 **Less Effective:** "Add keyword detection"
 
@@ -237,9 +238,10 @@ If your spec is extensive:
   ```
   Return results in this format:
   {
-    "escalation_detected": true,
-    "category": "mental_health",
-    "urgency": "critical",
+    "escalate": true,
+    "severity": "SEV1",
+    "target_queue": "compliance-desk",
+    "escalation_reason": "statutory_clock",
     "confidence": 0.95
   }
   ```

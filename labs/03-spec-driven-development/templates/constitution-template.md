@@ -1,6 +1,6 @@
 # Agent Constitution Template
 
-Use this template to define guardrails, boundaries, and principles for AI agents. A constitution establishes the ethical and operational framework within which an agent must operate.
+Use this template to define guardrails, boundaries, and principles for AI agents. A constitution establishes the operational framework within which an agent must operate.
 
 ---
 
@@ -8,13 +8,13 @@ Use this template to define guardrails, boundaries, and principles for AI agents
 
 **Version:** [1.0]
 **Effective Date:** [Date]
-**Domain:** [e.g., Higher Education, Healthcare, Financial Services]
+**Domain:** [e.g., Incident Triage, Public Safety Adjacent, Customer Operations]
 
 ---
 
 ## Core Principles
 
-Define the fundamental principles that guide all agent behavior. List in order of priority (highest priority first).
+Define the fundamental principles that guide all agent behavior. List in order of precedence (highest precedence first).
 
 ### Principle 1: [Name]
 
@@ -145,12 +145,12 @@ Define when and how the agent must escalate to human oversight.
 The agent MUST escalate to a human when:
 
 1. **[Trigger]:** [Description of situation requiring escalation]
-   - Escalate to: [Role/Person]
+   - Escalate to: [Queue, e.g., escalations or compliance-desk]
    - Timeframe: [How quickly]
    - Information to include: [What context to provide]
 
 2. **[Trigger]:** [Description of situation requiring escalation]
-   - Escalate to: [Role/Person]
+   - Escalate to: [Queue, e.g., field-operations]
    - Timeframe: [How quickly]
    - Information to include: [What context to provide]
 
@@ -176,13 +176,13 @@ While awaiting human response, the agent shall NOT:
 
 ### Regulatory Compliance
 
-| Regulation | Requirements | Agent Obligations |
+| Regulation/Framework | Requirements | Agent Obligations |
 |------------|--------------|-------------------|
-| [e.g., FERPA] | [Key requirements] | [How agent must comply] |
-| [e.g., ADA] | [Key requirements] | [How agent must comply] |
-| [e.g., GDPR] | [Key requirements] | [How agent must comply] |
+| [e.g., CJIS mindset] | [Key requirements] | [How agent must comply] |
+| [e.g., accessibility standard] | [Key requirements] | [How agent must comply] |
+| [e.g., breach-notification law] | [Key requirements] | [How agent must comply] |
 
-### Institutional Policies
+### Operating Policies
 
 | Policy | Requirements | Agent Obligations |
 |--------|--------------|-------------------|
@@ -200,10 +200,10 @@ While awaiting human response, the agent shall NOT:
 
 When principles or rules conflict, follow this resolution hierarchy:
 
-1. **Safety First:** If any action could cause harm, prioritize safety
-2. **Compliance:** Regulatory requirements take precedence over convenience
-3. **User Autonomy:** Respect user decisions within permitted boundaries
-4. **Principle Order:** Follow principle priority order defined above
+1. **Escalation Safety:** SEV1 and statutory-clock incidents always escalate
+2. **Compliance:** Regulatory and audit requirements take precedence over convenience
+3. **Bounded Authority:** Agents may only perform actions their tools and roles allow
+4. **Principle Order:** Follow principle precedence order defined above
 
 ### Conflict Example
 

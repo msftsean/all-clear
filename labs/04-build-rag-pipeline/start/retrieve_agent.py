@@ -1,13 +1,14 @@
 """
-Lab 04 - Build RAG Pipeline
-RetrieveAgent: RAG agent that uses SearchTool to answer questions with citations
+Lab 04 - Build All Clear RAG Pipeline
+RetrieveAgent: RAG agent that uses SearchTool to answer incident-triage
+questions with citations.
 
 This module provides a RetrieveAgent class that implements a Retrieval-Augmented
-Generation (RAG) pattern: search for relevant documents, build context, and
-generate a response with citations.
+Generation (RAG) pattern: search for relevant runbooks/SOPs, build context, and
+generate a response with citations for ActionAgent.search_knowledge.
 
 RAG Pattern Benefits:
-- Grounds LLM responses in actual documents (reduces hallucination)
+- Grounds LLM responses in actual source records (reduces hallucination)
 - Provides traceable citations for verification
 - Allows the LLM to answer questions about private/recent data
 
@@ -26,14 +27,14 @@ from search_tool import SearchTool
 
 class RetrieveAgent:
     """
-    A RAG agent that retrieves relevant documents and generates
+    A RAG agent that retrieves relevant incident knowledge and generates
     responses with citations.
 
     The agent follows the RAG pattern:
-    1. Search for relevant documents using hybrid search
-    2. Build a context from the retrieved documents
+    1. Search for relevant runbooks/SOPs using hybrid search
+    2. Build a context from the retrieved source records
     3. Generate a response using an LLM with the context
-    4. Include citations to source documents
+    4. Include citations to source records
     """
 
     def __init__(
@@ -80,7 +81,7 @@ class RetrieveAgent:
             search_results: List of search result dictionaries.
 
         Returns:
-            A formatted string containing the retrieved context with source references.
+            A formatted string containing retrieved context with source records.
         """
         if not search_results:
             return "No relevant context found."
@@ -104,7 +105,7 @@ class RetrieveAgent:
         Returns:
             A formatted prompt string for the LLM.
         """
-        return f"""Use the following context to answer the question. Include citations using [Source N] format. If the context doesn't contain enough information to answer, say "I don't know based on the provided context."
+        return f"""Use the following All Clear incident-triage context to answer the question. Include citations using [Source N] format. Constitution Article IV applies: no citation, no claim. If the context doesn't contain enough information to answer, say "I don't know based on the provided context" and escalate uncertainty.
 
 Context:
 {context}
@@ -119,28 +120,28 @@ Answer:"""
         top_k: int = 5,
     ) -> dict[str, Any]:
         """
-        Retrieve relevant documents and generate a response with citations.
+        Retrieve relevant source records and generate a response with citations.
 
         This is the main RAG pipeline method that orchestrates:
         1. Embedding the query
-        2. Searching for relevant documents
+        2. Searching for relevant runbooks/SOPs
         3. Building context from results
         4. Generating a response with the LLM
 
         Args:
-            query: The user's question.
+            query: The incident-triage question.
             top_k: Number of documents to retrieve (default: 5).
 
         Returns:
             A dictionary containing:
             - answer: The generated response with citations
-            - sources: List of source documents used
+            - sources: List of source records used
             - query: The original query
         """
         # Step 1: Get the embedding for the query
         query_vector = await self._get_embedding(query)
 
-        # Step 2: Search for relevant documents using hybrid search
+        # Step 2: Search for relevant runbooks/SOPs using hybrid search
         search_results = await self.search_tool.search(
             query=query, query_vector=query_vector, top_k=top_k
         )
@@ -157,7 +158,7 @@ Answer:"""
             messages=[
                 {
                     "role": "system",
-                    "content": "You are a helpful assistant that answers questions based on provided context.",
+                    "content": "You support All Clear ActionAgent.search_knowledge. Answer only from provided context and cite every factual claim.",
                 },
                 {"role": "user", "content": prompt},
             ],

@@ -14,13 +14,13 @@
 Lab Progress: [░░░░░░░░░░] 0% - Not Started
 
 Checkpoints:
-□ Understand Multi-Agent Architecture
-□ Learn QueryAgent Pattern
-□ Learn RouterAgent Pattern
-□ Learn ActionAgent Pattern
-□ Complete Exercise 1a: Intent Classification
+□ Understand Multi-Agent Architecture & Bounded Authority
+□ Learn QueryAgent Pattern (classify only)
+□ Learn RouterExecutor Pattern (deterministic, zero LLM)
+□ Learn ActionAgent Pattern (three tools)
+□ Complete Exercise 1a: Signal Classification
 □ Complete Exercise 1b: Prompt Engineering
-□ Achieve >90% Intent Accuracy
+□ Achieve >90% Classification Accuracy
 □ Complete Self-Assessment
 ```
 
@@ -31,8 +31,8 @@ Checkpoints:
 By the end of this lab, you will be able to:
 
 1. 🏗️ **Understand multi-agent vs single agent architectures** - Compare the trade-offs between monolithic AI systems and distributed agent patterns
-2. 🔄 **Learn the QueryAgent → RouterAgent → ActionAgent pattern** - Master the three-agent architecture used throughout this accelerator
-3. 🎯 **Practice intent classification** - Build and test an intent classifier that routes user queries to the appropriate agent
+2. 🔄 **Learn the QueryAgent → RouterExecutor → ActionAgent pattern** - Master All Clear's three-stage pipeline and its *bounded authority* model
+3. 🎯 **Practice signal classification** - Build and test a classifier that turns a raw incident **signal** into a typed `SignalClassification`
 
 ---
 
@@ -64,102 +64,108 @@ Breaking your system into specialized agents provides:
 
 ---
 
-## 🔄 The Three-Agent Pattern
+## 🔄 The Three-Stage Pipeline
 
-This accelerator uses a proven three-agent architecture that balances simplicity with power:
+All Clear uses a three-stage pipeline on the Microsoft Agent Framework. Each
+stage has **bounded authority** (Constitution Art. II) — it can do only what its
+role permits, enforced by code structure, not prompt hope:
 
 ```
-                                    +------------------+
-                                    |   ActionAgent    |
-                                    |   (RAG Search)   |
-                                    +------------------+
-                                           ^
-                                           |
-+------------------+    +------------------+
-|   QueryAgent     |--->|   RouterAgent    |
-| (Understanding)  |    |  (Dispatching)   |
-+------------------+    +------------------+
-        ^                      |
-        |                      v
-   User Query           +------------------+
-                        |   ActionAgent    |
-                        |   (API Call)     |
-                        +------------------+
-                               |
-                               v
-                        +------------------+
-                        |   ActionAgent    |
-                        | (Conversation)   |
-                        +------------------+
+        signal in                                          response out
+            │                                                    ▲
+            ▼                                                    │
+   ┌─────────────────┐    ┌──────────────────┐    ┌────────────────────────┐
+   │   QueryAgent     │──▶ │  RouterExecutor   │──▶ │      ActionAgent        │
+   │  (MAF agent)     │    │ (deterministic,   │    │   (MAF agent, 3 tools)  │
+   │  classify ONLY   │    │  ZERO LLM calls)  │    │   create_incident       │
+   │                  │    │  dedup → severity  │    │   search_knowledge      │
+   │ SignalClassif.   │    │  → SLA → escalate  │    │   generate_sitrep       │
+   └─────────────────┘    └──────────────────┘    └────────────────────────┘
 ```
 
-### 👥 Agent Responsibilities
+> 💡 The reference implementation is real and shipped:
+> [`backend/app/agents/query_agent.py`](../../backend/app/agents/query_agent.py),
+> [`router_agent.py`](../../backend/app/agents/router_agent.py),
+> [`action_agent.py`](../../backend/app/agents/action_agent.py), wired in
+> [`pipeline.py`](../../backend/app/agents/pipeline.py).
 
-#### 🔍 QueryAgent - The Understander
+### 👥 Stage Responsibilities
 
-**Purpose:** Transform raw user input into structured, actionable data.
+#### 🔍 QueryAgent - The Classifier
 
-**Responsibilities:**
-- 📝 Parse natural language queries
-- 🏷️ Extract entities (names, dates, amounts, etc.)
-- ✨ Normalize input (fix typos, expand abbreviations)
-- 🎯 Identify query type and intent
-- 📚 Enrich context with conversation history
-
-| 📥 Input | 📤 Output |
-|----------|----------|
-| Raw user message + conversation context | Structured query object with intent, entities, and metadata |
-
-#### 🚦 RouterAgent - The Dispatcher
-
-**Purpose:** Determine the best action path for a given query.
+**Purpose:** Turn one raw **signal** into a structured, typed `SignalClassification`.
 
 **Responsibilities:**
-- 🏷️ Classify intent into predefined categories
-- ✅ Select appropriate ActionAgent(s)
-- ❓ Handle ambiguous queries (ask for clarification)
-- 📋 Apply business rules and access control
-- 📊 Log routing decisions for analytics
+- 📝 Parse the natural-language signal
+- 🏷️ Extract entities (`location`, `system`, `severity_indicators`)
+- 🚩 Detect PII and flag it (never echo it back — Constitution Art. I)
+- 🎯 Identify `intent` and `intent_category` (a `SignalCategory`)
+- 📊 Emit a confidence score
+
+**Authority:** *classify only.* It cannot route, create, search, or act.
 
 | 📥 Input | 📤 Output |
 |----------|----------|
-| Structured query from QueryAgent | Routing decision with selected agent(s) and parameters |
+| Raw signal text + channel | `SignalClassification` (intent, category, entities, PII flags, confidence) |
 
-#### ⚡ ActionAgent(s) - The Doers
+#### 🚦 RouterExecutor - The Decider
 
-**Purpose:** Execute specific tasks and generate responses.
+**Purpose:** Decide what happens to the classified signal — **deterministically**.
 
-**Types of ActionAgents:**
-- 📚 **RAG Agent** - Searches knowledge bases and synthesizes answers
-- 🔗 **API Agent** - Calls external services and transforms responses
-- 💬 **Conversation Agent** - Handles chitchat and clarifications
-- 📋 **Task Agent** - Performs multi-step workflows
+**Responsibilities:**
+- 🔁 **Dedup:** embedding-similarity match against open incidents in the same `intent_category`. ≥ `DEDUP_THRESHOLD` (default 0.83 cosine) → `ATTACH_TO_INCIDENT`; below → `OPEN_INCIDENT`
+- 🚦 Map severity indicators to **SEV1–SEV4** and the matching **SLA** (15 min → next business day)
+- 🆙 Apply **escalation rules** (safety control): SEV1 and statutory-clock incidents *always* escalate
+- 📋 Record which `routing_rules_applied`
+
+**Authority:** *decide only.* It makes **zero LLM calls**, holds no tools, and
+touches no records. Severity is set by rules, never by model vibes — so a caller
+(or attacker) cannot talk the system into a lower severity.
 
 | 📥 Input | 📤 Output |
 |----------|----------|
-| Routing decision with parameters | Final response to user |
+| `SignalClassification` | `RoutingDecision` (outcome, target_queue, severity, sla_minutes, escalate) |
+
+#### ⚡ ActionAgent - The Doer
+
+**Purpose:** Act on the decision through exactly three tools, and respond.
+
+**The three tools (and nothing else):**
+- 🆕 **create_incident** — opens a new incident (`AC-####`) on the `OPEN_INCIDENT` path
+- 📚 **search_knowledge** — RAG over incident runbooks/SOPs (Lab 04), returns `KnowledgeArticle`s
+- 📝 **generate_sitrep** — a **citation-grounded** situation report; every claim cites a source record
+
+**Authority:** *only what its tools permit.* It cannot approve waivers, modify
+records outside its tools, or suppress escalation. On the `ATTACH_TO_INCIDENT`
+path it skips knowledge search (keeps surge latency flat) and just acknowledges.
+
+| 📥 Input | 📤 Output |
+|----------|----------|
+| `RoutingDecision` | `IncidentAction` (incident, sitrep, citations, user_message) |
 
 ---
 
-## 🛡️ Agent Boundaries and Responsibilities
+## 🛡️ Bounded Authority — the decision matrix
 
-Clear boundaries between agents are critical. Here is a decision matrix:
+Clear boundaries between stages are not a style choice; they are a security
+control. Here is who is allowed to do what:
 
-| 📋 Concern | 🔍 QueryAgent | 🚦 RouterAgent | ⚡ ActionAgent |
+| 📋 Concern | 🔍 QueryAgent | 🚦 RouterExecutor | ⚡ ActionAgent |
 |---------|------------|-------------|-------------|
-| Parse user input | ✅ Yes | ❌ No | ❌ No |
-| Classify intent | 🔶 Partial | ✅ Yes | ❌ No |
-| Select execution path | ❌ No | ✅ Yes | ❌ No |
-| Call external APIs | ❌ No | ❌ No | ✅ Yes |
-| Generate final response | ❌ No | ❌ No | ✅ Yes |
-| Maintain conversation state | ✅ Yes | ❌ No | 🔶 Partial |
+| Parse/understand the signal | ✅ Yes | ❌ No | ❌ No |
+| Classify intent & severity *indicators* | ✅ Yes | ❌ No | ❌ No |
+| Decide severity / SLA / dedup outcome | ❌ No | ✅ Yes | ❌ No |
+| Apply escalation rules | ❌ No | ✅ Yes | ❌ No |
+| Make LLM calls | ✅ Yes | 🚫 **Never** | ✅ Yes |
+| Create/mutate incident records | ❌ No | ❌ No | ✅ Yes (via tools) |
+| Generate the final response/sitrep | ❌ No | ❌ No | ✅ Yes |
 
 ### 🚫 Anti-Patterns to Avoid
 
-1. ❌ **Router doing understanding** - Keep parsing in QueryAgent
-2. ❌ **ActionAgent re-classifying** - Trust the router's decision
-3. ❌ **QueryAgent calling APIs** - It should only understand, not act
-4. ❌ **Circular dependencies** - Agents should not call back to earlier stages
+1. ❌ **RouterExecutor calling the model** — routing must stay deterministic and auditable; zero LLM calls is enforced by test
+2. ❌ **ActionAgent re-deciding severity or skipping escalation** — trust the RoutingDecision; weakening escalation is a security blocker
+3. ❌ **QueryAgent creating incidents or searching** — it only classifies
+4. ❌ **Echoing detected PII** back into responses, logs, or sitreps
 
 ---
 
@@ -167,23 +173,24 @@ Clear boundaries between agents are critical. Here is a decision matrix:
 
 Complete the following hands-on exercises to reinforce your understanding:
 
-### 📚 Exercise 1a: Intent Classification
+### 📚 Exercise 1a: Signal Classification
 **File:** [exercises/01a-intent-classification.md](exercises/01a-intent-classification.md)
 
-Build an intent classifier that categorizes user queries into predefined intents. You will:
-- 🏷️ Define intent categories for your domain
-- 📝 Create training examples for each intent
-- 💻 Implement classification logic
-- 🧪 Test against edge cases
+Build the QueryAgent classifier that turns a raw signal into a typed
+`SignalClassification`. You will:
+- 🏷️ Use the All Clear `SignalCategory` taxonomy (INFRASTRUCTURE_OUTAGE, FIELD_HAZARD, PUBLIC_SAFETY, CUSTOMER_INQUIRY, SERVICE_REQUEST, COMPLIANCE_REPORT, …)
+- 📝 Create example signals for each category (downed line, gas leak, "when will power return?", recall report)
+- 💻 Implement classification + entity extraction (`location`, `system`, `severity_indicators`)
+- 🧪 Test against edge cases (ambiguous, multi-hazard, PII-bearing signals)
 
 ### ✏️ Exercise 1b: Prompt Engineering
 **File:** [exercises/01b-prompt-engineering.md](exercises/01b-prompt-engineering.md)
 
-Craft effective prompts for each agent in the pipeline. You will:
-- 🔍 Write a QueryAgent system prompt
-- 🚦 Design a RouterAgent decision prompt
-- ⚡ Create ActionAgent task prompts
-- 🔄 Test prompt variations
+Craft effective prompts for the LLM-backed stages. You will:
+- 🔍 Write the QueryAgent classification prompt (structured output, no free-text parsing)
+- ⚡ Write the ActionAgent sitrep prompt (every claim must cite a source record)
+- 🚫 Confirm the RouterExecutor needs **no** prompt — it is deterministic code
+- 🔄 Test prompt variations against the signal set
 
 ---
 
@@ -193,10 +200,10 @@ By the end of this lab, you should have:
 
 | 📋 Deliverable | ✅ Success Criteria |
 |-------------|------------------|
-| 🎯 Intent Classifier | >90% accuracy on test queries |
-| 📝 Agent Prompts | Three working prompts (Query, Router, Action) |
-| 🏗️ Architecture Diagram | Your own version showing data flow |
-| 🧪 Test Suite | At least 20 test queries with expected classifications |
+| 🎯 Signal Classifier | >90% accuracy on test signals |
+| 📝 Agent Prompts | Working QueryAgent and ActionAgent prompts (RouterExecutor needs none) |
+| 🏗️ Architecture Diagram | Your own version showing the bounded-authority data flow |
+| 🧪 Test Suite | At least 20 test signals with expected `SignalCategory` |
 
 ---
 
@@ -209,10 +216,10 @@ By the end of this lab, you should have:
 - ✅ **Solution:** Check for overlapping intent definitions - make categories more distinct
 - ✅ **Solution:** Add more diverse examples per intent (aim for 10+ each)
 
-**Issue:** RouterAgent selecting wrong ActionAgent
-- ✅ **Solution:** Verify QueryAgent is extracting correct intent
-- ✅ **Solution:** Review routing rules for gaps or conflicts
-- ✅ **Solution:** Add explicit handling for edge cases
+**Issue:** RouterExecutor producing the wrong severity or queue
+- ✅ **Solution:** Verify QueryAgent is extracting the right `severity_indicators` and `intent_category`
+- ✅ **Solution:** Review the deterministic routing rules for gaps or conflicts
+- ✅ **Solution:** Add explicit handling for statutory-clock / SEV1-forcing phrases
 
 **Issue:** Prompts generating inconsistent outputs
 - ✅ **Solution:** Add output format examples to your prompts
@@ -252,37 +259,38 @@ Before proceeding to Lab 02, verify you can answer these questions:
 |----------|-------------|
 | Why is a multi-agent architecture better than a monolithic agent for complex systems? | _[Write your answer]_ |
 | What is the primary responsibility of the QueryAgent? | _[Write your answer]_ |
-| When should the RouterAgent escalate to a human instead of dispatching to an ActionAgent? | _[Write your answer]_ |
-| What's the difference between a RAG ActionAgent and an API ActionAgent? | _[Write your answer]_ |
+| Why does the RouterExecutor make zero LLM calls, and when must it escalate to a human queue? | _[Write your answer]_ |
+| What is the difference between the `OPEN_INCIDENT` and `ATTACH_TO_INCIDENT` paths? | _[Write your answer]_ |
 
 ### ✅ Self-Assessment Checklist
 
 Complete this checklist to confirm you're ready for Lab 02:
 
-- [ ] 🗣️ I can explain the three-agent pattern to someone new
-- [ ] 🎯 My intent classifier achieves >90% accuracy on test queries
-- [ ] ✏️ I have written prompts for QueryAgent, RouterAgent, and ActionAgent
-- [ ] 🔄 I understand why agents should NOT call back to earlier stages in the pipeline
-- [ ] 🎨 I can draw an architecture diagram showing data flow between agents
-- [ ] 🧪 I have at least 20 test queries with expected classifications
+- [ ] 🗣️ I can explain the three-stage pipeline and bounded authority to someone new
+- [ ] 🎯 My signal classifier achieves >90% accuracy on test signals
+- [ ] ✏️ I have written prompts for QueryAgent and ActionAgent (and know why RouterExecutor needs none)
+- [ ] 🔄 I understand why the RouterExecutor makes zero LLM calls
+- [ ] 🎨 I can draw an architecture diagram showing the bounded-authority data flow
+- [ ] 🧪 I have at least 20 test signals with expected `SignalCategory`
 
 ### 🧪 Quick Quiz
 
 Test yourself with these scenarios:
 
-1. **Scenario:** A user asks "What's my financial aid status?" and also mentions "my password isn't working"
-   - 🔍 Which agent handles parsing both issues?
-   - 🚦 How should the RouterAgent handle multiple intents?
+1. **Scenario:** A signal reads "transformer fire on Oak Ave and people are trapped, call my cell 555-0123"
+   - 🔍 Which stage extracts the `location`, the `severity_indicators`, and flags the phone number as PII?
+   - 🚦 Why must this never be downgraded below SEV1?
 
-2. **Scenario:** The QueryAgent extracts an intent but with only 60% confidence
-   - ❓ Should the RouterAgent proceed or ask for clarification?
-   - 📊 What factors influence this decision?
+2. **Scenario:** The QueryAgent classifies a signal but with only 60% confidence
+   - ❓ What does the RouterExecutor do with a low-confidence classification?
+   - 📊 Which `EscalationReason` applies?
 
-3. **Scenario:** An ActionAgent needs information that wasn't in the original query
-   - 🔄 Can it call back to QueryAgent to re-parse?
-   - ✅ What's the correct pattern to handle this?
+3. **Scenario:** The 38th caller reports the same downed line already tracked as `AC-0007`
+   - 🔄 Does the pipeline open a new incident?
+   - ✅ What is the correct dedup outcome, and what happens to the incident's magnitude?
 
-**Answers:** Discuss with your coach or check [coach-guide/TALKING_POINTS.md](../../coach-guide/TALKING_POINTS.md) for guidance.
+**Answers:** Discuss with your coach or see the
+[Coach's Runbook](../../coach-runbook/index.html) for guidance.
 
 ---
 
@@ -301,7 +309,7 @@ In the next lab, you will configure Azure OpenAI and Azure AI Search services to
 | Component | Required Version | Tested Version |
 |-----------|-----------------|----------------|
 | 🐍 Python | 3.11+ | 3.12.10 |
-| 🤖 Azure OpenAI | GPT-4.1 | 2025-01-01-preview |
+| 🤖 Azure OpenAI | GPT-5.1 | 2025-01-01-preview |
 | 🔧 Pydantic | 2.5+ | 2.6.1 |
 | 📝 Prompt Engineering | N/A | Best practices |
 

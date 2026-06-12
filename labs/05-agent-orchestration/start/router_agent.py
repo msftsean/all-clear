@@ -1,296 +1,179 @@
 """
-Router Agent Module
+RouterExecutor scaffold for the Lab 05 All Clear mini-app.
 
-This agent is responsible for routing analyzed queries to the
-appropriate department or action handler based on intent and entities.
+RouterExecutor is deterministic workflow code. It makes zero LLM calls and owns
+dedup, severity/SLA mapping, and escalation. It does not mutate records.
 """
 
+from __future__ import annotations
+
+import math
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
-from query_agent import QueryResult, Intent
+from query_agent import SignalCategory, SignalClassification
 
 
-class Priority(str, Enum):
-    """Priority levels for routed requests."""
+class Severity(str, Enum):
+    """All Clear severity/SLA scale."""
 
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    URGENT = "urgent"
+    SEV1 = "SEV1"
+    SEV2 = "SEV2"
+    SEV3 = "SEV3"
+    SEV4 = "SEV4"
+
+
+class RoutingOutcome(str, Enum):
+    """Dedup outcome for a signal."""
+
+    ATTACH_TO_INCIDENT = "ATTACH_TO_INCIDENT"
+    OPEN_INCIDENT = "OPEN_INCIDENT"
 
 
 @dataclass
+class OpenIncident:
+    """Read-only incident summary used for dedup in the lab."""
+
+    incident_id: str
+    category: SignalCategory
+    summary: str
+    magnitude: int = 1
+
+
+@dataclass(frozen=True)
 class RoutingDecision:
-    """Structured routing decision for a query."""
+    """RouterExecutor output. Deterministic; zero LLM calls."""
 
-    target_agent: str
-    parameters: dict = field(default_factory=dict)
-    fallback_agent: Optional[str] = None
-    priority: Priority = Priority.MEDIUM
-    reasoning: str = ""
-    requires_escalation: bool = False
+    outcome: RoutingOutcome
+    target_queue: str
+    severity: Severity
+    sla_minutes: int
+    escalate: bool = False
     escalation_reason: Optional[str] = None
+    matched_incident_id: Optional[str] = None
+    dedup_similarity: Optional[float] = None
+    magnitude: Optional[int] = None
+    routing_rules_applied: list[str] = field(default_factory=list)
+    classification: Optional[SignalClassification] = None
+    signal_text: str = ""
 
 
-class RouterAgent:
-    """
-    Agent responsible for routing queries to appropriate departments.
+DEDUP_THRESHOLD = 0.83
+SLA_MINUTES = {Severity.SEV1: 15, Severity.SEV2: 60, Severity.SEV3: 240, Severity.SEV4: 1440}
+QUEUE_FOR = {
+    SignalCategory.INFRASTRUCTURE_OUTAGE: "engineering",
+    SignalCategory.FIELD_HAZARD: "field-operations",
+    SignalCategory.PUBLIC_SAFETY: "field-operations",
+    SignalCategory.CUSTOMER_INQUIRY: "customer-comms",
+    SignalCategory.SERVICE_REQUEST: "customer-comms",
+    SignalCategory.COMPLIANCE_REPORT: "compliance-desk",
+    SignalCategory.STATUS_CHECK: "customer-comms",
+    SignalCategory.HUMAN_REQUEST: "escalations",
+    SignalCategory.GENERAL_INQUIRY: "customer-comms",
+}
 
-    This agent analyzes the QueryResult from the QueryAgent and determines
-    the best department, priority level, and any escalation requirements.
 
-    Attributes:
-        client: The Azure OpenAI client for LLM calls.
-        model: The model deployment name to use.
-        escalation_keywords: Keywords that trigger automatic escalation.
-    """
+class RouterExecutor:
+    """Deterministic routing executor: dedup -> severity -> SLA -> escalation."""
 
-    def __init__(
-        self,
-        client: Any,
-        model: str = "gpt-4.1",
-        escalation_keywords: list[str] | None = None,
-    ) -> None:
-        """
-        Initialize the RouterAgent.
+    def __init__(self, open_incidents: list[OpenIncident] | None = None) -> None:
+        self.open_incidents = open_incidents or []
 
-        Args:
-            client: Azure OpenAI client instance.
-            model: The model deployment name to use for routing decisions.
-            escalation_keywords: List of keywords that trigger escalation.
-        """
-        self.client = client
-        self.model = model
-        self.escalation_keywords = escalation_keywords or [
-            "urgent",
-            "emergency",
-            "lawsuit",
-            "legal",
-            "executive",
-        ]
+    async def route(self, classification: SignalClassification, signal_text: str | None = None) -> RoutingDecision:
+        """Route a classified signal without calling an LLM."""
+        text = signal_text or classification.signal_text
+        rules: list[str] = []
+        severity = self._severity(classification)
+        # TODO: Keep this deterministic; do not add model calls here.
+        rules.append(f"severity={severity.value}")
+        sla_minutes = SLA_MINUTES[severity]
 
-    async def route(self, query_result: QueryResult) -> RoutingDecision:
-        """
-        Route a query to the appropriate department.
-
-        This method analyzes the QueryResult and determines:
-        1. Which department should handle the query
-        2. The priority level of the request
-        3. Whether escalation to a human is required
-        4. Suggested actions for the handling agent
-
-        Args:
-            query_result: The analyzed query from QueryAgent.
-
-        Returns:
-            RoutingDecision with target_agent, priority, and reasoning.
-
-        Raises:
-            ValueError: If query_result is invalid.
-        """
-        if query_result is None:
-            raise ValueError("Query result cannot be None")
-
-        # Check for automatic escalation triggers FIRST
-        escalation_result = self._check_escalation_triggers(query_result)
-        if escalation_result:
-            return escalation_result
-
-        # Handle clarification requests from QueryAgent
-        if query_result.requires_clarification:
+        matched, similarity = self._best_match(text, classification.category)
+        if classification.category == SignalCategory.STATUS_CHECK and not matched:
+            rules.append("status_check_no_new_incident")
             return RoutingDecision(
-                target_agent="clarification_agent",
-                parameters={
-                    "question": query_result.clarification_question,
-                    "original_query": query_result.original_query,
-                },
-                fallback_agent="general_agent",
-                priority=Priority.MEDIUM,
-                reasoning="Query requires clarification before proceeding",
-                requires_escalation=False,
-                escalation_reason=None,
+                outcome=RoutingOutcome.ATTACH_TO_INCIDENT,
+                target_queue=QUEUE_FOR[classification.category],
+                severity=Severity.SEV4,
+                sla_minutes=SLA_MINUTES[Severity.SEV4],
+                dedup_similarity=similarity,
+                routing_rules_applied=rules,
+                classification=classification,
+                signal_text=text,
             )
 
-        # Check confidence level - low confidence needs clarification
-        if query_result.confidence < 0.6:
+        if matched and similarity >= DEDUP_THRESHOLD:
+            rules.append(f"dedup>={DEDUP_THRESHOLD}")
             return RoutingDecision(
-                target_agent="clarification_agent",
-                parameters={
-                    "intent_guess": query_result.intent.value,
-                    "confidence": query_result.confidence,
-                },
-                fallback_agent="general_agent",
-                priority=Priority.MEDIUM,
-                reasoning=f"Low confidence ({query_result.confidence:.2f}) - requesting clarification",
-                requires_escalation=False,
-                escalation_reason=None,
+                outcome=RoutingOutcome.ATTACH_TO_INCIDENT,
+                target_queue=QUEUE_FOR[classification.category],
+                severity=severity,
+                sla_minutes=sla_minutes,
+                matched_incident_id=matched.incident_id,
+                dedup_similarity=similarity,
+                magnitude=matched.magnitude + 1,
+                routing_rules_applied=rules,
+                classification=classification,
+                signal_text=text,
             )
 
-        # Look up route in routing table based on intent
-        ROUTING_TABLE = {
-            Intent.KNOWLEDGE_QUERY: ("retrieve_agent", "general_agent"),
-            Intent.PASSWORD_RESET: ("password_agent", "escalation_agent"),
-            Intent.TICKET_STATUS: ("ticket_agent", "general_agent"),
-            Intent.GENERAL_CHAT: ("general_agent", None),
-            Intent.ESCALATION: ("escalation_agent", None),
-            Intent.COURSE_INFO: ("retrieve_agent", "general_agent"),
-            Intent.UNKNOWN: ("clarification_agent", "general_agent"),
-        }
-        primary, fallback = ROUTING_TABLE.get(
-            query_result.intent, ("general_agent", None)
-        )
-
-        # Determine priority
-        priority = self._determine_priority(query_result)
-
-        # Build parameters based on intent
-        parameters = {
-            "query": query_result.original_query,
-            "entities": {e.name: e.value for e in query_result.entities},
-        }
+        escalate, reason = self._escalation(classification, severity)
+        if escalate:
+            rules.append(f"escalate:{reason}")
 
         return RoutingDecision(
-            target_agent=primary,
-            parameters=parameters,
-            fallback_agent=fallback,
-            priority=priority,
-            reasoning=f"Intent '{query_result.intent.value}' with confidence {query_result.confidence:.2f}",
-            requires_escalation=False,
-            escalation_reason=None,
-        )
-
-    def _check_escalation_triggers(
-        self, query_result: QueryResult
-    ) -> RoutingDecision | None:
-        """
-        Check if the query requires automatic escalation.
-
-        Escalation triggers indicate situations that require human intervention
-        regardless of the classified intent. These include:
-        - Legal concerns (lawyer, sue, attorney)
-        - Safety concerns (suicide, harm, hurt myself)
-        - Strong frustration (complaint, manager, supervisor)
-        - Explicit human requests (human, real person)
-
-        Args:
-            query_result: The analyzed query to check.
-
-        Returns:
-            RoutingDecision for escalation if triggers found, None otherwise.
-        """
-        ESCALATION_TRIGGERS = [
-            # Legal
-            "lawyer",
-            "attorney",
-            "legal",
-            "sue",
-            "lawsuit",
-            # Safety (URGENT priority)
-            "suicide",
-            "harm",
-            "hurt myself",
-            "kill",
-            "die",
-            # Frustration
-            "supervisor",
-            "manager",
-            "complaint",
-            "incompetent",
-            # Urgency
-            "emergency",
-            "urgent",
-            "immediately",
-            "right now",
-            # Explicit requests
-            "human",
-            "real person",
-            "speak to someone",
-        ]
-
-        SAFETY_TRIGGERS = ["suicide", "harm", "hurt myself", "kill", "die"]
-        LEGAL_TRIGGERS = ["lawyer", "attorney", "legal", "sue", "lawsuit"]
-
-        query_lower = query_result.original_query.lower()
-        triggered = [kw for kw in ESCALATION_TRIGGERS if kw in query_lower]
-
-        if not triggered:
-            return None
-
-        # Determine priority based on trigger type
-        if any(kw in query_lower for kw in SAFETY_TRIGGERS):
-            priority = Priority.URGENT
-            reason = "Safety concern detected"
-        elif any(kw in query_lower for kw in LEGAL_TRIGGERS):
-            priority = Priority.HIGH
-            reason = "Legal concern detected"
-        else:
-            priority = Priority.HIGH
-            reason = f"Escalation triggered by: {', '.join(triggered)}"
-
-        return RoutingDecision(
-            target_agent="escalation_agent",
-            parameters={
-                "query": query_result.original_query,
-                "triggered_keywords": triggered,
-            },
-            fallback_agent=None,
-            priority=priority,
-            reasoning=reason,
-            requires_escalation=True,
+            outcome=RoutingOutcome.OPEN_INCIDENT,
+            target_queue=QUEUE_FOR[classification.category],
+            severity=severity,
+            sla_minutes=sla_minutes,
+            escalate=escalate,
             escalation_reason=reason,
+            dedup_similarity=similarity,
+            routing_rules_applied=rules,
+            classification=classification,
+            signal_text=text,
         )
 
-    def _determine_priority(self, query_result: QueryResult) -> Priority:
-        """
-        Determine the priority level for a routed query.
+    def _severity(self, classification: SignalClassification) -> Severity:
+        haystack = " ".join(classification.severity_indicators_all() + [classification.signal_text]).lower()
+        if classification.category in {SignalCategory.PUBLIC_SAFETY, SignalCategory.COMPLIANCE_REPORT}:
+            return Severity.SEV1
+        if any(word in haystack for word in ("fire", "gas", "injured", "trapped", "school", "statutory", "no power")):
+            return Severity.SEV1
+        if classification.category in {SignalCategory.INFRASTRUCTURE_OUTAGE, SignalCategory.FIELD_HAZARD}:
+            return Severity.SEV2
+        if classification.category in {SignalCategory.CUSTOMER_INQUIRY, SignalCategory.SERVICE_REQUEST, SignalCategory.STATUS_CHECK, SignalCategory.GENERAL_INQUIRY}:
+            return Severity.SEV4
+        return Severity.SEV3
 
-        Priority is derived from:
-        1. Intent type (ESCALATION is highest priority)
-        2. Specific entity values (e.g., "ASAP" in topic)
-        3. Urgency keywords in original query
+    def _escalation(self, classification: SignalClassification, severity: Severity) -> tuple[bool, Optional[str]]:
+        if severity == Severity.SEV1:
+            return True, "sev1_incident"
+        if classification.category == SignalCategory.HUMAN_REQUEST:
+            return True, "user_requested_human"
+        if classification.pii_detected:
+            return True, "pii_exposure"
+        if classification.confidence < 0.70:
+            return True, "confidence_too_low"
+        return False, None
 
-        Args:
-            query_result: The analyzed query with metadata.
+    def _best_match(self, signal_text: str, category: SignalCategory) -> tuple[Optional[OpenIncident], Optional[float]]:
+        candidates = [incident for incident in self.open_incidents if incident.category == category]
+        if not candidates:
+            return None, None
+        scored = [(incident, self._token_similarity(signal_text, incident.summary)) for incident in candidates]
+        return max(scored, key=lambda item: item[1])
 
-        Returns:
-            Priority enum value.
-        """
-        # High priority intents
-        if query_result.intent == Intent.ESCALATION:
-            return Priority.HIGH
+    def _token_similarity(self, left: str, right: str) -> float:
+        left_tokens = set(left.lower().split())
+        right_tokens = set(right.lower().split())
+        if not left_tokens or not right_tokens:
+            return 0.0
+        overlap = len(left_tokens & right_tokens)
+        return overlap / math.sqrt(len(left_tokens) * len(right_tokens))
 
-        # Check for urgency keywords in original query
-        if any(
-            kw in query_result.original_query.lower()
-            for kw in ["urgent", "asap", "immediately", "emergency"]
-        ):
-            return Priority.HIGH
+    def add_open_incident(self, incident: OpenIncident) -> None:
+        """Lab helper for building a dedup fixture."""
+        self.open_incidents.append(incident)
 
-        # Password reset gets medium priority by default
-        if query_result.intent == Intent.PASSWORD_RESET:
-            return Priority.MEDIUM
-
-        # Default to low priority
-        return Priority.LOW
-
-    def _build_routing_prompt(self, query_result: QueryResult) -> str:
-        """
-        Build the prompt for routing decision (optional LLM-based routing).
-
-        Note: The solution uses rule-based routing via a static ROUTING_TABLE
-        for most cases. This method is provided for complex routing scenarios
-        that require LLM reasoning.
-
-        Args:
-            query_result: The query to route.
-
-        Returns:
-            Formatted prompt string for the LLM.
-        """
-        # Use rule-based routing via ROUTING_TABLE for most cases
-        # LLM-based routing is optional for complex scenarios
-        return f"""Query: {query_result.original_query}
-Intent: {query_result.intent.value}
-Confidence: {query_result.confidence}"""

@@ -1,13 +1,13 @@
 # Exercise 06a: Local Docker Testing
 
 **Duration:** 30 minutes
-**Objective:** Verify your application runs correctly in Docker containers before deploying to Azure
+**Objective:** Verify All Clear runs correctly in Docker containers before deploying to Azure
 
 ---
 
 ## Overview
 
-Before deploying to Azure, it's critical to verify your application works correctly in Docker containers. This exercise walks you through building, running, and testing your containerized application locally.
+Before deploying to Azure, it's critical to verify All Clear works correctly in Docker containers. This exercise walks you through building, running, and testing your containerized application locally.
 
 ---
 
@@ -155,13 +155,13 @@ docker compose build
  => [backend] RUN pip install --no-cache-dir -r requirements.txt
  => [backend] COPY . .
  => [backend] exporting to image
- => => naming to docker.io/library/47doors-backend
+ => => naming to docker.io/library/allclear-backend
 ```
 
 ### 3.2 Verify Image Created
 
 ```bash
-docker images | grep 47doors
+docker images | grep allclear
 ```
 
 **Expected:** Shows the backend (and frontend if applicable) images.
@@ -217,7 +217,7 @@ docker compose ps
 
 ```
 NAME                    STATUS              PORTS
-47doors-backend-1      Up (healthy)        0.0.0.0:8000->8000/tcp
+allclear-backend-1      Up (healthy)        0.0.0.0:8000->8000/tcp
 ```
 
 Note: It may take 30-60 seconds for the health check to pass and show "(healthy)".
@@ -233,17 +233,12 @@ curl http://localhost:8000/api/health
 ```json
 {
   "status": "healthy",
-  "timestamp": "2024-01-15T10:30:00.000Z",
-  "services": {
-    "llm": { "status": "up", "latency_ms": 5 },
-    "ticketing": { "status": "up", "latency_ms": 3 },
-    "knowledge_base": { "status": "up", "latency_ms": 2 },
-    "session_store": { "status": "up", "latency_ms": 1 }
-  }
+  "mock_mode": true,
+  "domain": "all-clear-incident-triage"
 }
 ```
 
-The key field to verify is `"status": "healthy"`. The individual service statuses will show "up" when running in mock mode.
+The key field to verify is `"status": "healthy"`. In mock mode, `mock_mode` is `true`; in Azure live mode it reports the deployed service mode while keeping the health probe lightweight.
 
 ### 4.4 Test API Documentation
 
@@ -252,15 +247,15 @@ Open your browser and navigate to:
 - **API Docs:** http://localhost:8000/docs
 - **Health:** http://localhost:8000/api/health
 
-### 4.5 Test Chat Endpoint (if implemented)
+### 4.5 Test Signals Endpoint (if implemented)
 
 ```bash
-curl -X POST http://localhost:8000/api/chat \
+curl -X POST http://localhost:8000/api/signals \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello!", "session_id": null}'
+  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}'
 ```
 
-**Expected:** JSON response with agent reply.
+**Expected:** JSON response with PipelineResult with classification, routing, and action.
 
 ### Verify Voice & Phone Services (Optional)
 
@@ -403,11 +398,11 @@ You have successfully:
 
 1. Verified Docker installation
 2. Reviewed Dockerfile and docker-compose.yml configurations
-3. Built Docker images for your application
+3. Built Docker images for All Clear
 4. Started and tested containers locally
 5. Verified health check functionality
 
-Your application is now ready for cloud deployment. Proceed to Exercise 06b to deploy to Azure.
+All Clear is now ready for cloud deployment. Proceed to Exercise 06b to deploy to Azure.
 
 ---
 

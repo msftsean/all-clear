@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Clear · Structured ClearBoard</title>
+  <!-- Font substitution: Davinci is not available on Google Fonts, so Playfair Display is used. Helvetica Now is not available on Google Fonts, so Inter is used. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-putty: #c4c3b6;
+      --color-ink: #000000;
+      --color-bone: #e7e5e4;
+      --color-chalk: #ebebeb;
+      --color-vellum: #dfdcd5;
+      --color-graphite: #595855;
+      --color-ash: #808080;
+      --color-paper: #ffffff;
+      --sev1: #E25555;
+      --sev2: #E59A3A;
+      --sev3: #5B8FE8;
+      --clear: #37C281;
+      --font-davinci: 'Playfair Display', ui-serif, Georgia, serif;
+      --font-helvetica-now: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --radius-sm: 2px;
+      --radius-lg: 9px;
+      --radius-buttons: 28.8px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--color-putty); color: var(--color-ink); }
+    body { font-family: var(--font-helvetica-now); font-size: 15px; line-height: 1.5; overflow-x: hidden; }
+    button { font: inherit; }
+
+    .style-badge {
+      position: fixed; z-index: 20; top: 16px; left: 50%; transform: translateX(-50%);
+      padding: 6px 12px; border: 1px solid var(--color-ink); border-radius: var(--radius-buttons);
+      background: var(--color-bone); color: var(--color-ink); font-size: 9px; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase;
+    }
+
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 430px minmax(0, 1fr); }
+    .conversation {
+      min-height: 100vh; padding: 28px 24px 24px; border-right: 1px solid var(--color-ink);
+      background: var(--color-bone); display: flex; flex-direction: column; gap: 20px;
+    }
+    .canvas { min-height: 100vh; padding: 28px 28px 36px; background: var(--color-putty); }
+
+    .header { grid-column: 1 / -1; display: contents; }
+    .brand-row, .status-row { min-height: 48px; display: flex; align-items: center; gap: 16px; }
+    .brand-row { padding-bottom: 20px; }
+    .brand-mark {
+      width: 32px; height: 32px; border: 1.5px solid var(--color-ink); border-radius: 50%;
+      display: grid; place-items: center; font-family: var(--font-davinci); font-size: 18px; font-weight: 500;
+    }
+    .brand-name { font-family: var(--font-davinci); font-size: 34px; line-height: 1; letter-spacing: -0.31px; font-weight: 500; }
+    .status-row { justify-content: flex-end; border-bottom: 1px solid var(--color-vellum); padding-bottom: 20px; }
+    .status-line { font-size: 12px; color: var(--color-graphite); font-weight: 500; letter-spacing: .04em; text-transform: uppercase; }
+    .live-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--sev1); display: inline-block; margin-right: 8px; animation: blink 1.4s steps(2, start) infinite; }
+
+    .label { font-size: 9px; line-height: 1.25; letter-spacing: .12em; text-transform: uppercase; font-weight: 500; color: var(--color-graphite); }
+    .small { font-size: 12px; color: var(--color-graphite); }
+    .panel, .card, .bubble {
+      border: 1px solid var(--color-ink); border-radius: var(--radius-lg); background: var(--color-bone); box-shadow: none;
+    }
+    .panel { padding: 24px; }
+    .audio-panel { margin-top: 4px; display: grid; gap: 16px; }
+    .audio-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .channel { color: var(--color-ink); border: 1px solid var(--color-ink); padding: 5px 9px; border-radius: var(--radius-buttons); background: var(--color-putty); }
+    .wave { height: 42px; display: flex; gap: 6px; align-items: center; padding: 0 2px; }
+    .bar { width: 5px; background: var(--color-ink); border-radius: 28.8px; transform-origin: center; animation: wave 1.05s ease-in-out infinite; }
+    .bar:nth-child(1){height:14px;animation-delay:-.35s}.bar:nth-child(2){height:24px;animation-delay:-.2s}.bar:nth-child(3){height:32px;animation-delay:-.1s}.bar:nth-child(4){height:18px}.bar:nth-child(5){height:38px;animation-delay:-.45s}.bar:nth-child(6){height:26px;animation-delay:-.15s}.bar:nth-child(7){height:34px;animation-delay:-.3s}.bar:nth-child(8){height:16px;animation-delay:-.05s}.bar:nth-child(9){height:30px;animation-delay:-.25s}.bar:nth-child(10){height:21px;animation-delay:-.4s}.bar:nth-child(11){height:35px;animation-delay:-.12s}.bar:nth-child(12){height:18px;animation-delay:-.32s}
+
+    .bubble { padding: 18px; font-size: 15px; }
+    .caller { border-top-left-radius: var(--radius-sm); background: var(--color-chalk); }
+    .agent { border-top-right-radius: var(--radius-sm); font-family: var(--font-davinci); font-size: 16px; letter-spacing: -0.001em; line-height: 1.5; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -8px; }
+    .chip { border: 1px solid var(--color-vellum); border-radius: var(--radius-sm); padding: 5px 7px; font-size: 12px; line-height: 1.25; color: var(--color-ink); background: var(--color-bone); font-variant-numeric: tabular-nums; }
+    .magnitude-line { border-top: 1px dashed var(--color-ink); border-bottom: 1px dashed var(--color-ink); padding: 13px 0; font-family: var(--font-davinci); font-size: 22px; line-height: 1.33; letter-spacing: -0.11px; }
+
+    .board-title { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin: 0 0 20px; }
+    .board-title h1 { margin: 0; font-family: var(--font-davinci); font-size: 94px; line-height: .84; letter-spacing: -0.85px; font-weight: 500; }
+    .board-meta { text-align: right; max-width: 340px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { padding: 24px; min-height: 210px; position: relative; overflow: hidden; }
+    .wide { grid-column: 1 / -1; min-height: 330px; }
+    .eyebrow { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; font-size: 9px; line-height: 1.25; letter-spacing: .12em; text-transform: uppercase; font-weight: 500; color: var(--color-graphite); font-variant-numeric: tabular-nums; }
+    .card h2 { margin: 0 0 12px; font-family: var(--font-davinci); font-size: 34px; line-height: 1.1; letter-spacing: -0.31px; font-weight: 500; }
+    .incident-title { min-height: 76px; }
+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    .metric { border-top: 1px solid var(--color-ink); padding-top: 8px; }
+    .metric .value { font-size: 16px; font-weight: 500; font-variant-numeric: tabular-nums; }
+    .sev { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; }
+    .sev::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+    .sev1 { color: var(--sev1); } .sev2 { color: var(--sev2); } .sev3 { color: var(--sev3); }
+    .near-breach { color: var(--sev1); }
+
+    .map-wrap { height: 246px; border: 1px solid var(--color-vellum); border-radius: var(--radius-lg); background: var(--color-chalk); position: relative; overflow: hidden; }
+    .map-wrap svg { width: 100%; height: 100%; display: block; }
+    .legend { position: absolute; right: 16px; bottom: 16px; display: flex; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--color-ink); border-radius: var(--radius-buttons); background: var(--color-bone); font-size: 12px; color: var(--color-graphite); }
+    .pin { position: absolute; border-radius: 50%; border: 1px solid var(--color-ink); transform: translate(-50%, -50%); background: var(--color-bone); }
+    .pin::after { content: attr(data-mag); position: absolute; inset: 0; display: grid; place-items: center; font-size: 12px; font-weight: 500; color: var(--color-ink); }
+    .p1 { left: 37%; top: 48%; width: 48px; height: 48px; color: var(--sev1); border-color: var(--sev1); }
+    .p2 { left: 62%; top: 35%; width: 34px; height: 34px; color: var(--sev2); border-color: var(--sev2); }
+    .p3 { left: 72%; top: 66%; width: 26px; height: 26px; color: var(--sev3); border-color: var(--sev3); }
+    .pulse { animation: none; }
+    .pulse::before { content: ''; position: absolute; inset: -1px; border: 1px solid var(--sev1); border-radius: 50%; animation: pulse 1.8s ease-out infinite; }
+
+    .sitrep p { margin: 0 0 13px; font-size: 15px; }
+    .cite { display: inline-flex; align-items: center; border: 1px solid var(--color-vellum); border-radius: var(--radius-sm); padding: 1px 5px; font-size: 12px; line-height: 1.25; color: var(--color-graphite); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .receipt { display: grid; gap: 0; }
+    .receipt-row { border-top: 1px dashed var(--color-ink); padding: 12px 0; font-size: 12px; color: var(--color-graphite); font-variant-numeric: tabular-nums; }
+    .receipt-row strong { color: var(--color-ink); font-weight: 500; }
+    .gate { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--color-ink); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .primary { background: var(--clear); color: var(--color-ink); border: 0; border-radius: var(--radius-buttons); padding: 9px 17px; font-size: 12px; font-weight: 400; cursor: pointer; }
+    .primary:focus-visible { outline: 2px solid var(--sev3); outline-offset: 3px; }
+    .approve-mark { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; background: var(--clear); border: 1px solid var(--color-ink); vertical-align: -1px; }
+
+    .hex { width: 12px; height: 12px; display: inline-block; clip-path: polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); border: 1px solid var(--color-ink); background: transparent; }
+    .dark-strip { margin-top: 14px; background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); min-height: 90px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .dark-strip .label, .dark-strip .small { color: var(--color-paper); }
+
+    @keyframes wave { 0%, 100% { transform: scaleY(.55); } 50% { transform: scaleY(1.15); } }
+    @keyframes blink { 50% { opacity: .28; } }
+    @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 70% { transform: scale(1.72); opacity: 0; } 100% { transform: scale(1.72); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .bar { animation: none; transform: scaleY(.8); } .live-dot, .pulse { animation: none; } }
+    @media (max-width: 980px) { .shell { grid-template-columns: 1fr; } .conversation { border-right: 0; } .canvas { display: none; } .style-badge { left: auto; right: 16px; transform: none; } }
+  </style>
+</head>
+<body>
+  <div class="style-badge">Structured</div>
+  <main class="shell" aria-label="All Clear Structured preview">
+    <section class="conversation" aria-label="Conversation column">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div class="brand-name">All Clear</div>
+      </div>
+
+      <div class="panel audio-panel">
+        <div class="audio-head">
+          <div class="label channel">Inbound·phone</div>
+          <div class="label"><span class="live-dot"></span>Live</div>
+        </div>
+        <div class="wave" aria-label="Live audio waveform">
+          <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bubble caller">There’s a power line down across Oak Street, sparking near the school.</div>
+      <div class="chips" aria-label="As-classified chips">
+        <span class="chip">intent=infrastructure-hazard</span>
+        <span class="chip">entity="Oak Street"</span>
+        <span class="chip">severity-cue=life-safety</span>
+        <span class="chip">confidence=0.94</span>
+      </div>
+      <div class="bubble agent">Thank you — I’ve logged this and flagged it for field operations. You’re the 14th caller about the Oak Street line, so crews are already being routed.</div>
+      <div class="magnitude-line">Fourteen neighbors have reported the same hazard; the incident is now weighted for community impact.</div>
+      <div class="panel dark-strip">
+        <div>
+          <div class="label">ClearBoard surge mode</div>
+          <div class="small">Signals stay preserved. Dedup attaches reports to incidents.</div>
+        </div>
+        <span class="hex" aria-hidden="true"></span>
+      </div>
+    </section>
+
+    <section class="canvas" aria-label="Operational canvas">
+      <div class="status-row">
+        <div class="status-line">3 open incidents · 1 SEV1 · 22 signals in last 5 min</div>
+      </div>
+      <div class="board-title">
+        <h1>ClearBoard</h1>
+        <div class="board-meta">
+          <div class="label">Live surge</div>
+          <div class="small">Operational picture rendered on putty paper with flat gallery surfaces.</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <article class="card wide">
+          <div class="eyebrow"><span>Map · AC-1042 · auto</span><span>3 incident pins</span></div>
+          <div class="map-wrap" role="img" aria-label="Stylized map with three incident pins">
+            <svg viewBox="0 0 1000 260" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M85,44 C178,20 255,48 345,32 C473,9 554,64 664,43 C780,22 864,44 930,87 L900,219 C797,239 704,213 616,232 C505,256 409,202 298,226 C202,247 138,222 65,194 Z" fill="#e7e5e4" stroke="#000000" stroke-width="2"/>
+              <path d="M122 175 C260 112 389 105 545 127 C664 144 774 126 895 73" fill="none" stroke="#595855" stroke-width="2"/>
+              <path d="M177 52 C237 108 271 158 315 224" fill="none" stroke="#dfdcd5" stroke-width="3"/>
+              <path d="M432 34 C438 91 431 159 468 230" fill="none" stroke="#dfdcd5" stroke-width="3"/>
+              <path d="M613 50 C636 104 673 159 742 218" fill="none" stroke="#dfdcd5" stroke-width="3"/>
+              <path d="M125 118 L895 118" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="8 10"/>
+              <path d="M265 72 L782 205" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="5 12"/>
+              <text x="310" y="104" fill="#595855" font-family="Inter, sans-serif" font-size="12">Oak Street</text>
+              <text x="617" y="91" fill="#595855" font-family="Inter, sans-serif" font-size="12">Maple district</text>
+            </svg>
+            <span class="pin p1 pulse" data-mag="14" aria-label="SEV1 incident AC-1042 magnitude 14"></span>
+            <span class="pin p2" data-mag="6" aria-label="SEV2 incident AC-1043 magnitude 6"></span>
+            <span class="pin p3" data-mag="2" aria-label="SEV3 incident AC-1044 magnitude 2"></span>
+            <div class="legend"><span class="sev sev1">SEV1</span><span class="sev sev2">SEV2</span><span class="sev sev3">SEV3</span></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1042 · auto</span><span>field-operations</span></div>
+          <h2 class="incident-title">Oak Street power line down</h2>
+          <div class="sev sev1">SEV1</div>
+          <div class="metrics">
+            <div class="metric"><div class="label">Magnitude</div><div class="value">14</div></div>
+            <div class="metric"><div class="label">SLA</div><div class="value near-breach">15:00 countdown</div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1043 · auto</span><span>engineering</span></div>
+          <h2 class="incident-title">Intermittent outage — Maple district</h2>
+          <div class="sev sev2">SEV2</div>
+          <div class="metrics">
+            <div class="metric"><div class="label">Magnitude</div><div class="value">6</div></div>
+            <div class="metric"><div class="label">SLA</div><div class="value">1:00:00</div></div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1044 · auto</span><span>customer-comms</span></div>
+          <h2 class="incident-title">Billing portal returning 500s</h2>
+          <div class="sev sev3">SEV3</div>
+          <div class="metrics">
+            <div class="metric"><div class="label">Magnitude</div><div class="value">2</div></div>
+            <div class="metric"><div class="label">SLA</div><div class="value">4:00:00</div></div>
+          </div>
+        </article>
+
+        <article class="card sitrep">
+          <div class="eyebrow"><span>Sitrep · pinned by: “give me a sitrep”</span><span>ActionAgent</span></div>
+          <h2>Situation report</h2>
+          <p>Oak Street has a downed, sparking power line near the school <span class="cite">[AC-1042]</span>.</p>
+          <p>Fourteen inbound phone signals have attached to the same incident through dedup <span class="cite">[signal #14]</span>.</p>
+          <p>RouterExecutor mapped the life-safety cue to SEV1 and routed field operations with immediate escalation <span class="cite">[AC-1042]</span>.</p>
+        </article>
+
+        <article class="card wide">
+          <div class="eyebrow"><span>Decision receipt · AC-1042 · auto</span><span>approval boundary</span></div>
+          <div class="receipt">
+            <div class="receipt-row"><strong>QueryAgent · gpt-4.1</strong> · classified infrastructure-hazard (0.94)</div>
+            <div class="receipt-row"><strong>RouterExecutor · deterministic</strong> · no LLM · dedup 0.91 ≥ 0.83 → attach; SEV1; escalate</div>
+            <div class="receipt-row"><strong>ActionAgent · gpt-4.1</strong> · create_incident + generate_sitrep</div>
+          </div>
+          <div class="gate">
+            <button class="primary" data-testid="approve-publish-button"><span class="approve-mark"></span>Approve &amp; publish</button>
+            <div class="small">15-minute undo window</div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
+

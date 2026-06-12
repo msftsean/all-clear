@@ -8,7 +8,7 @@
 
 ---
 
-> 📢 **BOOT CAMP NOTE:** The Azure AI Search index `university-kb` has been **pre-populated** with 32 KB articles and embeddings. **Skip Steps 2 and 3** and proceed directly to **Step 4: Implement the Search Tool**.
+> 📢 **BOOT CAMP NOTE:** The Azure AI Search index `allclear-kb` has been **pre-populated** with incident runbooks, SOPs, response procedures, and embeddings. **Skip Steps 2 and 3** and proceed directly to **Step 4: Implement the Search Tool**.
 >
 > 🧪 **Verify your setup first:**
 > ```bash
@@ -38,43 +38,45 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. 🔧 **Set up Azure AI Search with hybrid search** - Configure an Azure AI Search index that supports both vector and keyword search for optimal retrieval
-2. 🧠 **Create embeddings for KB articles** - Generate vector embeddings from knowledge base documents and index them for semantic search
-3. 📚 **Build a RetrieveAgent with citations** - Implement an agent that retrieves relevant documents and includes proper citations in responses
+1. 🔧 **Set up Azure AI Search with hybrid search** - Configure an Azure AI Search index that supports both vector and keyword search over incident runbooks and SOPs
+2. 🧠 **Create embeddings for incident knowledge articles** - Generate vector embeddings from source records and index them for semantic search
+3. 📚 **Build ActionAgent.search_knowledge with citations** - Implement retrieval that returns KnowledgeArticles and Citations for grounded sitreps
 
 ---
 
 ## 🤔 What is RAG?
 
-**Retrieval-Augmented Generation (RAG)** is a technique that enhances AI responses by retrieving relevant information from a knowledge base before generating answers. Instead of relying solely on the model's training data, RAG:
+**Retrieval-Augmented Generation (RAG)** is a technique that enhances All Clear responses by retrieving relevant runbooks, SOPs, and response procedures before generating answers or sitreps. Instead of relying solely on the model's training data, RAG:
 
-1. 🔍 **Retrieves** relevant documents from your knowledge base
+1. 🔍 **Retrieves** relevant source records from your incident knowledge base
 2. ➕ **Augments** the prompt with this retrieved context
 3. 💬 **Generates** a response grounded in your specific data
+
+> **Constitution Article IV: Truth Over Fluency** — sitreps and responses cite source records for every factual claim. **No citation, no claim.**
 
 ### 🌟 Why RAG Matters
 
 | 🚫 Without RAG | ✅ With RAG |
 |-------------|----------|
-| Responses based only on training data | Responses grounded in your data |
-| May hallucinate facts | Can cite specific sources |
-| Outdated information | Access to current documents |
-| Generic answers | Domain-specific answers |
+| Responses based only on training data | Responses grounded in All Clear source records |
+| May invent procedures | Can cite specific runbooks and SOPs |
+| Outdated information | Access to current response procedures |
+| Generic answers | Incident-triage-specific answers |
 | No source attribution | Clear citations and references |
 
 ### 🏗️ RAG Architecture
 
 ```
 +------------------+       +------------------+       +------------------+
-|   User Query     |       |   Embedding      |       |   Azure AI       |
-|   "How do I      | ----> |   Model          | ----> |   Search         |
-|    reset pwd?"   |       |   (Vectorize)    |       |   (Retrieve)     |
+|   Signal /       |       |   Embedding      |       |   Azure AI       |
+|   incident query | ----> |   Model          | ----> |   Search         |
+|   "gas odor"     |       |   (Vectorize)    |       |   (Retrieve)     |
 +------------------+       +------------------+       +------------------+
                                                               |
                                                               v
 +------------------+       +------------------+       +------------------+
 |   Response       |       |   LLM            |       |   Retrieved      |
-|   with Citations | <---- |   (Generate)     | <---- |   Documents      |
+|   with Citations | <---- |   (Generate)     | <---- |   SOPs/runbooks  |
 +------------------+       +------------------+       +------------------+
 ```
 
@@ -88,13 +90,13 @@ By the end of this lab, you will be able to:
 - 🔢 Converts text to numerical vectors (embeddings)
 - 🔍 Finds semantically similar content
 - 📝 Handles synonyms and related concepts
-- ✅ Great for: "What's the policy on working from home?" finding "Remote work guidelines"
+- ✅ Great for: "caller smells rotten eggs near the meter" finding "Gas Odor and Leak Response SOP"
 
 ### 📝 Keyword Search (Lexical)
 - 🔤 Traditional text matching (BM25)
 - 🎯 Exact term matching with relevance scoring
 - 📌 Handles specific terminology and names
-- ✅ Great for: Finding "Error code E-1234" or "Form W-2"
+- ✅ Great for: Finding "NFIRS / NIBRS" or "AC-1042"
 
 ### 🤝 Why Hybrid?
 
@@ -114,19 +116,15 @@ In this lab, you will build the following components:
 
 ```
 labs/04-build-rag-pipeline/
-  📁 data/                    # Knowledge base articles (JSON)
+  📁 data/                    # Incident knowledge articles (JSON)
   📁 start/
-    📄 index_schema.json      # Azure AI Search index definition
-    📄 indexer.py             # Script to index KB articles
     📄 retrieve_agent.py      # RetrieveAgent implementation (skeleton)
     📄 search_tool.py         # Search tool implementation (skeleton)
-    📄 config.py              # Configuration settings
   📁 solution/
-    📄 index_schema.json      # Complete index definition
-    📄 indexer.py             # Complete indexer script
     📄 retrieve_agent.py      # Complete RetrieveAgent
     📄 search_tool.py         # Complete search tool
-    📄 config.py              # Complete configuration
+  📄 setup_index.py           # Create/index All Clear KB articles
+  📄 verify_index.py          # Verify pre-indexed All Clear data
 ```
 
 ---
@@ -135,37 +133,40 @@ labs/04-build-rag-pipeline/
 
 ### 🔹 Step 1: Understand Your Knowledge Base
 
-The `data/` directory contains knowledge base articles in JSON format. Each article has:
+The `data/` directory contains incident knowledge articles in JSON format. Each article has:
 
 ```json
 {
-  "id": "kb-001",
-  "title": "Password Reset Procedure",
-  "content": "To reset your password, follow these steps...",
-  "category": "Security",
-  "lastUpdated": "2024-01-15",
-  "tags": ["password", "security", "account"]
+  "article_id": "kb-field-001",
+  "title": "Downed Power Line Field-Operations SOP",
+  "url": "https://allclear.example/runbooks/field-operations/downed-power-line",
+  "content": "Treat every downed line as energized until engineering confirms isolation...",
+  "snippet": "Field-operations SOP for downed power line isolation.",
+  "queue": "field-operations",
+  "category": "field_hazard",
+  "last_updated": "2026-01-15T10:00:00Z",
+  "tags": ["downed line", "SEV1", "field-operations"]
 }
 ```
 
-Before indexing, review the KB articles to understand:
+Before indexing, review the incident knowledge articles to understand:
 - 📊 How many articles exist
-- 🏷️ What categories and topics they cover
+- 🏷️ Which queues, categories, and topics they cover
 - 📏 The structure and length of content
 
 ```bash
-# 📊 Count KB articles
+# 📊 Count incident knowledge articles
 ls data/*.json | wc -l
 
 # 👀 Preview an article
-cat data/kb-001.json | jq .
+cat data/field_operations_sops.json | jq .
 ```
 
 ### 🔹 Step 2: Create the Azure AI Search Index
 
 > ⏭️ **SKIP THIS STEP** - The index has been pre-created for the boot camp. Read this section for understanding only.
 
-The search index defines how documents are stored and queried. Open `start/index_schema.json` and configure:
+The search index defines how documents are stored and queried. `setup_index.py` configures:
 
 #### 📋 Fields Configuration
 
@@ -174,10 +175,11 @@ The search index defines how documents are stored and queried. Open `start/index
 | `id` | String (Key) | Unique document identifier |
 | `title` | String (Searchable) | Article title for keyword search |
 | `content` | String (Searchable) | Full article text |
-| `contentVector` | Collection(Single) | Vector embedding for semantic search |
+| `content_vector` | Collection(Single) | Vector embedding for semantic search |
+| `queue` | String (Filterable) | All Clear queue (`field-operations`, `customer-comms`, `compliance-desk`, `engineering`, `escalations`) |
 | `category` | String (Filterable) | For filtering by category |
 | `tags` | Collection(String) | For filtering by tags |
-| `lastUpdated` | DateTimeOffset | For sorting by recency |
+| `last_updated` | String | For sorting by recency |
 
 #### 🧠 Vector Configuration
 
@@ -185,7 +187,7 @@ Configure the vector field for hybrid search:
 
 ```json
 {
-  "name": "contentVector",
+  "name": "content_vector",
   "type": "Collection(Edm.Single)",
   "dimensions": 1536,
   "vectorSearchProfile": "my-vector-profile"
@@ -210,23 +212,30 @@ Enable semantic ranking for improved relevance:
 }
 ```
 
-**Task:** ~~Complete the index schema in `start/index_schema.json`.~~ *(Pre-completed for boot camp)* ✅
+**Task:** ~~Review the index schema in `setup_index.py`.~~ *(Pre-completed for boot camp)* ✅
 
-### 🔹 Step 3: Generate Embeddings and Index Documents
+### 🔹 Step 3: Generate Embeddings and Index Source Records
 
-> ⏭️ **SKIP THIS STEP** - All 32 KB articles have been pre-indexed with embeddings. Read this section for understanding only.
+> ⏭️ **SKIP THIS STEP** - All incident runbooks, SOPs, and response procedures have been pre-indexed with embeddings. Read this section for understanding only.
 
-Open `start/indexer.py` and implement the indexing pipeline:
+Open `setup_index.py` and review the indexing pipeline:
 
 #### 3a: 📂 Load KB Articles
 
 ```python
 def load_kb_articles(data_dir: str) -> list[dict]:
-    """Load all KB articles from the data directory."""
+    """Load All Clear incident runbooks and SOPs from the data directory."""
+    kb_files = [
+        "field_operations_sops.json",
+        "outage_response_kb.json",
+        "compliance_reporting_kb.json",
+        "customer_comms_templates.json",
+        "public_safety_sops.json",
+    ]
     articles = []
-    for file_path in Path(data_dir).glob("*.json"):
-        with open(file_path) as f:
-            articles.append(json.load(f))
+    for file_name in kb_files:
+        with open(Path(data_dir) / file_name) as f:
+            articles.extend(json.load(f))
     return articles
 ```
 
@@ -246,38 +255,39 @@ async def generate_embedding(text: str, client: AsyncAzureOpenAI) -> list[float]
 
 #### 3c: ⬆️ Upload to Index
 
-Create and upload documents to Azure AI Search:
+Create and upload source records to Azure AI Search:
 
 ```python
 async def index_documents(articles: list[dict], search_client: SearchClient):
-    """Index KB articles with embeddings into Azure AI Search."""
+    """Index incident knowledge articles with embeddings into Azure AI Search."""
     documents = []
     for article in articles:
         # Generate embedding for content
         embedding = await generate_embedding(article["content"], openai_client)
 
         documents.append({
-            "id": article["id"],
+            "id": article["article_id"],
             "title": article["title"],
             "content": article["content"],
-            "contentVector": embedding,
+            "content_vector": embedding,
+            "queue": article["queue"],
             "category": article["category"],
             "tags": article.get("tags", []),
-            "lastUpdated": article["lastUpdated"]
+            "last_updated": article["last_updated"]
         })
 
     # Upload in batches
     result = search_client.upload_documents(documents)  # Note: use azure.search.documents.aio for async
-    print(f"Indexed {len(result)} documents")
+    print(f"Indexed {len(result)} source records")
 ```
 
-**Task:** ~~Complete the indexer in `start/indexer.py` and run it to populate your index.~~ *(Pre-completed for boot camp)* ✅
+**Task:** ~~Run `setup_index.py` to populate your index.~~ *(Pre-completed for boot camp)* ✅
 
 ```bash
 # ⏭️ (SKIP) Run the indexer - already done
-# python start/indexer.py --data-dir ./data
+# python setup_index.py
 
-# ✅ Verify documents were indexed
+# ✅ Verify source records were indexed
 python verify_index.py
 ```
 
@@ -297,7 +307,7 @@ def create_vector_query(query_embedding: list[float]) -> VectorizedQuery:
     return VectorizedQuery(
         vector=query_embedding,
         k_nearest_neighbors=5,
-        fields="contentVector"
+        fields="content_vector"
     )
 ```
 
@@ -315,7 +325,7 @@ async def hybrid_search(
     Perform hybrid search combining vector and keyword search.
 
     Args:
-        query: User's search query
+        query: Incident-triage search query
         search_client: Azure AI Search client
         openai_client: Azure OpenAI client for embeddings
         top_k: Number of results to return
@@ -331,7 +341,7 @@ async def hybrid_search(
     vector_query = VectorizedQuery(
         vector=query_embedding,
         k_nearest_neighbors=top_k,
-        fields="contentVector"
+        fields="content_vector"
     )
 
     # 🏷️ Build filter if category specified
@@ -344,7 +354,7 @@ async def hybrid_search(
         query_type="semantic",  # Enable semantic ranking
         semantic_configuration_name="my-semantic-config",
         filter=filter_expr,
-        select=["id", "title", "content", "category", "lastUpdated"],
+        select=["id", "title", "content", "snippet", "queue", "category", "last_updated"],
         top=top_k
     )
 
@@ -353,6 +363,8 @@ async def hybrid_search(
             "id": doc["id"],
             "title": doc["title"],
             "content": doc["content"],
+            "snippet": doc.get("snippet"),
+            "queue": doc["queue"],
             "category": doc["category"],
             "score": doc["@search.score"]
         }
@@ -370,7 +382,7 @@ Open `start/retrieve_agent.py` and implement the RAG agent:
 
 ```python
 class RetrieveAgent:
-    """Agent that retrieves relevant KB articles and generates cited responses."""
+    """Agent that retrieves relevant incident knowledge and generates cited responses."""
 
     def __init__(
         self,
@@ -384,14 +396,14 @@ class RetrieveAgent:
 
     async def answer(self, query: str) -> RetrieveResponse:
         """
-        Answer a user query using RAG.
+        Answer an incident-triage query using RAG.
 
-        1. 🔍 Search for relevant documents
+        1. 🔍 Search for relevant runbooks/SOPs
         2. 📝 Build context with citations
         3. 💬 Generate response with source attribution
         """
-        # Step 1: Retrieve relevant documents
-        documents = await hybrid_search(
+        # Step 1: Retrieve relevant runbooks/SOPs
+        source_records = await hybrid_search(
             query=query,
             search_client=self.search_client,
             openai_client=self.openai_client,
@@ -399,10 +411,10 @@ class RetrieveAgent:
         )
 
         # Step 2: Build context with numbered citations
-        context = self._build_context(documents)
+        context = self._build_context(source_records)
 
         # Step 3: Generate response
-        response = await self._generate_response(query, context, documents)
+        response = await self._generate_response(query, context, source_records)
 
         return response
 ```
@@ -410,12 +422,12 @@ class RetrieveAgent:
 #### 5b: 📚 Building Context with Citations
 
 ```python
-def _build_context(self, documents: list[dict]) -> str:
-    """Build context string with numbered citations."""
+def _build_context(self, source_records: list[dict]) -> str:
+    """Build context string with numbered source records."""
     context_parts = []
-    for i, doc in enumerate(documents, 1):
+    for i, doc in enumerate(source_records, 1):
         context_parts.append(
-            f"[{i}] {doc['title']}\n{doc['content']}\n"
+            f"[{i}] {doc['title']} ({doc['id']})\n{doc['content']}\n"
         )
     return "\n---\n".join(context_parts)
 ```
@@ -427,16 +439,16 @@ async def _generate_response(
     self,
     query: str,
     context: str,
-    documents: list[dict]
+    source_records: list[dict]
 ) -> RetrieveResponse:
     """Generate a response with proper citations."""
 
-    system_prompt = """You are a helpful assistant that answers questions based on the provided knowledge base articles.
+    system_prompt = """You support All Clear ActionAgent.search_knowledge and answer based on the provided source records.
 
 IMPORTANT RULES:
 1. ✅ Only answer based on the provided context
-2. 📝 Always cite your sources using [1], [2], etc.
-3. 🚫 If the context doesn't contain relevant information, say so
+2. 📝 Every factual claim must cite a source using [1], [2], etc.
+3. 🚫 If the context doesn't contain relevant information, say so and escalate uncertainty
 4. ✂️ Be concise but complete
 5. 📚 Include all relevant citations at the end of your response
 
@@ -444,8 +456,8 @@ Format your response as:
 <answer with inline citations>
 
 Sources:
-[1] <title>
-[2] <title>
+[1] <title> (<id>)
+[2] <title> (<id>)
 ..."""
 
     user_prompt = f"""Context:
@@ -468,7 +480,7 @@ Please provide a helpful answer with citations."""
         answer=response.choices[0].message.content,
         sources=[
             {"id": doc["id"], "title": doc["title"]}
-            for doc in documents
+            for doc in source_records
         ]
     )
 ```
@@ -489,9 +501,9 @@ async def test_rag_pipeline():
 
     # 🧪 Test queries
     test_queries = [
-        "How do I reset my password?",
-        "What is the vacation policy?",
-        "How do I submit an expense report?",
+        "What should field-operations do for a downed power line?",
+        "What should customer-comms say during an outage surge?",
+        "Which NFIRS/NIBRS facts belong in the sitrep?",
     ]
 
     for query in test_queries:
@@ -551,9 +563,9 @@ By the end of this lab, you should have:
 - ✅ **Solution:** Ensure field names in query match index schema
 
 **Issue:** Citations are missing or incorrect
-- ✅ **Solution:** Verify document IDs are preserved through the pipeline
+- ✅ **Solution:** Verify source record IDs are preserved through the pipeline
 - ✅ **Solution:** Check that the system prompt clearly instructs citation format
-- ✅ **Solution:** Ensure retrieved documents are passed to the generation step
+- ✅ **Solution:** Ensure retrieved source records are passed to the generation step
 
 **Issue:** Low relevance scores for obvious matches
 - ✅ **Solution:** Enable semantic ranking in your index
@@ -565,7 +577,7 @@ By the end of this lab, you should have:
 1. [ ] ☁️ Azure AI Search service is running and accessible
 2. [ ] 🧠 Azure OpenAI embeddings endpoint is configured
 3. [ ] 📄 Index schema is valid and created successfully
-4. [ ] 📊 Documents are indexed (check document count)
+4. [ ] 📊 Source records are indexed (check document count)
 5. [ ] 🔢 Embeddings have correct dimensions
 6. [ ] 🔍 Hybrid search returns results for test queries
 7. [ ] 📚 Citations appear in generated responses
@@ -594,7 +606,7 @@ Once your RAG pipeline returns relevant, cited responses for all test queries, p
 
 **[Lab 05 - Agent Orchestration](../05-agent-orchestration/README.md)** 🔄
 
-In the next lab, you will learn how to orchestrate multiple agents including your RetrieveAgent in a cohesive system.
+In the next lab, you will orchestrate QueryAgent → RouterExecutor → ActionAgent and run a surge where dedup attaches reports to incidents.
 
 ---
 

@@ -17,8 +17,8 @@ Checkpoints:
 □ Step 1: Understand the Templates
 □ Step 2: Write Your Spec (Exercise 03a)
 □ Step 3: Generate Code from Spec (Exercise 03b)
-□ Create Escalation Detection Agent Spec
-□ Create Higher Ed Constitution
+□ Create Escalation Detection Capability Spec
+□ Create All Clear Constitution
 ```
 
 ---
@@ -27,13 +27,13 @@ Checkpoints:
 
 Spec-driven development is a methodology where you write detailed specifications *before* writing code. This approach is particularly powerful when working with AI coding assistants like GitHub Copilot, as clear specifications help the AI generate more accurate, aligned code on the first attempt.
 
-In this lab, you will learn to write specifications that serve as contracts between human intent and AI-generated code, ensuring that generated solutions meet your exact requirements.
+In this lab, you will learn to write specifications that serve as contracts between human intent and AI-generated code, ensuring that generated solutions meet All Clear's exact incident-triage requirements: bounded authority, escalation as a safety control, and truth over fluency.
 
 ## 🎯 Learning Objectives
 
 By the end of this lab, you will be able to:
 
-1. 📋 **Write a SPEC.md** for an agent feature that clearly defines requirements, constraints, and success criteria
+1. 📋 **Write a SPEC.md** for an All Clear capability that clearly defines requirements, constraints, and success criteria
 2. 🛡️ **Create a constitution.md** with guardrails that establish boundaries and principles for AI agent behavior
 3. 💻 **Generate code from spec** using GitHub Copilot, leveraging your specifications as context
 
@@ -66,7 +66,7 @@ This lab contains two exercises:
 
 | 📋 Exercise | 📝 Title | ⏱️ Duration | 📖 Description |
 |----------|-------|----------|-------------|
-| 03a | Write a Spec | 25 min | Create a specification for an Escalation Detection Agent |
+| 03a | Write a Spec | 25 min | Create a specification for an All Clear escalation detection capability |
 | 03b | Generate from Spec | 20 min | Use Copilot to generate code from your specification |
 
 ## 📝 Step-by-Step Instructions
@@ -84,7 +84,7 @@ These templates provide scaffolding for your specifications.
 
 Navigate to `exercises/03a-write-spec.md` and follow the instructions to:
 
-1. 🎯 Define the Escalation Detection Agent feature
+1. 🎯 Define an All Clear escalation detection capability, such as a statutory-clock detector or escalation-reason classifier
 2. 👤 Write user stories from multiple perspectives
 3. 📋 Document functional requirements
 4. ✅ Establish success criteria and constraints
@@ -103,17 +103,17 @@ Navigate to `exercises/03b-generate-from-spec.md` and follow the instructions to
 
 By the end of this lab, you will have created:
 
-### 1. 📋 Escalation Detection Agent Spec (`your-spec.md`)
+### 1. 📋 Escalation Detection Capability Spec (`your-spec.md`)
    - ✅ Complete feature specification following the template
-   - 👤 User stories covering student, advisor, and system perspectives
+   - 👤 User stories covering reporter, operator, and system perspectives
    - 📋 Detailed functional requirements
    - 📊 Measurable success criteria
 
-### 2. 🛡️ Higher Ed Constitution (`your-constitution.md`)
-   - 📜 Core principles for AI agents in educational contexts
-   - 🚧 Clear agent boundaries
+### 2. 🛡️ All Clear Constitution (`your-constitution.md`)
+   - 📜 Core principles for AI agents in incident-triage contexts
+   - 🚧 Clear agent boundaries aligned to QueryAgent → RouterExecutor → ActionAgent
    - 🚫 Prohibited actions and behaviors
-   - 🔐 FERPA and accessibility considerations
+   - 🔐 CJIS-mindset privacy, audit, and accessibility considerations
 
 ## 🏗️ Key Concepts
 
@@ -171,7 +171,7 @@ By the end of this lab, you will have created:
 
 - 📖 [Specification by Example](https://en.wikipedia.org/wiki/Specification_by_example) - Background on spec-driven approaches
 - 🤖 [GitHub Copilot Documentation](https://docs.github.com/en/copilot) - Official Copilot guides
-- 🔐 [FERPA Basics for Developers](https://studentprivacy.ed.gov/) - Understanding educational data privacy
+- 🛡️ [`../../shared/constitution.md`](../../shared/constitution.md) - All Clear constitution: bounded authority, escalation safety, truth over fluency
 
 ## ➡️ Next Steps
 
@@ -203,6 +203,6 @@ Start with **[Exercise 03a: Write a Spec](exercises/03a-write-spec.md)** 📝
 
 [← Lab 02](../02-azure-mcp-setup/README.md) | **Lab 03** | [Lab 04 →](../04-build-rag-pipeline/README.md)
 
-📅 Last Updated: 2026-02-04 | 📝 Version: 1.0.0
+📅 Last Updated: 2026-06-12 | 📝 Version: 1.1.0
 
 </div>

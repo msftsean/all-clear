@@ -1,10 +1,10 @@
-# Exercise 03a: Write a Spec for the Escalation Detection Agent
+# Exercise 03a: Write a Spec for an All Clear Escalation Capability
 
 **Duration:** 25 minutes
 
 ## Overview
 
-In this exercise, you will write a complete specification for an **Escalation Detection Agent**. This agent monitors student communications and interactions to identify situations that may require human intervention, such as academic distress, accessibility needs, or urgent support requests.
+In this exercise, you will write a complete specification for an **All Clear escalation capability**. This capability monitors inbound signals to identify situations that require mandatory human handoff, such as statutory clocks, life safety, total outages, PII exposure, or explicit requests for a human.
 
 ## Learning Objectives
 
@@ -13,17 +13,17 @@ In this exercise, you will write a complete specification for an **Escalation De
 - Create measurable success criteria
 - Document constraints and boundaries
 
-## Background: The Escalation Detection Agent
+## Background: The Escalation Capability
 
-Higher education institutions receive thousands of student communications daily. Some of these communications contain signals that require urgent human attention:
+All Clear receives high-volume signals during incidents and surges. Some signals require immediate human attention regardless of model output:
 
-- A student expressing academic distress or mental health concerns
-- Requests for disability accommodations
-- Complaints about discrimination or harassment
-- Financial aid emergencies
-- Safety concerns
+- A downed power line, gas leak, or transformer fire
+- A statutory clock such as breach notification or recall reporting
+- A total outage or spreading public-facing impairment
+- PII exposure that must not be echoed back
+- An explicit request for human handoff
 
-The Escalation Detection Agent will analyze incoming communications and flag those requiring human review, categorize them by urgency and type, and route them to appropriate staff.
+The escalation capability will analyze incoming signals, identify mandatory escalation triggers, assign reason codes, force SEV1 where required, and route the incident to the appropriate human queue.
 
 ## Instructions
 
@@ -31,28 +31,28 @@ The Escalation Detection Agent will analyze incoming communications and flag tho
 
 1. Create a new file called `your-spec.md` in the lab directory
 2. Use the template from `templates/spec-template.md` as your starting point
-3. Complete each section for the Escalation Detection Agent
+3. Complete each section for an All Clear capability such as a statutory-clock detector or escalation-reason classifier
 
 #### Required Sections
 
 **Feature Name:**
-Name your feature clearly (e.g., "Escalation Detection Agent" or similar)
+Name your feature clearly (e.g., "Statutory-Clock Escalation Detector" or similar)
 
 **User Stories (minimum 3):**
 
 Write user stories from these perspectives:
 
-1. **Student Perspective:** A student who needs their urgent concern addressed quickly
-2. **Advisor/Staff Perspective:** A staff member who needs to prioritize their response queue
-3. **System/Admin Perspective:** An administrator who needs oversight and reporting
+1. **Reporter Perspective:** A person whose urgent signal must receive immediate triage
+2. **Operator Perspective:** A human queue member who needs clear escalation context
+3. **System/Admin Perspective:** An administrator who needs auditability and stable routing behavior
 
 **Functional Requirements (minimum 5):**
 
 Consider these categories:
-- Input processing (what data does the agent receive?)
+- Input processing (what signal data does the capability receive?)
 - Detection logic (how does it identify escalation signals?)
-- Classification (what categories of escalation exist?)
-- Routing (how are flagged items assigned?)
+- Classification (which `EscalationReason` values are emitted?)
+- Routing (which queue receives the incident?)
 - Notification (how are humans alerted?)
 
 **Success Criteria:**
@@ -67,24 +67,24 @@ Define measurable criteria such as:
 
 Address these constraint categories:
 - Technical (language, framework, dependencies)
-- Compliance (FERPA, accessibility)
-- Operational (what the agent cannot do)
+- Compliance (PII handling, audit records, accessibility)
+- Operational (what the capability cannot do)
 
 ### Part 2: Create Your Constitution (10 minutes)
 
 1. Create a new file called `your-constitution.md` in the lab directory
 2. Use the template from `templates/constitution-template.md` as your starting point
-3. Complete the following sections for the Higher Education context
+3. Complete the following sections for the All Clear incident-triage context
 
 #### Required Sections
 
 **Core Principles (minimum 3):**
 
-Consider principles like:
-- Student privacy and dignity
-- Human oversight for sensitive decisions
-- Transparency in automated decisions
-- Avoiding bias and discrimination
+Use principles from the All Clear constitution:
+- Data discipline with a CJIS mindset
+- Bounded authority
+- Escalation is a safety control
+- Truth over fluency
 
 **Agent Boundaries:**
 
@@ -96,39 +96,39 @@ Define what the agent:
 **Prohibited Actions:**
 
 List actions the agent must NEVER perform:
-- Related to student data
-- Related to automated decisions
-- Related to communication
+- Related to PII or signal preservation
+- Related to unauthorized incident mutation
+- Related to suppressing escalation or fabricating citations
 
 **Compliance Requirements:**
 
 Address:
-- FERPA (student records privacy)
-- ADA/Accessibility
-- Institutional policies
+- CJIS-mindset data discipline
+- Audit logging and traceability
+- Accessibility and clear communication
 
 ## Example Content
 
 Here's an example user story to guide your writing:
 
-> **Story: Urgent Mental Health Concern**
+> **Story: Statutory Clock Referenced**
 >
-> As a **student in crisis**,
-> I want **my message about struggling mentally to be flagged for immediate human review**
-> So that **I receive timely support from a counselor rather than an automated response**
+> As a **compliance operator**,
+> I want **signals that mention breach-notification deadlines to force SEV1 and escalate**
+> So that **a legally mandated clock is never delayed by automation**
 >
 > **Acceptance Criteria:**
-> - [ ] Messages containing mental health keywords are flagged within 30 seconds
-> - [ ] Flagged messages are routed to counseling services queue
-> - [ ] Student receives acknowledgment that their message is being prioritized
-> - [ ] Human counselor is notified via urgent alert
+> - [ ] Signals containing statutory-clock terms are flagged within 30 seconds
+> - [ ] Flagged signals produce `EscalationReason.STATUTORY_CLOCK`
+> - [ ] RouterExecutor assigns SEV1 with a 15-minute SLA
+> - [ ] The incident is routed to `compliance-desk` and escalated to humans
 
 Here's an example prohibited action:
 
 | Prohibited Action | Severity | Rationale |
 |-------------------|----------|-----------|
-| Responding to mental health concerns without human review | Critical | Students in crisis need human support; automated responses could cause harm |
-| Sharing escalation reasons with other students | Critical | Violates student privacy and could cause stigmatization |
+| Downgrading a statutory-clock signal below SEV1 | Critical | Statutory clocks always escalate; model output cannot downgrade them |
+| Echoing PII from a signal into a response | Critical | All Clear uses CJIS-mindset data discipline and must not expose sensitive data |
 
 ## Validation Checklist
 
@@ -136,31 +136,31 @@ Before moving to Exercise 03b, verify your spec:
 
 - [ ] Feature name is clear and descriptive
 - [ ] At least 3 user stories with acceptance criteria
-- [ ] At least 5 functional requirements with priorities
+- [ ] At least 5 functional requirements with severity/queue terminology
 - [ ] Success criteria are measurable (include numbers/percentages)
-- [ ] Constraints address FERPA and accessibility
+- [ ] Constraints address privacy, audit, and accessibility
 - [ ] At least 2 concrete examples with inputs/outputs
 
 Verify your constitution:
 
-- [ ] At least 3 core principles in priority order
+- [ ] At least 3 core principles in precedence order
 - [ ] Agent boundaries clearly define permitted vs. prohibited actions
 - [ ] Prohibited actions include rationale
 - [ ] Escalation protocol is defined
-- [ ] FERPA compliance is addressed
+- [ ] Data discipline and audit requirements are addressed
 
 ## Tips for Writing Effective Specs
 
 1. **Be Specific:** Instead of "fast response time," write "response time < 500ms for 95th percentile"
 
 2. **Include Edge Cases:** What happens when:
-   - A message contains multiple escalation signals?
+   - A signal contains multiple escalation reasons?
    - The confidence score is borderline?
-   - The routing queue is full?
+   - The target queue is unavailable?
 
 3. **Define "Not" as much as "Is":** Explicitly state what the feature will NOT do
 
-4. **Use Consistent Terminology:** Define terms like "escalation," "urgent," "flag" and use them consistently
+4. **Use Consistent Terminology:** Define terms like "signal," "incident," "severity," "queue," and "escalation" and use them consistently
 
 5. **Consider Failure Modes:** What happens when detection fails? What's the fallback?
 
@@ -168,11 +168,11 @@ Verify your constitution:
 
 When writing specs for agents that may be accessed via voice, consider adding these constraints:
 - **Response length** — spoken responses should be 2–3 sentences max
-- **Phonetic clarity** — IDs and codes should be spelled out ("T-K-T dash I-T dash 0-0-4-2")
+- **Phonetic clarity** — IDs and codes should be spelled out ("A-C dash 0-0-4-2")
 - **PII handling** — never echo back sensitive data the caller provides
 - **Silence handling** — what happens when the caller stops talking? (VAD timeout)
 
-Try adding a "Voice Modality" section to your Escalation Detection Agent spec that addresses these constraints.
+Try adding a "Voice Modality" section to your escalation capability spec that addresses these constraints.
 
 ## Deliverables
 

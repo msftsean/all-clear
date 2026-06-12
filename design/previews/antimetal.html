@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>All Clear — Antimetal ClearBoard</title>
+  <!-- Font substitution: Antimetal's custom abcdFont is substituted with Google Font DM Sans; custom ivarTextFont is substituted with Fraunces. JetBrains Mono is used only where the All Clear screen explicitly requires mono machine/provenance text. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500&family=Fraunces:opsz,wght@9..144,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-midnight-navy: #1b2540;
+      --color-deep-cosmos: #001033;
+      --color-chartreuse-pulse: #d0f100;
+      --color-ice-veil: #e0f6ff;
+      --color-ghost-canvas: #f8f9fc;
+      --color-pure-surface: #ffffff;
+      --color-slate-ink: #6b7184;
+      --color-ash-medium: #7c8293;
+      --color-storm-gray: #596075;
+      --color-fog-border: #b1b5c0;
+      --gradient-hero-gradient: linear-gradient(180deg, #001033 0%, #0050f8 55%, #5fbdf7 100%);
+      --gradient-blue-glow-radial: radial-gradient(50% 50%, rgba(0, 128, 248, 0.32) 0%, rgba(95, 189, 247, 0.32) 20%, rgba(211, 239, 252, 0.32) 60%, rgba(248, 249, 252, 0) 100%);
+      --surface-data-chip-surface: #0c264d05;
+      --sev1: #E25555;
+      --sev2: #E59A3A;
+      --sev3: #5B8FE8;
+      --clear: #37C281;
+      --font-abcdfont: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+      --font-ivartextfont: 'Fraunces', Georgia, serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+      --radius-cards: 20px;
+      --radius-badges: 16px;
+      --radius-buttons: 9999px;
+      --radius-cardssmall: 6px;
+      --radius-cardsmedium: 16px;
+      --shadow-md: rgba(0, 39, 80, 0.08) 0px 6px 16px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+      --shadow-md-2: rgba(255, 255, 255, 0.08) 0px 0px 16px 8px inset, rgba(255, 255, 255, 0.08) 0px 0px 8px 4px inset, rgba(255, 255, 255, 0.08) 0px 0px 4px 2px inset, rgba(255, 255, 255, 0.12) 0px 0px 2px 1px inset;
+      --shadow-subtle: rgba(255, 255, 255, 0.72) 0px 1px 1px 0px inset, rgba(4, 33, 80, 0.02) 0px 8px 16px 0px, rgba(4, 33, 80, 0.03) 0px 4px 12px 0px, rgba(4, 33, 80, 0.06) 0px 1px 2px 0px, rgba(4, 33, 80, 0.04) 0px 0px 0px 1px;
+      --shadow-xl: rgba(0, 39, 80, 0.03) 0px 56px 72px -16px, rgba(0, 39, 80, 0.03) 0px 32px 32px -16px, rgba(0, 39, 80, 0.04) 0px 6px 12px -3px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+      --shadow-subtle-3: rgba(24, 37, 66, 0.32) 0px 1px 3px 0px, rgba(24, 37, 66, 0.12) 0px 0.5px 0.5px 0px, rgba(24, 37, 66, 0.44) 0px 12px 24px -12px, rgba(219, 247, 255, 0.06) 0px 8px 16px 0px inset, rgba(219, 247, 255, 0.48) 0px 0.5px 0.5px 0px inset, rgba(219, 247, 255, 0.04) 0px -4px 8px 0px inset, rgba(219, 247, 255, 0.24) 0px -0.5px 0.5px 0px inset;
+      --shadow-subtle-4: rgba(255, 255, 255, 0.88) 0px 1px 1px 0px inset, rgba(0, 39, 80, 0.04) 0px 48px 72px -12px, rgba(0, 39, 80, 0.03) 0px 28px 40px 0px, rgba(0, 39, 80, 0.02) 0px 4px 12px 0px, rgba(0, 39, 80, 0.04) 0px 0px 0px 1px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: var(--font-abcdfont);
+      background: var(--color-ghost-canvas);
+      color: var(--color-midnight-navy);
+      letter-spacing: -0.016em;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 16px 16px, rgba(0, 16, 51, .10) 1px, transparent 1.5px) 0 0 / 28px 28px,
+        linear-gradient(90deg, rgba(255,255,255,.32), rgba(255,255,255,0));
+      opacity: .42;
+      z-index: 0;
+    }
+    .style-badge {
+      position: fixed;
+      top: 14px;
+      left: 14px;
+      z-index: 20;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--color-ice-veil);
+      background: rgba(0,16,51,.88);
+      border-radius: var(--radius-buttons);
+      padding: 9px 13px;
+      box-shadow: var(--shadow-md-2);
+    }
+    .shell { position: relative; z-index: 1; min-height: 100vh; padding: 24px; }
+    .board {
+      min-height: calc(100vh - 48px);
+      display: grid;
+      grid-template-columns: 430px minmax(0, 1fr);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: var(--shadow-subtle-4);
+      background: var(--color-pure-surface);
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+    .conversation {
+      background: var(--color-pure-surface);
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: rgba(0,39,80,0.04) 1px 0 0 0;
+    }
+    .canvas {
+      background: linear-gradient(180deg, #001033 0%, #0050f8 55%, #5fbdf7 100%);
+      padding: 20px;
+      color: var(--color-ice-veil);
+      position: relative;
+      overflow: hidden;
+    }
+    .canvas::before {
+      content: "";
+      position: absolute;
+      inset: -160px -120px auto auto;
+      width: 620px;
+      height: 620px;
+      background: var(--gradient-blue-glow-radial);
+      opacity: .78;
+      pointer-events: none;
+    }
+    .canvas::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 8px 8px, rgba(255,255,255,.34) 1px, transparent 1.5px) 0 0 / 24px 24px;
+      opacity: .16;
+      mask-image: linear-gradient(180deg, #000, transparent 72%);
+    }
+    .header { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 8px; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .mark {
+      width: 30px; height: 30px; border-radius: 50%; background: var(--color-chartreuse-pulse);
+      box-shadow: var(--shadow-subtle-3); position: relative; flex: 0 0 auto;
+    }
+    .mark::after { content:""; position:absolute; inset:8px; border-radius:50%; background: var(--color-deep-cosmos); box-shadow: inset 0 0 0 3px var(--color-chartreuse-pulse); }
+    .brand-name { font-size: 22px; line-height: 1.29; letter-spacing: -0.22px; font-weight: 500; color: var(--color-midnight-navy); }
+    .status-line { font-size: 13px; line-height: 1; color: var(--color-slate-ink); white-space: nowrap; }
+    .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--sev1); margin-right: 7px; animation: blink 1.4s steps(2,end) infinite; }
+    .section-title {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--color-slate-ink); margin: 4px 0 2px;
+    }
+    .call-card, .bubble, .magnitude, .card {
+      background: var(--color-pure-surface);
+      border-radius: var(--radius-cards);
+      box-shadow: var(--shadow-md);
+    }
+    .call-card { padding: 16px; }
+    .call-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .tag, .pill, .citation, .sev, .queue {
+      font-family: var(--font-mono); font-size: 11px; line-height: 1; letter-spacing: .04em; border-radius: var(--radius-cardssmall);
+      background: var(--surface-data-chip-surface); padding: 7px 8px; color: var(--color-midnight-navy);
+    }
+    .inbound { color: var(--sev2); box-shadow: rgba(0,39,80,0.04) 0 0 0 1px; }
+    .live { color: var(--sev1); }
+    .wave { height: 54px; display: flex; align-items: center; gap: 5px; margin-top: 14px; }
+    .bar {
+      width: 6px; height: 18px; border-radius: 9999px; background: var(--sev2);
+      animation: wave 860ms ease-in-out infinite; opacity: .88;
+    }
+    .bar:nth-child(2) { animation-delay: 90ms; height: 28px; }
+    .bar:nth-child(3) { animation-delay: 180ms; height: 40px; }
+    .bar:nth-child(4) { animation-delay: 270ms; height: 24px; }
+    .bar:nth-child(5) { animation-delay: 360ms; height: 48px; }
+    .bar:nth-child(6) { animation-delay: 450ms; height: 32px; }
+    .bar:nth-child(7) { animation-delay: 540ms; height: 20px; }
+    .bar:nth-child(8) { animation-delay: 630ms; height: 36px; }
+    .bar:nth-child(9) { animation-delay: 720ms; height: 26px; }
+    .bubble { padding: 16px; border-radius: 20px 20px 20px 6px; font-size: 15px; line-height: 1.48; letter-spacing: -0.16px; }
+    .bubble.agent { border-radius: 20px 20px 6px 20px; font-weight: 500; background: var(--color-ghost-canvas); color: var(--color-midnight-navy); }
+    .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: -6px; }
+    .chip { font-family: var(--font-mono); font-size: 11px; color: var(--color-storm-gray); background: var(--surface-data-chip-surface); border-radius: var(--radius-cardssmall); padding: 8px 9px; box-shadow: rgba(0,39,80,0.04) 0 0 0 1px; }
+    .magnitude { padding: 16px; background: var(--color-ghost-canvas); display: grid; gap: 6px; }
+    .magnitude strong { font-family: var(--font-ivartextfont); font-size: 32px; line-height: 1.08; letter-spacing: -0.32px; font-weight: 400; font-feature-settings: "ss04", "ss06", "ss09", "ss10", "ss11"; }
+    .magnitude span { color: var(--color-slate-ink); font-size: 13px; line-height: 1.35; }
+
+    .canvas-header { position: relative; z-index: 2; display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px; }
+    .canvas-title h1 { margin:0; color:#fafeff; font-family: var(--font-ivartextfont); font-size: 40px; line-height:1.05; letter-spacing:-0.4px; font-weight:400; font-feature-settings:"ss04", "ss06", "ss09", "ss10", "ss11"; }
+    .canvas-title p { margin: 7px 0 0; color: var(--color-ice-veil); font-size: 14px; line-height: 1.4; opacity:.88; }
+    .surge-pill { border-radius: var(--radius-buttons); padding: 10px 14px; color: #fafeff; font-family: var(--font-mono); font-size: 11px; letter-spacing:.08em; text-transform:uppercase; box-shadow: var(--shadow-md-2); }
+    .grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card { color: var(--color-midnight-navy); padding: 18px; min-height: 152px; animation: arrive .6s linear(0 0%, 0.026 1.8%, 0.108 3.9%, 0.59 12.2%, 0.792 16.5%, 0.931 21%, 0.978 23.4%, 1.01 25.9%, 1.033 29.3%, 1.04 33.3%, 1.001 56.9%, 1 100%) both; }
+    .wide { grid-column: 1 / -1; }
+    .eyebrow { font-family: var(--font-mono); font-size: 10px; line-height:1; letter-spacing:.10em; text-transform:uppercase; color: var(--color-slate-ink); display:flex; justify-content:space-between; gap:12px; margin-bottom: 14px; }
+    .card h2 { margin:0 0 8px; font-size: 22px; line-height:1.18; letter-spacing:-0.22px; font-weight:500; color: var(--color-midnight-navy); }
+    .meta { display:flex; flex-wrap:wrap; gap:8px; margin-top: 14px; }
+    .sev { color: #fff; }
+    .sev1 { background: var(--sev1); } .sev2 { background: var(--sev2); } .sev3 { background: var(--sev3); }
+    .near { color: var(--sev1); box-shadow: rgba(226,85,85,.32) 0 0 0 1px inset; }
+    .queue { color: var(--color-slate-ink); }
+    .metric-row { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-top: 10px; color: var(--color-slate-ink); font-size: 13px; }
+    .metric-row b { color: var(--color-midnight-navy); font-family:var(--font-mono); font-weight:500; }
+    .map-card { padding: 16px; background: var(--color-pure-surface); }
+    .map-wrap { height: 282px; border-radius: var(--radius-cardsmedium); overflow: hidden; background: var(--color-deep-cosmos); box-shadow: var(--shadow-md-2); position: relative; }
+    .map-wrap svg { width:100%; height:100%; display:block; }
+    .legend { position:absolute; right:14px; bottom:14px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; background: rgba(0,16,51,.72); color: #fafeff; border-radius: var(--radius-badges); padding: 10px 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing:.04em; box-shadow: var(--shadow-md-2); }
+    .legend i { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:4px; vertical-align:-1px; }
+    .pin { filter: drop-shadow(0 8px 16px rgba(0,16,51,.42)); }
+    .pulse { transform-origin: 50% 50%; animation: pulse 1.6s ease-out infinite; }
+    .sitrep p { margin: 0 0 10px; font-size: 14px; line-height: 1.45; color: var(--color-midnight-navy); }
+    .citation { color: var(--color-slate-ink); display:inline-block; vertical-align: 1px; padding: 5px 6px; margin-left: 4px; }
+    .receipt { display:grid; gap:10px; }
+    .rule-row { font-family: var(--font-mono); font-size: 11px; line-height:1.42; color: var(--color-storm-gray); border-top: 1px dashed var(--color-fog-border); padding-top: 10px; }
+    .gate { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top: 4px; padding-top: 12px; border-top: 1px dashed var(--color-fog-border); }
+    button.primary {
+      appearance:none; border:0; background: var(--color-chartreuse-pulse); color: var(--color-midnight-navy); border-radius: var(--radius-buttons);
+      height: 40px; padding: 0 24px; font: 500 15px/1 var(--font-abcdfont); letter-spacing: -0.015em; box-shadow: var(--shadow-subtle-3); cursor: pointer;
+    }
+    button.primary:focus-visible { outline: 2px solid var(--sev3); outline-offset: 3px; }
+    .undo { color: var(--color-slate-ink); font-size: 13px; line-height:1.25; }
+
+    @keyframes blink { 50% { opacity:.28; } }
+    @keyframes wave { 0%,100% { transform: scaleY(.58); } 50% { transform: scaleY(1.12); } }
+    @keyframes pulse { 0% { opacity:.52; transform: scale(1); } 70%,100% { opacity:0; transform: scale(2.15); } }
+    @keyframes arrive { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } .bar { transform: scaleY(.5); } }
+    @media (max-width: 1100px) { .board { grid-template-columns: 430px 920px; } .shell { overflow:auto; } }
+  </style>
+</head>
+<body>
+  <div class="style-badge">Antimetal</div>
+  <main class="shell">
+    <section class="board" aria-label="All Clear ClearBoard live surge preview">
+      <aside class="conversation" aria-label="Conversation column">
+        <header class="header">
+          <div class="brand"><span class="mark" aria-hidden="true"></span><span class="brand-name">All Clear</span></div>
+          <div class="status-line"><span class="live-dot" aria-hidden="true"></span>3 open incidents · 1 SEV1 · 22 signals in last 5 min</div>
+        </header>
+
+        <div class="section-title">Inbound signal</div>
+        <section class="call-card" aria-label="Live phone signal">
+          <div class="call-top"><span class="tag inbound">INBOUND·PHONE</span><span class="tag live">LIVE</span></div>
+          <div class="wave" aria-label="Live audio waveform">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+          </div>
+        </section>
+
+        <div class="bubble">There&apos;s a power line down across Oak Street, sparking near the school.</div>
+        <div class="chips" aria-label="As-classified chips">
+          <span class="chip">intent=infrastructure-hazard</span>
+          <span class="chip">entity=&quot;Oak Street&quot;</span>
+          <span class="chip">severity-cue=life-safety</span>
+          <span class="chip">confidence=0.94</span>
+        </div>
+        <div class="bubble agent">Thank you — I&apos;ve logged this and flagged it for field operations. You&apos;re the 14th caller about the Oak Street line, so crews are already being routed.</div>
+        <div class="magnitude">
+          <strong>Fourteen neighbors are describing the same hazard.</strong>
+          <span>Magnitude is community signal, not noise. Dedup keeps every report attributable while routing one shared incident.</span>
+        </div>
+      </aside>
+
+      <section class="canvas" aria-label="Operational canvas">
+        <header class="canvas-header">
+          <div class="canvas-title"><h1>ClearBoard</h1><p>Live surge view with deduped incidents, SLA clocks, and citation-grounded operator actions.</p></div>
+          <div class="surge-pill">Surge · Oak Street cluster</div>
+        </header>
+        <div class="grid">
+          <article class="card wide map-card" style="animation-delay:.02s">
+            <div class="eyebrow"><span>Map · ClearBoard</span><span>AC-1042 · auto</span></div>
+            <div class="map-wrap">
+              <svg viewBox="0 0 900 282" role="img" aria-label="Stylized dark map with three incident pins">
+                <defs>
+                  <linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#001033"/><stop offset=".55" stop-color="#0050f8"/><stop offset="1" stop-color="#5fbdf7"/></linearGradient>
+                  <filter id="soft"><feGaussianBlur stdDeviation="7"/></filter>
+                </defs>
+                <rect width="900" height="282" fill="#001033"/>
+                <circle cx="730" cy="36" r="170" fill="rgba(95,189,247,.28)" filter="url(#soft)"/>
+                <path d="M96 68 C182 36 238 54 306 82 C378 112 454 76 532 64 C650 46 732 84 800 128 C760 212 648 254 522 238 C410 224 348 254 246 218 C150 184 84 162 96 68Z" fill="url(#land)" opacity=".42" stroke="#e0f6ff" stroke-opacity=".52"/>
+                <g fill="none" stroke="#e0f6ff" stroke-opacity=".32" stroke-width="2">
+                  <path d="M70 210 C230 170 360 164 510 186 C638 204 740 178 852 118"/>
+                  <path d="M128 96 C270 136 360 122 500 98 C620 78 704 112 816 172"/>
+                  <path d="M274 36 C292 118 292 178 258 252"/>
+                  <path d="M560 42 C538 124 548 190 598 250"/>
+                  <path d="M404 62 C438 110 442 170 420 232"/>
+                </g>
+                <g fill="#fff" opacity=".28">
+                  <circle cx="180" cy="72" r="1.5"/><circle cx="210" cy="110" r="1.5"/><circle cx="705" cy="108" r="1.5"/><circle cx="662" cy="206" r="1.5"/><circle cx="318" cy="210" r="1.5"/><circle cx="486" cy="144" r="1.5"/>
+                </g>
+                <g class="pin" transform="translate(390 124)">
+                  <circle class="pulse" r="23" fill="#E25555" opacity=".4"/><circle r="15" fill="#E25555"/><circle r="5" fill="#ffffff"/>
+                </g>
+                <g class="pin" transform="translate(620 178)"><circle r="11" fill="#E59A3A"/><circle r="4" fill="#ffffff"/></g>
+                <g class="pin" transform="translate(242 188)"><circle r="8" fill="#5B8FE8"/><circle r="3" fill="#ffffff"/></g>
+              </svg>
+              <div class="legend"><span><i style="background:#E25555"></i>SEV1 magnitude 14</span><span><i style="background:#E59A3A"></i>SEV2 magnitude 6</span><span><i style="background:#5B8FE8"></i>SEV3 magnitude 2</span></div>
+            </div>
+          </article>
+
+          <article class="card" style="animation-delay:.08s">
+            <div class="eyebrow"><span>Incident</span><span>AC-1042 · auto</span></div>
+            <h2>Oak Street power line down</h2>
+            <div class="meta"><span class="sev sev1">SEV1</span><span class="pill">magnitude 14</span><span class="queue">queue field-operations</span></div>
+            <div class="metric-row"><span>SLA countdown</span><b class="near">15:00</b></div>
+          </article>
+
+          <article class="card" style="animation-delay:.12s">
+            <div class="eyebrow"><span>Incident</span><span>AC-1043 · auto</span></div>
+            <h2>Intermittent outage — Maple district</h2>
+            <div class="meta"><span class="sev sev2">SEV2</span><span class="pill">magnitude 6</span><span class="queue">queue engineering</span></div>
+            <div class="metric-row"><span>SLA countdown</span><b>1:00:00</b></div>
+          </article>
+
+          <article class="card" style="animation-delay:.16s">
+            <div class="eyebrow"><span>Incident</span><span>AC-1044 · auto</span></div>
+            <h2>Billing portal returning 500s</h2>
+            <div class="meta"><span class="sev sev3">SEV3</span><span class="pill">magnitude 2</span><span class="queue">queue customer-comms</span></div>
+            <div class="metric-row"><span>SLA countdown</span><b>4:00:00</b></div>
+          </article>
+
+          <article class="card sitrep" style="animation-delay:.20s">
+            <div class="eyebrow"><span>Sitrep</span><span>pinned by: &quot;give me a sitrep&quot;</span></div>
+            <p>Oak Street has a downed, sparking power line near the school <span class="citation">[AC-1042]</span>.</p>
+            <p>Fourteen reports now attach to the same infrastructure-hazard incident <span class="citation">[signal #14]</span>.</p>
+            <p>RouterExecutor escalated it as SEV1 and queued field operations under a 15-minute SLA <span class="citation">[routing decision]</span>.</p>
+          </article>
+
+          <article class="card wide" style="animation-delay:.24s">
+            <div class="eyebrow"><span>Decision receipt</span><span>AC-1042 · approval required</span></div>
+            <div class="receipt">
+              <div class="rule-row">QueryAgent · gpt-4.1 · classified infrastructure-hazard (0.94)</div>
+              <div class="rule-row">RouterExecutor · deterministic · no LLM · dedup 0.91 ≥ 0.83 → attach; SEV1; escalate</div>
+              <div class="rule-row">ActionAgent · gpt-4.1 · create_incident + generate_sitrep</div>
+              <div class="gate">
+                <button class="primary" data-testid="approve-publish-button">Approve &amp; publish</button>
+                <span class="undo">15-minute undo window</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

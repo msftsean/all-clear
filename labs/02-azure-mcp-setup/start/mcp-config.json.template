@@ -1,7 +1,7 @@
 {
   "_instructions": [
     "This is your MCP (Model Context Protocol) configuration template for Azure integration.",
-    "Follow the TODO comments below to configure each MCP server.",
+    "Use it to inspect the Azure resources behind All Clear: Azure OpenAI, Azure AI Search, and Azure Container Apps.",
     "Environment variables use the ${env:VARIABLE_NAME} syntax to reference values from your .env file.",
     "After completing all TODOs, rename this file to mcp-config.json"
   ],
@@ -9,7 +9,7 @@
   "mcpServers": {
     "_TODO_1": "Configure the main Azure MCP server for general Azure resource management",
     "azure": {
-      "_hint": "This server provides access to Azure resources like VMs, App Services, etc.",
+      "_hint": "This server provides access to All Clear Azure resources such as Azure OpenAI, Azure AI Search, and Azure Container Apps.",
       "command": "npx",
       "args": [
         "-y",
@@ -28,10 +28,10 @@
         "_TODO_5": "Set your Azure service principal client secret",
         "AZURE_CLIENT_SECRET": "${env:AZURE_CLIENT_SECRET}",
 
-        "_TODO_6": "Set your Azure resource group name",
+        "_TODO_6": "Set the Azure resource group that contains the All Clear deployment resources",
         "AZURE_RESOURCE_GROUP": "${env:AZURE_RESOURCE_GROUP}",
 
-        "_TODO_7": "Set your Azure OpenAI endpoint URL (e.g., https://your-resource.openai.azure.com/)",
+        "_TODO_7": "Set the Azure OpenAI endpoint URL for the model used by QueryAgent classification (e.g., https://your-resource.openai.azure.com/)",
         "AZURE_OPENAI_ENDPOINT": "${env:AZURE_OPENAI_ENDPOINT}",
 
         "_TODO_8": "Set your Azure OpenAI API key",
@@ -42,9 +42,9 @@
       }
     },
 
-    "_TODO_10": "Configure the Azure AI Search MCP server for vector search capabilities",
+    "_TODO_10": "Configure the Azure AI Search MCP server for incident runbook and SOP retrieval",
     "azure-ai-search": {
-      "_hint": "This server enables semantic search and RAG patterns with Azure AI Search",
+      "_hint": "This server enables semantic search over incident runbooks and SOPs used by ActionAgent.search_knowledge.",
       "command": "npx",
       "args": [
         "-y",
@@ -57,14 +57,14 @@
         "_TODO_12": "Set your Azure AI Search API key (found in Search service > Keys)",
         "AZURE_SEARCH_API_KEY": "${env:AZURE_SEARCH_API_KEY}",
 
-        "_TODO_13": "Set your search index name",
+        "_TODO_13": "Set the search index name for incident runbooks and SOPs",
         "AZURE_SEARCH_INDEX_NAME": "${env:AZURE_SEARCH_INDEX_NAME}"
       }
     },
 
-    "_TODO_14": "Configure the Azure Storage MCP server for blob storage access",
+    "_TODO_14": "Configure the Azure Storage MCP server if your runbook or source-record assets are stored in Blob Storage",
     "azure-storage": {
-      "_hint": "This server provides access to Azure Blob Storage for file operations",
+      "_hint": "This server provides access to Azure Blob Storage for All Clear source assets, runbooks, or SOP files.",
       "command": "npx",
       "args": [
         "-y",

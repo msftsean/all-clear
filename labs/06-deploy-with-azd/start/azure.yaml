@@ -5,17 +5,17 @@
 # Reference: https://learn.microsoft.com/azure/developer/azure-developer-cli/azd-schema
 
 # TODO: Set the application name
-name: university-front-door-agent
+name: all-clear
 
 # Optional metadata
 metadata:
-  template: university-front-door-agent@0.0.1
+  template: all-clear@0.1.0
 
 # TODO: Define your services
 # Each service should specify:
 #   - project: path to the service code
 #   - language: programming language (python, js, etc.)
-#   - host: Azure hosting service (containerapp, staticwebapp, etc.)
+#   - host: Azure hosting service (All Clear uses containerapp for backend and frontend)
 services:
   backend:
     # TODO: Configure the backend service
@@ -25,12 +25,16 @@ services:
     #   host: containerapp
     #   docker:
     #     path: Dockerfile
+    #     remoteBuild: true
 
   # Optional: Frontend service
   # frontend:
   #   project: ./frontend
   #   language: js
-  #   host: staticwebapp
+  #   host: containerapp
+  #   docker:
+  #     path: Dockerfile
+  #     remoteBuild: true
 
 # TODO: Configure infrastructure settings
 # Specify the IaC provider and path to templates

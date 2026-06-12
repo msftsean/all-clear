@@ -12,7 +12,7 @@ You've built a three-agent pipeline that handles text queries. Now you'll see th
 2. **Phone calls** — dial a real number, the agent answers (coach demo)
 3. **Live transcripts** — watch a phone call in real-time on the LivePage
 
-The key insight: **voice and phone are input/output modalities, not new agents.** Your QueryAgent, RouterAgent, and ActionAgents work identically regardless of how the student communicates.
+The key insight: **voice and phone are input/output modalities, not new agents.** Your QueryAgent, RouterExecutor, and ActionAgent work identically regardless of how the reporter communicates.
 
 ---
 
@@ -61,7 +61,7 @@ Look at `backend/app/api/realtime.py` — find the `create_realtime_session()` f
 1. Open the frontend at `http://localhost:5173`
 2. Find the microphone button (VoiceMicButton component)
 3. Click it — grant microphone permission when prompted
-4. Ask: **"How do I reset my password?"**
+4. Speak a signal: **"Report a power line down across Main Street, it's sparking on the road."**
 5. Watch the response appear as both text and (in production) spoken audio
 
 **In mock mode:** You'll see the voice state transition (Idle → Connecting → Listening → Processing → Idle) but won't hear audio. The transcript will show a mock response. This is expected—the **architecture flow** is what matters.
@@ -72,9 +72,9 @@ Open your browser's DevTools (Network tab) and repeat the voice interaction. You
 
 1. `POST /api/realtime/session` — ephemeral token request
 2. WebRTC SDP exchange (in production) or mock state transitions
-3. The same intent classification and routing you built in Labs 01 and 05
+3. The same signal classification and routing you built in Labs 01 and 05
 
-**Checkpoint:** Can you identify which of YOUR agents (from Lab 05) processed the voice query? The answer: all three—QueryAgent classified the intent, RouterAgent selected IT Support, and the ActionAgent (RetrieveAgent) searched the knowledge base.
+**Checkpoint:** Can you identify which of YOUR agents (from Lab 05) processed the voice signal? The answer: all three—QueryAgent classified it as `PUBLIC_SAFETY`, the deterministic RouterExecutor opened a SEV1 incident routed to field-operations, and the ActionAgent called `create_incident` and `generate_sitrep`.
 
 ---
 
@@ -137,8 +137,8 @@ Fill in this comparison table:
 |--------|-----------|---------------|-------|
 | Input path | HTTP POST /api/chat | WebRTC → Azure OpenAI | PSTN → ACS → WebSocket bridge |
 | Authentication | Session cookie | Ephemeral token (60s) | Managed identity (backend) |
-| Agent pipeline | QueryAgent → RouterAgent → ActionAgent | _____ | _____ |
-| Tools available | 4 tools | _____ | _____ |
+| Agent pipeline | QueryAgent → RouterExecutor → ActionAgent | _____ | _____ |
+| Tools available | 3 tools | _____ | _____ |
 | Response format | JSON with markdown | Spoken audio + text transcript | _____ |
 | Live audience view | No | No | _____ |
 | Mock mode support | Yes | _____ | _____ |

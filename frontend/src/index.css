@@ -3,17 +3,19 @@
 @tailwind utilities;
 
 :root {
-  --paper: #F2EDE3;
-  --paper2: #FFFDF7;
-  --paperline: #E0D8C8;
-  --inkwarm: #2E2A22;
-  --midwarm: #6E6657;
-  --voice: #B0541F;
-  --night: #10161F;
-  --panel: #161E2A;
-  --nline: #27324A;
-  --nink: #C6D2E4;
-  --ndim: #7C8CA6;
+  --paper: #f8f9fc;
+  --paper2: #ffffff;
+  --paperline: #dfe3ea;
+  --inkwarm: #1b2540;
+  --midwarm: #6b7184;
+  --voice: #0050f8;
+  --night: #001033;
+  --panel: #14213f;
+  --nline: #26345c;
+  --nink: #e0f6ff;
+  --ndim: #9fb6d8;
+  --cta: #d0f100;
+  --ctaink: #1b2540;
   --sev1: #E25555;
   --sev2: #E59A3A;
   --sev3: #5B8FE8;
@@ -23,10 +25,23 @@
 html, body, #root { height: 100%; }
 body {
   margin: 0;
-  font-family: "Inter", system-ui, sans-serif;
-  background: var(--night);
-  color: var(--nink);
+  font-family: "DM Sans", system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--inkwarm);
+  letter-spacing: -0.016em;
   -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 16px 16px, rgba(0, 16, 51, 0.09) 1px, transparent 1.5px) 0 0 / 28px 28px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0));
+  opacity: 0.4;
 }
 
 /* Mono eyebrows: uppercase, tracked */
@@ -37,15 +52,15 @@ body {
   letter-spacing: 0.1em;
 }
 
-/* Visible keyboard focus: 2px sev3 ring (DESIGN accessibility floor) */
+/* Visible keyboard focus: 2px Antimetal blue ring (DESIGN accessibility floor) */
 :focus-visible {
-  outline: 2px solid var(--sev3);
-  outline-offset: 2px;
+  outline: 2px solid var(--voice);
+  outline-offset: 3px;
 }
 
 /* Custom scrollbars, restrained */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #2a3445; border-radius: 6px; }
+::-webkit-scrollbar-thumb { background: #b1b5c0; border-radius: 9999px; }
 
 /* prefers-reduced-motion: freeze waveform at 50%, stop blink/rise */
 @media (prefers-reduced-motion: reduce) {

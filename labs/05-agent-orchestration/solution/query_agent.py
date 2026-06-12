@@ -1,536 +1,195 @@
 """
-Query Agent Module - Lab 05 Solution
+QueryAgent for the Lab 05 All Clear mini-app.
 
-This agent is the first stage of the three-agent orchestration pipeline.
-Its job is to transform raw user input into structured, actionable data
-that downstream agents can process.
-
-Key Responsibilities:
-1. Parse natural language queries
-2. Classify user intent into predefined categories
-3. Extract relevant entities (names, IDs, dates, topics)
-4. Enrich queries with conversation context
-5. Determine if clarification is needed before proceeding
-
-The QueryAgent uses Azure OpenAI to perform intent classification and
-entity extraction in a single call, returning structured JSON output.
+QueryAgent classifies one inbound signal. It does not route, deduplicate,
+open incidents, search knowledge, assign severity, or generate a sitrep.
 """
 
+from __future__ import annotations
+
 import json
-import os
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional
 
-from openai import AzureOpenAI
+
+class SignalCategory(str, Enum):
+    """All Clear signal category taxonomy."""
+
+    INFRASTRUCTURE_OUTAGE = "INFRASTRUCTURE_OUTAGE"
+    FIELD_HAZARD = "FIELD_HAZARD"
+    PUBLIC_SAFETY = "PUBLIC_SAFETY"
+    CUSTOMER_INQUIRY = "CUSTOMER_INQUIRY"
+    SERVICE_REQUEST = "SERVICE_REQUEST"
+    COMPLIANCE_REPORT = "COMPLIANCE_REPORT"
+    STATUS_CHECK = "STATUS_CHECK"
+    HUMAN_REQUEST = "HUMAN_REQUEST"
+    GENERAL_INQUIRY = "GENERAL_INQUIRY"
 
 
-class Intent(str, Enum):
-    """
-    Enumeration of all supported query intents.
+@dataclass(frozen=True)
+class SignalEntities:
+    """Entities extracted from one signal."""
 
-    Each intent maps to a specific ActionAgent in the routing table.
-    The UNKNOWN intent is used when classification confidence is very low.
+    location: Optional[str] = None
+    system: Optional[str] = None
+    severity_indicators: list[str] = field(default_factory=list)
+    other: list[str] = field(default_factory=list)
 
-    Note: Using str, Enum allows direct JSON serialization and comparison.
-    """
-    KNOWLEDGE_QUERY = "knowledge_query"     # Questions about policies, procedures, how-to
-    PASSWORD_RESET = "password_reset"       # Account access and password issues
-    TICKET_STATUS = "ticket_status"         # Checking existing support ticket status
-    GENERAL_CHAT = "general_chat"           # Casual conversation, greetings, chitchat
-    ESCALATION = "escalation"               # User wants human agent, frustrated, complex issue
-    COURSE_INFO = "course_info"             # Questions about courses, schedules, enrollment
-    UNKNOWN = "unknown"                     # Cannot determine intent with confidence
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "location": self.location,
+            "system": self.system,
+            "severity_indicators": list(self.severity_indicators),
+            "other": list(self.other),
+        }
 
 
-@dataclass
-class Entity:
-    """
-    Represents a single extracted entity from the user query.
+@dataclass(frozen=True)
+class SignalClassification:
+    """QueryAgent output. Authority: classify only."""
 
-    Entities are key pieces of information that agents need to fulfill requests.
-    For example, a ticket ID, user name, course number, or date.
-
-    Attributes:
-        name: The entity type identifier (e.g., "ticket_id", "course_number")
-        value: The actual extracted value (e.g., "TKT-12345", "CS101")
-        entity_type: Category of the entity (e.g., "identifier", "date", "name")
-        confidence: How confident the model is in this extraction (0.0-1.0)
-    """
-    name: str
-    value: str
-    entity_type: str
+    signal_text: str
+    category: SignalCategory
     confidence: float
-
-
-@dataclass
-class QueryResult:
-    """
-    Structured output from the QueryAgent.
-
-    This dataclass serves as the contract between QueryAgent and RouterAgent.
-    It contains all information needed to make routing decisions and execute actions.
-
-    Attributes:
-        original_query: The raw user message (preserved for logging/debugging)
-        intent: The classified intent enum value
-        entities: List of extracted Entity objects
-        confidence: Overall confidence in the classification (0.0-1.0)
-        requires_clarification: Whether the agent should ask for more info
-        clarification_question: The specific question to ask if clarification needed
-        metadata: Additional context (urgency, sentiment, etc.)
-    """
-    original_query: str
-    intent: Intent
-    entities: list[Entity]
-    confidence: float
+    entities: SignalEntities = field(default_factory=SignalEntities)
+    pii_detected: bool = False
+    pii_types: list[str] = field(default_factory=list)
+    urgency_indicators: list[str] = field(default_factory=list)
     requires_clarification: bool = False
     clarification_question: Optional[str] = None
-    metadata: dict[str, Any] = None
+    metadata: dict[str, Any] = field(default_factory=dict)
 
-    def __post_init__(self):
-        """Initialize metadata if not provided."""
-        if self.metadata is None:
-            self.metadata = {}
+    def severity_indicators_all(self) -> list[str]:
+        return list(self.entities.severity_indicators) + list(self.urgency_indicators)
 
-    def get_entity(self, name: str) -> Optional[Entity]:
-        """
-        Retrieve an entity by name.
 
-        Args:
-            name: The entity name to look up
-
-        Returns:
-            The Entity if found, None otherwise
-        """
-        for entity in self.entities:
-            if entity.name == name:
-                return entity
-        return None
-
-    def get_entities_dict(self) -> dict[str, str]:
-        """
-        Convert entities to a simple dictionary for passing to downstream agents.
-
-        Returns:
-            Dictionary mapping entity names to their values
-        """
-        return {e.name: e.value for e in self.entities}
+CATEGORY_KEYWORDS: dict[SignalCategory, tuple[str, ...]] = {
+    SignalCategory.PUBLIC_SAFETY: ("gas", "fire", "smoke", "explosion", "injured", "trapped", "school", "sparking", "power line"),
+    SignalCategory.FIELD_HAZARD: ("power line", "downed line", "sparking", "water main", "flood", "blocked road", "tree down"),
+    SignalCategory.INFRASTRUCTURE_OUTAGE: ("outage", "no power", "blackout", "transformer", "substation", "grid", "offline"),
+    SignalCategory.COMPLIANCE_REPORT: ("nfirs", "nibrs", "recall", "breach notification", "statutory", "compliance"),
+    SignalCategory.STATUS_CHECK: ("any update", "status", "crew eta", "already reported", "ac-"),
+    SignalCategory.HUMAN_REQUEST: ("human", "real person", "supervisor", "manager", "representative", "escalate"),
+    SignalCategory.CUSTOMER_INQUIRY: ("when will", "how long", "eta", "restored", "is it safe"),
+    SignalCategory.SERVICE_REQUEST: ("schedule", "inspection", "appointment", "meter", "service request", "routine"),
+}
+CATEGORY_PRECEDENCE = [SignalCategory.COMPLIANCE_REPORT, SignalCategory.PUBLIC_SAFETY, SignalCategory.STATUS_CHECK, SignalCategory.FIELD_HAZARD, SignalCategory.INFRASTRUCTURE_OUTAGE, SignalCategory.HUMAN_REQUEST, SignalCategory.CUSTOMER_INQUIRY, SignalCategory.SERVICE_REQUEST]
+AC_ID_RE = re.compile(r"\bAC-\d{4,}\b", re.IGNORECASE)
+PHONE_RE = re.compile(r"\b(?:\+?1[-. ]?)?\(?\d{3}\)?[-. ]?\d{3}[-. ]?\d{4}\b")
+EMAIL_RE = re.compile(r"\b[\w.+-]+@[\w.-]+\.\w+\b")
 
 
 class QueryAgent:
-    """
-    Agent responsible for understanding and structuring user queries.
+    """Classifies inbound All Clear signals into structured categories."""
 
-    The QueryAgent is the entry point of the orchestration pipeline. It takes
-    raw user input and produces a structured QueryResult that downstream
-    agents can process. This is a critical component because poor query
-    understanding leads to poor routing and responses.
+    SYSTEM_PROMPT = """You are the QueryAgent for All Clear. Classify one inbound signal into a SignalCategory and extract location, system, severity_indicators, PII flags, and confidence. You classify only; never route, deduplicate, open incidents, search knowledge, assign severity, or generate a sitrep. Return JSON only."""
 
-    Design Decisions:
-    - Uses Azure OpenAI with JSON mode for reliable structured output
-    - Low temperature (0.1) for deterministic, consistent classification
-    - Includes conversation context to handle follow-up questions
-    - Returns confidence scores so RouterAgent can request clarification
-
-    Attributes:
-        client: Azure OpenAI client for LLM calls
-        model: The deployment name of the chat model (e.g., "gpt-4.1")
-    """
-
-    # System prompt defines the agent's behavior and expected output format.
-    # Key elements:
-    # 1. Clear list of intent categories with descriptions
-    # 2. Entity types to extract
-    # 3. Exact JSON schema for the response
-    # 4. Instructions for handling ambiguous cases
-    SYSTEM_PROMPT = """You are a query understanding agent for a student support system.
-Your job is to analyze user messages and extract structured information.
-
-## Intent Categories
-
-Classify the user's message into exactly ONE of these intents:
-
-1. **knowledge_query**: Questions about policies, procedures, how-to guides, FAQs
-   - Example: "How do I reset my password?"
-   - Example: "What is the refund policy?"
-   - Example: "Where can I find the handbook?"
-
-2. **password_reset**: Specifically about password or account access issues
-   - Example: "I forgot my password"
-   - Example: "I can't log into my account"
-   - Example: "My account is locked"
-
-3. **ticket_status**: Checking on existing support tickets
-   - Example: "What's the status of my ticket?"
-   - Example: "Can you check TKT-12345?"
-   - Example: "I submitted a request last week"
-
-4. **general_chat**: Casual conversation, greetings, thanks, small talk
-   - Example: "Hello!"
-   - Example: "Thanks for your help"
-   - Example: "How are you?"
-
-5. **escalation**: User wants human support, is frustrated, or has complex needs
-   - Example: "I need to speak to a human"
-   - Example: "This is urgent!"
-   - Example: "I want to file a complaint"
-   - Trigger words: lawyer, complaint, supervisor, manager, urgent, frustrated
-
-6. **course_info**: Questions about courses, schedules, registration, enrollment
-   - Example: "When does CS101 start?"
-   - Example: "How do I register for classes?"
-   - Example: "What are the prerequisites for the course?"
-
-7. **unknown**: Cannot determine intent from the message
-   - Use this when the message is unclear, gibberish, or off-topic
-   - Set confidence below 0.5 for unknown
-
-## Entity Extraction
-
-Extract these entities when present:
-- **ticket_id**: Support ticket IDs (format: TKT-XXXXX or similar)
-- **course_number**: Course codes (e.g., CS101, MATH200)
-- **user_name**: If user identifies themselves by name
-- **date**: Dates mentioned (format: YYYY-MM-DD if possible)
-- **topic**: Main subject of the query
-- **urgency**: low, medium, or high based on language
-
-## Output Format
-
-Respond with ONLY valid JSON in this exact format:
-{
-    "intent": "<one of the intent values>",
-    "confidence": <0.0 to 1.0>,
-    "entities": {
-        "entity_name": "entity_value",
-        ...
-    },
-    "entity_confidences": {
-        "entity_name": <0.0 to 1.0>,
-        ...
-    },
-    "requires_clarification": <true or false>,
-    "clarification_question": "<question to ask if clarification needed, null otherwise>",
-    "urgency": "<low, medium, or high>"
-}
-
-## Guidelines
-
-- Be conservative with confidence scores
-- If multiple intents could apply, choose the most specific one
-- Set requires_clarification=true if the message is ambiguous
-- Always provide a clarification_question when requires_clarification is true
-- Detect urgency from language: "ASAP", "urgent", "immediately" = high
-"""
-
-    def __init__(
-        self,
-        client: Optional[AzureOpenAI] = None,
-        model: str = "gpt-4.1",
-        openai_endpoint: Optional[str] = None,
-        openai_key: Optional[str] = None,
-    ) -> None:
-        """
-        Initialize the QueryAgent.
-
-        The agent can be initialized with an existing client or will create
-        one from environment variables. This flexibility supports both
-        dependency injection (for testing) and standalone usage.
-
-        Args:
-            client: Pre-configured Azure OpenAI client (optional)
-            model: The model deployment name to use for analysis
-            openai_endpoint: Azure OpenAI endpoint URL (optional, uses env var)
-            openai_key: Azure OpenAI API key (optional, uses env var)
-        """
-        # Use provided client or create new one from environment/parameters
-        if client:
-            self.client = client
-        else:
-            # Load configuration from parameters or environment variables
-            endpoint = openai_endpoint or os.environ.get("AZURE_OPENAI_ENDPOINT")
-            key = openai_key or os.environ.get("AZURE_OPENAI_KEY")
-
-            if not endpoint or not key:
-                raise ValueError(
-                    "Azure OpenAI credentials required. Provide client, parameters, "
-                    "or set AZURE_OPENAI_ENDPOINT and AZURE_OPENAI_KEY environment variables."
-                )
-
-            self.client = AzureOpenAI(
-                azure_endpoint=endpoint,
-                api_key=key,
-                api_version="2025-01-01-preview",
-            )
-
+    def __init__(self, client: Any = None, model: str = "gpt-5.1") -> None:
+        self.client = client
         self.model = model
 
-    async def analyze(
-        self,
-        query: str,
-        conversation_context: Optional[str] = None,
-    ) -> QueryResult:
-        """
-        Analyze a user query to classify intent and extract entities.
+    async def classify(self, signal_text: str, conversation_context: str | None = None) -> SignalClassification:
+        """Classify one inbound signal. Falls back to deterministic rules without Azure."""
+        if not signal_text or not signal_text.strip():
+            raise ValueError("Signal cannot be empty")
+        if self.client is None:
+            return self._classify_with_rules(signal_text)
 
-        This is the main entry point for the QueryAgent. It processes the
-        incoming query using Azure OpenAI to:
-        1. Classify the user's intent
-        2. Extract relevant entities
-        3. Calculate confidence scores
-        4. Determine if clarification is needed
-
-        The async pattern allows for non-blocking I/O when integrated into
-        an async web framework like FastAPI.
-
-        Args:
-            query: The raw user query string to analyze
-            conversation_context: Optional summary of previous conversation
-                                 (helps with follow-up questions like "tell me more")
-
-        Returns:
-            QueryResult containing intent, entities, and confidence scores
-
-        Raises:
-            ValueError: If the query is empty or invalid
-
-        Example:
-            result = await agent.analyze(
-                query="Can you check ticket TKT-12345?",
-                conversation_context="User previously asked about password reset"
-            )
-            print(f"Intent: {result.intent}, Ticket: {result.get_entity('ticket_id')}")
-        """
-        # Validate input - empty queries would waste API calls
-        if not query or not query.strip():
-            raise ValueError("Query cannot be empty")
-
-        # Build the user prompt, optionally including conversation context
-        # Context helps handle follow-up questions and anaphora ("it", "that", "more")
-        user_prompt = self._build_user_prompt(query, conversation_context)
-
-        # Call Azure OpenAI with JSON mode for structured output
-        # Using low temperature (0.1) for deterministic, consistent results
+        prompt = self._build_classification_prompt(signal_text, conversation_context)
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=[
-                {"role": "system", "content": self.SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt}
-            ],
-            temperature=0.1,  # Low temp for consistent classification
-            response_format={"type": "json_object"},  # Ensure valid JSON output
-            max_tokens=500,  # Classification doesn't need many tokens
+            messages=[{"role": "system", "content": self.SYSTEM_PROMPT}, {"role": "user", "content": prompt}],
+            temperature=0.1,
+            response_format={"type": "json_object"},
         )
+        data = json.loads(response.choices[0].message.content)
+        return self._from_json(signal_text, data)
 
-        # Parse the JSON response from the LLM
-        # The response_format ensures we get valid JSON, but we still
-        # need to handle potential missing fields gracefully
-        result_json = json.loads(response.choices[0].message.content)
+    async def analyze(self, signal_text: str, conversation_context: str | None = None) -> SignalClassification:
+        """Backward-compatible wrapper for older lab harnesses."""
+        return await self.classify(signal_text, conversation_context)
 
-        # Convert raw JSON into our structured QueryResult
-        return self._parse_response(query, result_json)
-
-    def _build_user_prompt(
-        self,
-        query: str,
-        conversation_context: Optional[str] = None,
-    ) -> str:
-        """
-        Build the user prompt for intent classification.
-
-        The prompt structure is important:
-        1. Include conversation context first (if available) so the model
-           understands the broader conversation
-        2. Clearly mark the current user message
-        3. Request analysis
-
-        Args:
-            query: The current user query
-            conversation_context: Summary of previous conversation
-
-        Returns:
-            Formatted prompt string for the LLM
-        """
+    def _build_classification_prompt(self, signal_text: str, conversation_context: str | None = None) -> str:
         parts = []
-
-        # Include context if available - helps with follow-up questions
         if conversation_context:
-            parts.append(f"## Conversation Context\n{conversation_context}\n")
+            parts.append(f"Session context:\n{conversation_context}")
+        parts.append(f"Current signal:\n{signal_text}")
+        parts.append("Classify this signal and respond with JSON.")
+        return "\n\n".join(parts)
 
-        # Add the current query with clear marking
-        parts.append(f"## Current User Message\n{query}\n")
-
-        # Request analysis
-        parts.append("Analyze this message and respond with JSON.")
-
-        return "\n".join(parts)
-
-    def _parse_response(
-        self,
-        original_query: str,
-        llm_response: dict[str, Any],
-    ) -> QueryResult:
-        """
-        Parse the LLM's JSON response into a QueryResult object.
-
-        This method handles:
-        - Mapping string intent to Intent enum
-        - Creating Entity objects from the entities dict
-        - Setting defaults for missing fields
-        - Validating the response structure
-
-        Args:
-            original_query: The original user query (preserved for reference)
-            llm_response: The parsed JSON dict from the LLM
-
-        Returns:
-            QueryResult with all extracted information
-        """
-        # Extract intent, defaulting to UNKNOWN if invalid
-        intent_str = llm_response.get("intent", "unknown")
-        try:
-            intent = Intent(intent_str)
-        except ValueError:
-            # If LLM returns an invalid intent, default to unknown
-            intent = Intent.UNKNOWN
-
-        # Parse entities from the response
-        entities = self._parse_entities(
-            llm_response.get("entities", {}),
-            llm_response.get("entity_confidences", {}),
+    def _from_json(self, signal_text: str, data: dict[str, Any]) -> SignalClassification:
+        category_value = data.get("category", data.get("signal_category", "GENERAL_INQUIRY"))
+        category = SignalCategory(category_value) if category_value in SignalCategory._value2member_map_ else SignalCategory.GENERAL_INQUIRY
+        entities_data = data.get("entities", {}) or {}
+        return SignalClassification(
+            signal_text=signal_text,
+            category=category,
+            confidence=float(data.get("confidence", 0.5)),
+            entities=SignalEntities(
+                location=entities_data.get("location"),
+                system=entities_data.get("system"),
+                severity_indicators=list(entities_data.get("severity_indicators", [])),
+                other=list(entities_data.get("other", [])),
+            ),
+            pii_detected=bool(data.get("pii_detected", False)),
+            pii_types=list(data.get("pii_types", [])),
+            urgency_indicators=list(data.get("urgency_indicators", [])),
+            requires_clarification=bool(data.get("requires_clarification", False)),
+            clarification_question=data.get("clarification_question"),
         )
 
-        # Extract other fields with sensible defaults
-        confidence = float(llm_response.get("confidence", 0.5))
-        requires_clarification = llm_response.get("requires_clarification", False)
-        clarification_question = llm_response.get("clarification_question")
-
-        # Build metadata from additional fields
-        metadata = {
-            "urgency": llm_response.get("urgency", "low"),
-        }
-
-        return QueryResult(
-            original_query=original_query,
-            intent=intent,
-            entities=entities,
+    def _classify_with_rules(self, signal_text: str) -> SignalClassification:
+        text = signal_text.lower()
+        scores: dict[SignalCategory, int] = {}
+        indicators: list[str] = []
+        for category, keywords in CATEGORY_KEYWORDS.items():
+            hits = [kw for kw in keywords if kw in text]
+            if hits:
+                scores[category] = len(hits)
+                indicators.extend(hits)
+        if AC_ID_RE.search(signal_text):
+            scores[SignalCategory.STATUS_CHECK] = scores.get(SignalCategory.STATUS_CHECK, 0) + 2
+        category = self._best_category(scores) if scores else SignalCategory.GENERAL_INQUIRY
+        confidence = 0.55 if not scores else min(0.98, 0.70 + max(scores.values()) * 0.08)
+        pii_types = []
+        if PHONE_RE.search(signal_text):
+            pii_types.append("phone")
+        if EMAIL_RE.search(signal_text):
+            pii_types.append("email")
+        return SignalClassification(
+            signal_text=signal_text,
+            category=category,
             confidence=confidence,
-            requires_clarification=requires_clarification,
-            clarification_question=clarification_question,
-            metadata=metadata,
+            entities=SignalEntities(
+                location=self._extract_location(signal_text),
+                system=self._extract_system(text),
+                severity_indicators=sorted(set(indicators)),
+                other=AC_ID_RE.findall(signal_text),
+            ),
+            pii_detected=bool(pii_types),
+            pii_types=pii_types,
+            urgency_indicators=[kw for kw in ("urgent", "immediately", "statutory", "now") if kw in text],
+            requires_clarification=confidence < 0.60,
+            clarification_question="Can you share the location and what is happening?" if confidence < 0.60 else None,
         )
 
-    def _parse_entities(
-        self,
-        entities_dict: dict[str, str],
-        confidences_dict: dict[str, float],
-    ) -> list[Entity]:
-        """
-        Parse entity data from LLM response into Entity objects.
+    def _best_category(self, scores: dict[SignalCategory, int]) -> SignalCategory:
+        best_score = max(scores.values())
+        tied = {category for category, score in scores.items() if score == best_score}
+        for category in CATEGORY_PRECEDENCE:
+            if category in tied:
+                return category
+        return SignalCategory.GENERAL_INQUIRY
 
-        Transforms the flat dictionaries from the LLM into proper Entity
-        objects with type information derived from the entity name.
+    def _extract_location(self, signal_text: str) -> Optional[str]:
+        match = re.search(r"(?:at|near|on|across)\s+([^,.!?]+)", signal_text, re.IGNORECASE)
+        return match.group(1).strip() if match else None
 
-        Args:
-            entities_dict: Map of entity names to values
-            confidences_dict: Map of entity names to confidence scores
+    def _extract_system(self, text: str) -> Optional[str]:
+        for system in ("power line", "water main", "transformer", "substation", "grid", "gas"):
+            if system in text:
+                return system
+        return None
 
-        Returns:
-            List of Entity objects
-        """
-        entities = []
-
-        # Map entity names to their types for downstream processing
-        type_mapping = {
-            "ticket_id": "identifier",
-            "course_number": "identifier",
-            "user_name": "name",
-            "date": "date",
-            "topic": "topic",
-            "urgency": "attribute",
-        }
-
-        for name, value in entities_dict.items():
-            if value is None:
-                continue  # Skip null values
-
-            # Get confidence, defaulting to 0.8 if not provided
-            confidence = confidences_dict.get(name, 0.8)
-
-            # Determine entity type from the mapping
-            entity_type = type_mapping.get(name, "unknown")
-
-            entities.append(Entity(
-                name=name,
-                value=str(value),  # Ensure string type
-                entity_type=entity_type,
-                confidence=float(confidence),
-            ))
-
-        return entities
-
-
-# Synchronous wrapper for environments that don't support async
-def analyze_query_sync(
-    query: str,
-    client: Optional[AzureOpenAI] = None,
-    model: str = "gpt-4.1",
-    conversation_context: Optional[str] = None,
-) -> QueryResult:
-    """
-    Synchronous wrapper for query analysis.
-
-    Use this in non-async environments. For async environments,
-    use QueryAgent.analyze() directly.
-
-    Args:
-        query: The user query to analyze
-        client: Azure OpenAI client (optional)
-        model: Model deployment name
-        conversation_context: Previous conversation summary
-
-    Returns:
-        QueryResult with classified intent and entities
-    """
-    import asyncio
-
-    agent = QueryAgent(client=client, model=model)
-
-    # Run the async method in an event loop
-    return asyncio.run(agent.analyze(query, conversation_context))
-
-
-# Example usage and testing
-if __name__ == "__main__":
-    import asyncio
-
-    async def main():
-        """Demonstrate QueryAgent usage."""
-        # Initialize agent (uses environment variables)
-        agent = QueryAgent()
-
-        # Test queries covering different intents
-        test_queries = [
-            "Hello, how are you?",
-            "How do I reset my password?",
-            "What's the status of ticket TKT-12345?",
-            "I need to speak to a human right now!",
-            "When does CS101 start next semester?",
-            "asdfghjkl",  # Gibberish - should be unknown
-        ]
-
-        for query in test_queries:
-            print(f"\n{'='*50}")
-            print(f"Query: {query}")
-
-            result = await agent.analyze(query)
-
-            print(f"Intent: {result.intent.value}")
-            print(f"Confidence: {result.confidence:.2f}")
-            print(f"Entities: {result.get_entities_dict()}")
-            print(f"Requires clarification: {result.requires_clarification}")
-            if result.clarification_question:
-                print(f"Clarification: {result.clarification_question}")
-
-    asyncio.run(main())

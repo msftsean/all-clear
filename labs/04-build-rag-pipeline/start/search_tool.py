@@ -1,9 +1,10 @@
 """
-Lab 04 - Build RAG Pipeline
+Lab 04 - Build All Clear RAG Pipeline
 SearchTool: Hybrid search over Azure AI Search
 
 This module provides a SearchTool class that performs hybrid search
-(combining keyword and vector search) against an Azure AI Search index.
+(combining keyword and vector search) against an Azure AI Search index of
+All Clear incident runbooks, SOPs, and response procedures.
 
 Key Concepts:
 - Vector search: Uses embeddings to find semantically similar content
@@ -24,7 +25,7 @@ from azure.search.documents.models import VectorizedQuery
 
 class SearchTool:
     """
-    A tool for performing hybrid search over Azure AI Search.
+    A tool for performing hybrid search over All Clear incident knowledge.
 
     Hybrid search combines traditional keyword-based search with
     vector similarity search for improved relevance.
@@ -64,12 +65,12 @@ class SearchTool:
         Perform hybrid search combining keyword and vector search.
 
         Args:
-            query: The text query for keyword search.
+            query: The incident-triage text query for keyword search.
             query_vector: The embedding vector for vector search.
             top_k: Number of results to return (default: 5).
 
         Returns:
-            A list of search results, each containing document content
+            A list of search results, each containing source-record content
             and metadata (id, title, chunk, score).
         """
         # Create VectorizedQuery for semantic search
@@ -82,7 +83,7 @@ class SearchTool:
             search_text=query,
             vector_queries=[vector_query],
             top=top_k,
-            select=["id", "title", "chunk", "content"],
+            select=["id", "title", "snippet", "content", "queue", "category"],
         )
 
         # Process results into list of dictionaries
@@ -92,8 +93,10 @@ class SearchTool:
                 {
                     "id": result.get("id"),
                     "title": result.get("title"),
-                    "chunk": result.get("chunk"),
+                    "snippet": result.get("snippet"),
                     "content": result.get("content"),
+                    "queue": result.get("queue"),
+                    "category": result.get("category"),
                     "score": result.get("@search.score", 0.0),
                 }
             )

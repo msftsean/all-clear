@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Environment verification script for the 47 Doors boot camp.
+Environment verification script for the All Clear boot camp.
 
 Checks all required tools and configurations are in place before starting.
 """
@@ -216,7 +216,7 @@ def print_result(status: str, message: str) -> None:
 
 def main() -> int:
     """Run all environment checks and report results."""
-    print("\n47 Doors Boot Camp - Environment Verification\n")
+    print("\nAll Clear Boot Camp - Environment Verification\n")
     print("=" * 50)
     print()
 

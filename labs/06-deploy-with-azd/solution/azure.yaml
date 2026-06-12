@@ -1,13 +1,10 @@
-# Azure Developer CLI (azd) Configuration
+# Azure Developer CLI (azd) configuration for All Clear
 # Lab 06: Deploy with azd - SOLUTION
-#
-# This file defines the application structure for Azure deployment.
-# Run 'azd up' to provision infrastructure and deploy the application.
+# Run 'azd up' to provision infrastructure and deploy backend + frontend Container Apps.
 
-name: university-front-door-agent
-
+name: all-clear
 metadata:
-  template: university-front-door-agent@0.0.1
+  template: all-clear@0.1.0
 
 services:
   backend:
@@ -16,12 +13,15 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
+      remoteBuild: true
 
-  # Frontend service (uncomment if you have a frontend)
-  # frontend:
-  #   project: ./frontend
-  #   language: js
-  #   host: staticwebapp
+  frontend:
+    project: ./frontend
+    language: js
+    host: containerapp
+    docker:
+      path: Dockerfile
+      remoteBuild: true
 
 infra:
   provider: bicep
@@ -33,16 +33,14 @@ hooks:
     shell: sh
     run: |
       echo "=========================================="
-      echo "Deployment complete!"
+      echo "All Clear deployment complete!"
       echo "=========================================="
-      echo ""
       echo "Backend URL: ${AZURE_CONTAINERAPP_URL}"
-      echo "API Health: ${AZURE_CONTAINERAPP_URL}/api/health"
-      echo "API Docs:   ${AZURE_CONTAINERAPP_URL}/docs"
+      echo "Frontend URL: ${AZURE_FRONTEND_URL}"
+      echo "API Health:  ${AZURE_CONTAINERAPP_URL}/api/health"
+      echo "Signals API: ${AZURE_CONTAINERAPP_URL}/api/signals"
+      echo "API Docs:    ${AZURE_CONTAINERAPP_URL}/docs"
       echo ""
-      echo "To view logs:"
-      echo "  az containerapp logs show --name ca-backend --resource-group \$AZURE_RESOURCE_GROUP --follow"
-      echo ""
-      echo "To clean up resources:"
-      echo "  azd down"
+      echo "To view backend logs, resolve the Container App tagged azd-service-name=backend,"
+      echo "then run: az containerapp logs show --name <backend-app-name> --resource-group <resource-group> --follow"
       echo "=========================================="

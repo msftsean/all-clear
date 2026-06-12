@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ApiError, getHealth, submitSignal } from "./api";
 import type { PipelineResult } from "./types";
-import { Eyebrow, MonoPill, Waveform } from "./components";
+import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
 
 type Role = "caller" | "agent" | "system";
@@ -99,13 +99,13 @@ export default function BriefingRoom() {
   }
 
   return (
-    <div className="flex h-full w-full flex-col bg-night md:flex-row">
+    <div className="flex h-full w-full flex-col bg-paper md:flex-row">
       {/* ---- Paper world: conversation column ---- */}
-      <div className="flex h-full w-full flex-col border-r border-paperline bg-paper md:w-[430px] md:flex-none">
-        <header className="flex items-center justify-between border-b border-paperline px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-clear" />
-            <span className="font-display text-[18px] font-bold tracking-tight text-inkwarm">
+      <div className="z-10 flex h-full w-full flex-col border-r border-paperline bg-paper2 shadow-[rgba(0,39,80,0.04)_1px_0_0_0] md:w-[430px] md:flex-none">
+        <header className="flex items-center justify-between border-b border-paperline px-5 py-4">
+          <div className="flex items-center gap-2.5">
+            <img src="/allclear-mark.svg" alt="" className="h-6 w-6 flex-none" />
+            <span className="font-display text-[21px] font-medium tracking-tight text-inkwarm">
               All Clear
             </span>
           </div>
@@ -113,7 +113,7 @@ export default function BriefingRoom() {
             {health ? (
               <span
                 data-testid="health-pill"
-                className="font-mono text-[10px] text-midwarm"
+                className="rounded-chip bg-paper px-2.5 py-1 font-mono text-[10px] text-midwarm shadow-antimetal-soft"
                 title={health.live ? "Live model" : "Mock / offline"}
               >
                 {health.ok ? (health.live ? "● live" : "● mock") : "○ offline"}
@@ -123,18 +123,18 @@ export default function BriefingRoom() {
         </header>
 
         {/* Live channel strip — voice orange, the only ambient motion */}
-        <div className="flex items-center gap-3 border-b border-paperline/70 px-4 py-2">
+        <div className="flex items-center gap-3 border-b border-paperline/70 bg-paper px-5 py-3">
           <Waveform live={channel === "phone"} />
           <button
             data-testid="channel-toggle"
             onClick={() => setChannel((c) => (c === "phone" ? "chat" : "phone"))}
-            className="ml-auto rounded-chip border border-paperline px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-voice"
+            className="ml-auto rounded-chip border border-paperline bg-paper2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
           >
             {channel === "phone" ? "● inbound · phone" : "chat"}
           </button>
         </div>
 
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-paper px-5 py-5">
           {messages.map((m) => (
             <MessageBubble key={m.id} m={m} />
           ))}
@@ -155,7 +155,7 @@ export default function BriefingRoom() {
                 key={i}
                 data-testid={`suggestion-${i}`}
                 onClick={() => send(s)}
-                className="rounded-chip border border-paperline bg-paper2 px-2 py-1 text-left text-[11px] text-midwarm hover:border-midwarm"
+                className="rounded-chip border border-paperline bg-paper2 px-3 py-1.5 text-left text-[11px] text-midwarm shadow-antimetal-soft transition-colors hover:border-voice/50 hover:text-inkwarm"
               >
                 {s}
               </button>
@@ -164,7 +164,7 @@ export default function BriefingRoom() {
         ) : null}
 
         <form
-          className="border-t border-paperline p-3"
+          className="border-t border-paperline bg-paper2 p-3"
           onSubmit={(e) => {
             e.preventDefault();
             send(input);
@@ -183,13 +183,13 @@ export default function BriefingRoom() {
               }}
               rows={2}
               placeholder="Describe the signal…"
-              className="flex-1 resize-none rounded-bubble border border-paperline bg-paper2 px-3 py-2 text-[13px] text-inkwarm placeholder:text-midwarm/60 focus:border-midwarm"
+              className="flex-1 resize-none rounded-bubble border border-paperline bg-paper2 px-3 py-2 text-[13px] text-inkwarm shadow-antimetal-soft placeholder:text-midwarm/60 focus:border-voice"
             />
             <button
               data-testid="send-signal"
               type="submit"
               disabled={busy || !input.trim()}
-              className="rounded-chip bg-inkwarm px-3 py-2 font-sans text-[13px] font-medium text-paper2 disabled:opacity-40"
+              className="rounded-chip bg-cta px-5 py-2 font-sans text-[13px] font-semibold text-ctaink shadow-antimetal-cta transition hover:brightness-105 disabled:opacity-40"
             >
               Send
             </button>
@@ -198,13 +198,17 @@ export default function BriefingRoom() {
       </div>
 
       {/* ---- Night world: canvas ---- */}
-      <main className="hidden flex-1 overflow-y-auto bg-night md:block">
-        <Canvas result={latest} onOpenReceipt={() => setReceiptOpen(true)} />
+      <main className="relative hidden flex-1 overflow-y-auto bg-antimetal-hero md:block">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8px_8px,rgba(255,255,255,.34)_1px,transparent_1.5px)] bg-[length:24px_24px] opacity-15 [mask-image:linear-gradient(180deg,#000,transparent_72%)]" />
+        <div className="pointer-events-none absolute -right-28 -top-36 h-[620px] w-[620px] rounded-full bg-[radial-gradient(50%_50%,rgba(0,128,248,.32)_0%,rgba(95,189,247,.32)_20%,rgba(211,239,252,.32)_60%,rgba(248,249,252,0)_100%)]" />
+        <div className="relative z-10">
+          <Canvas result={latest} onOpenReceipt={() => setReceiptOpen(true)} />
+        </div>
       </main>
 
       {/* Mobile canvas summary (no split on phones per DESIGN) */}
       {latest ? (
-        <div className="border-t border-nline bg-night p-3 md:hidden">
+        <div className="border-t border-nline bg-antimetal-hero p-3 md:hidden">
           <button
             data-testid="open-receipt-mobile"
             onClick={() => setReceiptOpen(true)}
@@ -232,7 +236,7 @@ function MessageBubble({ m }: { m: Msg }) {
     return (
       <div
         data-testid="system-message"
-        className="rounded-bubble border border-dashed border-paperline bg-paper2/60 px-3 py-2 text-[12px] text-midwarm"
+        className="rounded-bubble border border-dashed border-paperline bg-paper2 px-3 py-2 text-[12px] text-midwarm shadow-antimetal-soft"
       >
         {m.text}
       </div>
@@ -245,10 +249,10 @@ function MessageBubble({ m }: { m: Msg }) {
       className={`flex flex-col ${isAgent ? "items-start" : "items-end"}`}
     >
       <div
-        className={`max-w-[86%] rounded-bubble border px-3 py-2 ${
+        className={`max-w-[86%] rounded-bubble border px-3 py-2 shadow-antimetal-card ${
           isAgent
-            ? "rounded-bl-[3px] border-paperline bg-paper2 font-display text-[13.5px] font-medium text-inkwarm"
-            : "rounded-br-[3px] border-paperline bg-paper2/70 font-sans text-[13px] text-inkwarm"
+            ? "rounded-bl-[6px] border-paperline bg-paper2 font-sans text-[13.5px] font-medium text-inkwarm"
+            : "rounded-br-[6px] border-paperline bg-paper2/90 font-sans text-[13px] text-inkwarm"
         }`}
         style={isAgent ? { letterSpacing: "-0.005em" } : undefined}
       >

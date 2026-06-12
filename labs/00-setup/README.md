@@ -10,9 +10,10 @@
 
 > ⚡ **If you ran `azd up`, you can skip this lab.** The 11-step
 > Codespaces/CORS checklist below is **only** for the **manual local lane** (when
-> you are *not* using `azd`). In the 3-hour AJCU workshop, `azd up` already
-> provisions and seeds everything — go straight to the AJCU scenarios. Keep
-> reading only if you're hand-rolling a local setup.
+> you are *not* using `azd`). In the 3-hour workshop, `azd up` already
+> provisions and seeds everything — go straight to the surge scenarios in
+> [Lab 05](../05-agent-orchestration/). Keep reading only if you're hand-rolling
+> a local setup.
 
 ## 📈 Progress Tracker
 
@@ -51,7 +52,7 @@ Before starting this lab, ensure you have:
 
 | ✅ Requirement       | 📝 Details                                      |
 | -------------------- | ----------------------------------------------- |
-| 🐙 GitHub Account    | With access to the 47doors repository           |
+| 🐙 GitHub Account    | With access to the EstablishedCorp/all-clear repo |
 | 🤖 GitHub Copilot    | Active subscription (required for labs)         |
 | ☁️ Azure Credentials | Provided by your instructor for labs 04, 05, 07 |
 | 🌐 Web Browser       | Chrome, Edge, or Firefox (latest version)       |
@@ -75,7 +76,7 @@ GitHub Codespaces provides:
 
 ### 🔹 Step 1: Launch GitHub Codespaces
 
-1. 🔗 Navigate to the [47doors repository](https://github.com/EstablishedCorp/47doors) on GitHub
+1. 🔗 Navigate to the [all-clear repository](https://github.com/EstablishedCorp/all-clear) on GitHub
 2. 🟢 Click the green **Code** button
 3. 📑 Select the **Codespaces** tab
 4. ➕ Click **Create codespace on main**
@@ -265,7 +266,7 @@ You should see a response like:
   "timestamp": "2026-02-03T22:20:12.504937Z",
   "services": {
     "llm": { "status": "up", "latency_ms": 5, "error": null },
-    "ticketing": { "status": "up", "latency_ms": 10, "error": null },
+    "incident_store": { "status": "up", "latency_ms": 10, "error": null },
     "knowledge_base": { "status": "up", "latency_ms": 15, "error": null },
     "session_store": { "status": "up", "latency_ms": 2, "error": null }
   }
@@ -326,17 +327,18 @@ Or construct the URL manually:
 https://<your-codespace-name>-5173.app.github.dev
 ```
 
-You should see the **47 Doors - University Support** interface with the logo. 🎉
+You should see the **All Clear** briefing-room interface — the two-world
+ClearBoard view. 🎉
 
-### 🔹 Step 11: Test the Chat Interface
+### 🔹 Step 11: Submit a Test Signal
 
-1. 💬 In the frontend, type a test message: `"I forgot my password"`
-2. 📤 Click **Send** or press Enter
-3. ✅ You should receive a response from the agent with:
-   - 🎫 A ticket ID (e.g., `TKT-IT-20260203-0001`)
-   - 🏢 Department routing (IT Support)
-   - ⏱️ Estimated response time
-   - 📚 Knowledge base articles
+1. 💬 In the briefing room, type a test signal: `"Power line down across Main St, sparking near the school"`
+2. 📤 Submit it
+3. ✅ You should receive a pipeline response with:
+   - 🆔 An incident ID (e.g., `AC-0001`)
+   - 🚦 A severity (e.g., `SEV1` — life-safety / public hazard) and SLA
+   - 🗂️ A target queue (e.g., `field-operations`)
+   - 📝 A citation-grounded acknowledgment (sitrep)
 
 If you see a response, congratulations! Your environment is fully set up. 🎉🎊
 
@@ -354,7 +356,7 @@ Before moving to the next lab, confirm the following:
 - [ ] ✅ Backend server starts without errors
 - [ ] 💚 `/api/health` endpoint returns healthy status
 - [ ] 🎨 Frontend application loads in browser
-- [ ] 💬 Chat interface sends and receives messages successfully
+- [ ] 💬 Briefing room submits a signal and renders an incident/severity/queue successfully
 - [ ] 🚫 No CORS errors in browser console (press F12 → Console tab)
 - [ ] 🤖 VS Code with GitHub Copilot extension is ready
 

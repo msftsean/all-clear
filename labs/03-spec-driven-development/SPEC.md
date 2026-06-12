@@ -10,7 +10,7 @@ This document defines the completion criteria for Lab 03: Spec-Driven Developmen
 
 - [ ] **Feature Specification Created**
   - [ ] Feature name and description clearly defined
-  - [ ] At least 3 user stories written (student, advisor, system perspectives)
+  - [ ] At least 3 user stories written (reporter, operator, system perspectives)
   - [ ] Minimum 5 functional requirements documented
   - [ ] Success criteria are measurable and testable
   - [ ] Constraints section identifies technical and compliance limitations
@@ -19,7 +19,7 @@ This document defines the completion criteria for Lab 03: Spec-Driven Developmen
   - [ ] Core principles defined (minimum 3 principles)
   - [ ] Agent boundaries clearly established
   - [ ] Prohibited actions listed with rationale
-  - [ ] FERPA compliance addressed
+  - [ ] Privacy and audit obligations addressed using the All Clear CJIS mindset
   - [ ] Accessibility requirements included
 
 ### Exercise 03b: Generate from Spec
@@ -68,7 +68,7 @@ By completion, your lab directory should contain:
 
 | Criterion | Poor | Adequate | Excellent |
 |-----------|------|----------|-----------|
-| Principles | Generic/vague | Domain-relevant | Higher Ed specific |
+| Principles | Generic/vague | Domain-relevant | All Clear specific |
 | Boundaries | Unclear limits | Basic boundaries | Comprehensive limits |
 | Prohibited Actions | Missing rationale | Actions listed | Actions + consequences |
 
@@ -94,7 +94,7 @@ You have successfully completed this lab when:
 
 | Issue | Resolution |
 |-------|------------|
-| Spec too broad | Focus on a single, specific feature |
+| Spec too broad | Focus on a single, specific capability |
 | Copilot ignores spec | Ensure spec file is open and use Agent Mode |
 | Generated code incomplete | Break spec into smaller generation requests |
 | Constitution too restrictive | Balance principles with practical functionality |

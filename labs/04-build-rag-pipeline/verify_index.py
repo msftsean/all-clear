@@ -1,6 +1,7 @@
 """
-Lab 04 - Verify Pre-indexed Data
-Run this script to confirm the Azure AI Search index is properly configured.
+Lab 04 - Verify Pre-indexed All Clear Data
+Run this script to confirm the Azure AI Search index is properly configured for
+incident runbooks, SOPs, and customer-comms templates.
 """
 
 import os
@@ -26,14 +27,14 @@ def verify_index():
     """Verify the pre-indexed Azure AI Search data."""
 
     print("=" * 60)
-    print("Lab 04 - Verify Pre-indexed Data")
+    print("Lab 04 - Verify Pre-indexed All Clear Data")
     print("=" * 60)
     print()
 
     # Check environment variables
     endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
     api_key = os.getenv("AZURE_SEARCH_API_KEY")
-    index_name = os.getenv("AZURE_SEARCH_INDEX_NAME", "university-kb")
+    index_name = os.getenv("AZURE_SEARCH_INDEX_NAME", "allclear-kb")
 
     if not endpoint or not api_key:
         print("❌ Missing environment variables!")
@@ -59,20 +60,20 @@ def verify_index():
         results = list(client.search(search_text="*", top=100))
         doc_count = len(results)
 
-        if doc_count >= 30:
+        if doc_count >= 15:
             print(f"✅ Found {doc_count} documents in index")
         else:
-            print(f"⚠️  Only found {doc_count} documents (expected 32)")
+            print(f"⚠️  Only found {doc_count} documents (expected at least 15)")
         print()
 
         # Test 2: Keyword search
         print("Test 2: Keyword Search")
         print("-" * 40)
-        results = list(client.search(search_text="password reset", top=3))
+        results = list(client.search(search_text="downed power line", top=3))
 
         if results:
             print("✅ Keyword search working!")
-            print("   Top results for 'password reset':")
+            print("   Top results for 'downed power line':")
             for r in results:
                 print(f"   - {r.get('title', 'Unknown')}")
         else:
@@ -93,14 +94,14 @@ def verify_index():
         print("Test 4: Category Filter")
         print("-" * 40)
         results = list(
-            client.search(search_text="*", filter="department eq 'it_support'", top=3)
+            client.search(search_text="*", filter="queue eq 'field-operations'", top=3)
         )
 
         if results:
-            print("✅ Filtering by department working!")
-            print(f"   Found {len(results)} IT Support articles")
+            print("✅ Filtering by queue working!")
+            print(f"   Found {len(results)} field-operations articles")
         else:
-            print("⚠️  No results for department filter")
+            print("⚠️  No results for queue filter")
         print()
 
         # Summary

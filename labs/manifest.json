@@ -24,14 +24,14 @@
       "duration_minutes": 90,
       "learning_objectives": [
         "Understand multi-agent vs single agent",
-        "Learn QueryAgent → RouterAgent → ActionAgent pattern",
-        "Practice intent classification"
+        "Learn QueryAgent → RouterExecutor → ActionAgent pattern",
+        "Practice signal classification"
       ],
       "prerequisites": ["00"],
       "has_start_code": false,
       "has_solution_code": false,
       "deliverables": [
-        "Intent classifier >90% accuracy on test queries"
+        "Signal classifier maps incident reports to the correct SignalCategory"
       ]
     },
     {
@@ -100,7 +100,7 @@
       "has_start_code": true,
       "has_solution_code": true,
       "deliverables": [
-        "Full pipeline QueryAgent → RouterAgent → ActionAgent",
+        "Full pipeline QueryAgent → RouterExecutor → ActionAgent",
         "Multi-turn conversation works"
       ]
     },
@@ -127,15 +127,15 @@
       "duration_minutes": 60,
       "learning_objectives": [
         "Understand MCP tool/resource model",
-        "Expose 47 Doors as MCP server",
+        "Expose All Clear as MCP server",
         "Test with Copilot Agent Mode"
       ],
       "prerequisites": ["05"],
       "has_start_code": true,
       "has_solution_code": true,
       "deliverables": [
-        "university_support_query tool responds",
-        "@47doors queries work in VS Code"
+        "create_incident / search_knowledge / generate_sitrep tools respond",
+        "@all-clear queries work in VS Code"
       ]
     }
   ]

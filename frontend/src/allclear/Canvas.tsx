@@ -29,7 +29,7 @@ function IncidentCard({
             <SeverityBadge sev={a.severity} />
             <span className="font-mono text-[11px] text-ndim">{a.queue}</span>
           </div>
-          <div className="mt-2 font-display text-[15px] text-nink">
+          <div className="mt-2 font-sans text-[15px] font-medium text-nink">
             {a.escalated ? "Escalated to a human" : attached ? "Attached to open incident" : "Incident opened"}
           </div>
           <div className="mt-1 text-[12px] text-ndim">{a.estimated_response_time}</div>
@@ -51,7 +51,7 @@ function IncidentCard({
       <button
         data-testid="open-receipt"
         onClick={onOpenReceipt}
-        className="mt-3 w-full rounded-chip border border-nline px-3 py-1.5 text-[12px] text-nink transition-colors hover:bg-night/50"
+        className="mt-3 w-full rounded-chip border border-nline/80 bg-night/20 px-3 py-1.5 text-[12px] text-nink shadow-dark-glass transition-colors hover:bg-night/40"
       >
         Show decision receipt
       </button>
@@ -113,16 +113,16 @@ function MapCard({ r }: { r: PipelineResult }) {
   const sevVar = `var(--${r.action.severity.toLowerCase()})`;
   return (
     <Card title="map" testid="map-card">
-      <div className="relative overflow-hidden rounded-[6px] border border-nline bg-night">
+      <div className="relative overflow-hidden rounded-[16px] border border-nline bg-night shadow-dark-glass">
         <svg viewBox="0 0 320 150" className="h-[150px] w-full" role="img" aria-label={`Map: ${loc}`}>
-          <rect width="320" height="150" fill="#0c121b" />
+          <rect width="320" height="150" fill="#001033" />
           {Array.from({ length: 7 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#1b2433" strokeWidth="1" />
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#26345c" strokeWidth="1" />
           ))}
           {Array.from({ length: 11 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#1b2433" strokeWidth="1" />
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#26345c" strokeWidth="1" />
           ))}
-          <path d="M0 96 L120 70 L210 92 L320 60" fill="none" stroke="#27324A" strokeWidth="2" />
+          <path d="M0 96 L120 70 L210 92 L320 60" fill="none" stroke="#5fbdf7" strokeWidth="2" opacity="0.55" />
           <g>
             <circle cx="166" cy="78" r="16" fill={sevVar} opacity="0.18" />
             <circle cx="166" cy="78" r="5" fill={sevVar} />
@@ -174,17 +174,17 @@ export function DecisionReceipt({
 
   return (
     <div className="fixed inset-0 z-40" data-testid="decision-receipt">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-[440px] overflow-y-auto border-l border-nline bg-panel p-4 shadow-2xl">
+      <div className="absolute inset-0 bg-night/70 backdrop-blur-sm" onClick={onClose} />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-[440px] overflow-y-auto border-l border-nline/80 bg-panel/95 p-5 shadow-dark-glass backdrop-blur">
         <div className="flex items-center justify-between">
           <div>
             <Eyebrow>decision receipt</Eyebrow>
-            <div className="mt-1 font-display text-[18px] text-nink">{a.incident_id}</div>
+            <div className="mt-1 font-display text-[22px] font-medium tracking-tight text-nink">{a.incident_id}</div>
           </div>
           <button
             data-testid="receipt-close"
             onClick={onClose}
-            className="rounded-chip border border-nline px-2 py-1 text-[12px] text-ndim hover:bg-night/50"
+            className="rounded-chip border border-nline bg-night/20 px-3 py-1.5 text-[12px] text-ndim shadow-dark-glass hover:bg-night/50"
           >
             Close
           </button>
@@ -252,7 +252,7 @@ export function ApprovalGate({
   return (
     <div
       data-testid="approval-gate"
-      className="mt-4 rounded-card border border-dashed border-paperline/40 bg-night/40 p-3"
+      className="mt-4 rounded-card border border-dashed border-nline bg-night/40 p-4"
     >
       <Eyebrow>{published ? "all clear · published" : "awaiting approval"}</Eyebrow>
       <p className="mt-2 text-[13px] text-nink">{s.summary}</p>
@@ -278,7 +278,7 @@ export function ApprovalGate({
           <button
             data-testid="approve-publish"
             onClick={onApprove}
-            className="mt-2 w-full rounded-chip border border-clear bg-clear/15 px-3 py-2 font-display text-[13px] font-medium text-clear transition-colors hover:bg-clear/25"
+            className="mt-3 w-full rounded-chip bg-cta px-5 py-2.5 font-sans text-[13px] font-semibold text-ctaink shadow-antimetal-cta transition hover:brightness-105"
           >
             Approve &amp; publish
           </button>
@@ -307,7 +307,7 @@ export function Canvas({
       >
         <div>
           <div className="mx-auto mb-3 h-px w-24 bg-nline" />
-          <p className="font-display text-[15px] text-ndim">The board is quiet.</p>
+          <p className="font-display text-[40px] font-medium leading-tight tracking-tight text-nink">The board is quiet.</p>
           <p className="mt-1 text-[12px] text-ndim/70">
             Submit a signal on the left. Classification, routing, and the incident appear here.
           </p>
@@ -316,7 +316,7 @@ export function Canvas({
     );
   }
   return (
-    <div data-testid="canvas" className="grid grid-cols-2 gap-[14px] p-4">
+    <div data-testid="canvas" className="grid grid-cols-2 gap-[14px] p-5">
       <IncidentCard r={result} onOpenReceipt={onOpenReceipt} />
       <ClassificationCard r={result} />
       <MapCard r={result} />

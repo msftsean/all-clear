@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>All Clear · Integrated Biosciences preview</title>
+  <!-- Aspekta is not available on Google Fonts; Inter Tight 400 is used as the closest Google Fonts substitute. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:opsz,wght@14..32,400&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bioluminescent-lime: #cef79e;
+      --color-abyssal-ink: #222f30;
+      --color-bone-white: #f7f7f5;
+      --color-paper: #ffffff;
+      --color-graphite: #4d5757;
+      --color-lichen: #c9cbbe;
+      --color-tissue: #e7e8e1;
+      --color-frost: #eeeeee;
+      --color-void: #000000;
+      --sev1: #E25555;
+      --sev2: #E59A3A;
+      --sev3: #5B8FE8;
+      --clear: #37C281;
+
+      --font-aspekta: 'Inter Tight', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-roboto-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-weight-regular: 400;
+
+      --text-caption: 13px;
+      --leading-caption: 1.23;
+      --tracking-caption: -0.26px;
+      --text-body: 18px;
+      --leading-body: 1.3;
+      --tracking-body: -0.018px;
+      --text-body-lg: 22px;
+      --leading-body-lg: 1.3;
+      --tracking-body-lg: -0.13px;
+      --text-subheading: 24px;
+      --leading-subheading: 1.2;
+      --tracking-subheading: -0.14px;
+      --text-heading-sm: 36px;
+      --leading-heading-sm: 1.2;
+      --tracking-heading-sm: -0.22px;
+
+      --spacing-4: 4px;
+      --spacing-8: 8px;
+      --spacing-12: 12px;
+      --spacing-16: 16px;
+      --spacing-20: 20px;
+      --spacing-24: 24px;
+      --spacing-40: 40px;
+      --spacing-44: 44px;
+      --spacing-48: 48px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+      --radius-2xl: 16px;
+      --radius-2xl-2: 20px;
+      --radius-3xl: 40px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--color-abyssal-ink);
+      color: var(--color-paper);
+      font-family: var(--font-aspekta);
+      font-weight: var(--font-weight-regular);
+      letter-spacing: var(--tracking-body);
+      overflow-x: hidden;
+    }
+
+    .style-badge {
+      position: fixed;
+      z-index: 20;
+      top: 14px;
+      right: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--color-lichen);
+      border-radius: 9999px;
+      padding: 8px 12px;
+      background: var(--color-paper);
+      color: var(--color-abyssal-ink);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+    }
+
+    .style-badge::before,
+    .tag-dot {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--color-bioluminescent-lime);
+      display: inline-block;
+      flex: 0 0 auto;
+    }
+
+    .app-shell {
+      width: min(1440px, 100vw);
+      min-height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 430px minmax(0, 1fr);
+      background: var(--color-abyssal-ink);
+      border-left: 1px solid var(--color-graphite);
+      border-right: 1px solid var(--color-graphite);
+    }
+
+    .conversation {
+      background: var(--color-bone-white);
+      color: var(--color-abyssal-ink);
+      border-right: 1px solid var(--color-lichen);
+      min-height: 100vh;
+      padding: 72px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .canvas {
+      min-height: 100vh;
+      padding: 28px 32px 32px;
+      background: var(--color-abyssal-ink);
+      color: var(--color-paper);
+    }
+
+    .topbar {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 430px minmax(0, 1fr);
+      min-height: 72px;
+      border-bottom: 1px solid var(--color-graphite);
+      background: var(--color-abyssal-ink);
+    }
+
+    .brand-block {
+      border-right: 1px solid var(--color-graphite);
+      padding: 22px 28px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--color-paper);
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: -0.14px;
+    }
+
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      border: 1px solid var(--color-paper);
+      border-radius: 9999px;
+      position: relative;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 9999px;
+      background: var(--clear);
+    }
+
+    .status-line {
+      padding: 24px 32px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      color: var(--color-lichen);
+      font-size: 18px;
+      line-height: 1.3;
+      letter-spacing: -0.018px;
+    }
+
+    .status-pill,
+    .eyebrow,
+    .chip,
+    .mono,
+    .legend,
+    button,
+    .receipt-row,
+    .citation {
+      font-family: var(--font-roboto-mono);
+      font-weight: var(--font-weight-regular);
+    }
+
+    .status-pill,
+    .section-pill,
+    .chip,
+    .legend-item,
+    .severity-pill {
+      border-radius: 9999px;
+      border: 1px solid currentColor;
+    }
+
+    .status-pill {
+      color: var(--color-lichen);
+      padding: 8px 14px;
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .header-note {
+      color: var(--color-graphite);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+    }
+
+    .panel-intro {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-top: 8px;
+    }
+
+    .section-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      color: var(--color-graphite);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-abyssal-ink);
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: var(--sev1);
+      animation: blink 1.4s steps(2, start) infinite;
+    }
+
+    .wave-card {
+      border: 1px solid var(--color-lichen);
+      border-radius: 20px;
+      background: var(--color-paper);
+      padding: 24px;
+    }
+
+    .wave-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .waveform {
+      height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0 2px;
+    }
+
+    .bar {
+      width: 5px;
+      height: 18px;
+      border-radius: 9999px;
+      background: var(--color-graphite);
+      transform-origin: center;
+      animation: wave 980ms ease-in-out infinite;
+    }
+
+    .bar:nth-child(2n) { animation-delay: -160ms; height: 28px; }
+    .bar:nth-child(3n) { animation-delay: -320ms; height: 38px; background: var(--color-bioluminescent-lime); }
+    .bar:nth-child(5n) { animation-delay: -480ms; height: 44px; }
+    .bar:nth-child(7n) { animation-delay: -620ms; height: 24px; }
+
+    .bubble {
+      border: 1px solid var(--color-lichen);
+      border-radius: 16px;
+      padding: 20px;
+      background: var(--color-paper);
+      font-size: 18px;
+      line-height: 1.3;
+      letter-spacing: -0.018px;
+    }
+
+    .bubble.caller {
+      border-top-left-radius: 4px;
+    }
+
+    .bubble.agent {
+      border-top-right-radius: 4px;
+      background: var(--color-tissue);
+    }
+
+    .bubble-label {
+      margin-bottom: 10px;
+      color: var(--color-graphite);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: -8px;
+    }
+
+    .chip {
+      color: var(--color-graphite);
+      padding: 7px 10px;
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      background: transparent;
+    }
+
+    .magnitude-line {
+      border: 1px solid var(--color-lichen);
+      border-radius: 16px;
+      background: var(--color-abyssal-ink);
+      color: var(--color-paper);
+      padding: 18px 20px;
+      font-size: 22px;
+      line-height: 1.3;
+      letter-spacing: -0.13px;
+    }
+
+    .magnitude-line .mono {
+      display: block;
+      color: var(--color-lichen);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .canvas-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      border: 1px solid var(--color-graphite);
+      border-radius: 20px;
+      background: var(--color-abyssal-ink);
+      padding: 24px;
+      min-width: 0;
+    }
+
+    .card.wide { grid-column: 1 / -1; padding: 24px; }
+
+    .eyebrow {
+      color: var(--color-lichen);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card-title {
+      color: var(--color-paper);
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: -0.14px;
+      margin: 0 0 14px;
+    }
+
+    .card-copy,
+    .incident-meta,
+    .sitrep {
+      color: var(--color-lichen);
+      font-size: 18px;
+      line-height: 1.3;
+      letter-spacing: -0.018px;
+    }
+
+    .incident-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      border-top: 1px solid var(--color-graphite);
+      padding-top: 12px;
+    }
+
+    .metric .mono {
+      display: block;
+      color: var(--color-graphite);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .severity-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .severity-pill {
+      padding: 7px 10px;
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+    }
+
+    .sev1 { color: var(--sev1); }
+    .sev2 { color: var(--sev2); }
+    .sev3 { color: var(--sev3); }
+    .near-breach { color: var(--sev1); }
+
+    .map-wrap {
+      border: 1px solid var(--color-graphite);
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--color-void);
+      min-height: 320px;
+      position: relative;
+    }
+
+    .map-wrap svg { display: block; width: 100%; height: 320px; }
+
+    .map-label {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-lichen);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      border: 1px solid var(--color-graphite);
+      border-radius: 9999px;
+      background: var(--color-abyssal-ink);
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+      color: var(--color-lichen);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+    }
+
+    .pin-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 9999px;
+      display: inline-block;
+      background: currentColor;
+    }
+
+    .pulse-ring {
+      animation: pinPulse 1.7s ease-out infinite;
+      transform-origin: center;
+    }
+
+    .citation {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--color-graphite);
+      border-radius: 9999px;
+      padding: 3px 7px;
+      color: var(--color-bioluminescent-lime);
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      white-space: nowrap;
+    }
+
+    .sitrep p { margin: 0 0 12px; }
+    .sitrep p:last-child { margin-bottom: 0; }
+
+    .receipt {
+      display: grid;
+      gap: 0;
+      border-top: 1px solid var(--color-graphite);
+      border-bottom: 1px solid var(--color-graphite);
+    }
+
+    .receipt-row {
+      padding: 12px 0;
+      color: var(--color-lichen);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      border-bottom: 1px dashed var(--color-graphite);
+    }
+
+    .receipt-row:last-child { border-bottom: 0; }
+
+    .approval-gate {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--color-graphite);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--color-paper);
+      padding: 9px 13px;
+      font-size: 13px;
+      line-height: 1;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: var(--clear);
+      border-color: var(--clear);
+      color: var(--color-abyssal-ink);
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--sev3);
+      outline-offset: 3px;
+    }
+
+    .undo-note {
+      color: var(--color-graphite);
+      font-family: var(--font-roboto-mono);
+      font-size: 13px;
+      line-height: 1.23;
+      letter-spacing: -0.26px;
+      text-transform: uppercase;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(.42); }
+      50% { transform: scaleY(1); }
+    }
+
+    @keyframes blink {
+      0%, 55% { opacity: 1; }
+      56%, 100% { opacity: .28; }
+    }
+
+    @keyframes pinPulse {
+      0% { opacity: .58; transform: scale(1); }
+      100% { opacity: 0; transform: scale(2.5); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar { animation: none; transform: scaleY(.5); }
+      .live-dot, .pulse-ring { animation: none; }
+    }
+
+    @media (max-width: 980px) {
+      .app-shell, .topbar { grid-template-columns: 1fr; width: 100%; }
+      .topbar { display: block; }
+      .brand-block { border-right: 0; }
+      .conversation { border-right: 0; min-height: auto; }
+      .canvas { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="style-badge">Integrated Biosciences</div>
+  <main class="app-shell" aria-label="All Clear ClearBoard preview">
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="brand" aria-label="All Clear brand"><span class="brand-mark"></span><span>All Clear</span></div>
+        <div class="header-note">ClearBoard</div>
+      </div>
+      <div class="status-line">
+        <span>3 open incidents · 1 SEV1 · 22 signals in last 5 min</span>
+        <span class="status-pill">Live surge</span>
+      </div>
+    </header>
+
+    <section class="conversation" aria-label="Conversation column">
+      <div class="panel-intro">
+        <span class="section-pill"><span class="tag-dot"></span>Inbound·phone</span>
+        <span class="live-pill mono"><span class="live-dot"></span>Live</span>
+      </div>
+
+      <div class="wave-card" aria-label="Live audio waveform">
+        <div class="wave-top">
+          <span class="bubble-label">Signal becoming structure</span>
+          <span class="mono">signal #14</span>
+        </div>
+        <div class="waveform" aria-hidden="true">
+          <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </div>
+      </div>
+
+      <div class="bubble caller">
+        <div class="bubble-label">Caller transcript</div>
+        “There's a power line down across Oak Street, sparking near the school.”
+      </div>
+
+      <div class="chips" aria-label="As-classified chips">
+        <span class="chip">intent=infrastructure-hazard</span>
+        <span class="chip">entity="Oak Street"</span>
+        <span class="chip">severity-cue=life-safety</span>
+        <span class="chip">confidence=0.94</span>
+      </div>
+
+      <div class="bubble agent">
+        <div class="bubble-label">Agent reply</div>
+        “Thank you — I've logged this and flagged it for field operations. You're the 14th caller about the Oak Street line, so crews are already being routed.”
+      </div>
+
+      <div class="magnitude-line">
+        <span class="mono">Magnitude as community</span>
+        Fourteen neighbors are reporting the same hazard, so ClearBoard treats Oak Street as a shared public-safety incident, not fourteen separate tickets.
+      </div>
+    </section>
+
+    <section class="canvas" aria-label="Operational canvas">
+      <div class="canvas-grid">
+        <article class="card wide">
+          <div class="eyebrow"><span>Map card · AC-1042 · auto</span><span>Magnitude weighted</span></div>
+          <div class="map-wrap">
+            <div class="map-label"><span class="tag-dot"></span>Oak ridge operating region</div>
+            <svg viewBox="0 0 900 320" role="img" aria-label="Dark map region with three incident pins">
+              <rect width="900" height="320" fill="#000000"></rect>
+              <path d="M94 74 C180 22 284 46 342 92 C390 130 451 102 516 68 C622 12 750 48 803 126 C856 204 786 282 673 292 C565 302 486 258 401 278 C304 302 218 292 150 235 C82 178 38 108 94 74 Z" fill="#222f30" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M112 230 C230 184 284 160 382 120 C502 70 610 78 790 116" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M176 76 C240 138 292 190 350 278" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M292 48 C356 108 430 166 530 250" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M626 54 C596 130 594 198 618 294" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M112 154 L824 154" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <path d="M214 262 C318 228 382 210 482 194 C590 176 668 214 778 252" fill="none" stroke="#4d5757" stroke-width="1"></path>
+              <text x="350" y="144" fill="#c9cbbe" font-family="Roboto Mono" font-size="13" letter-spacing="-0.26">Oak Street</text>
+              <text x="600" y="178" fill="#4d5757" font-family="Roboto Mono" font-size="13" letter-spacing="-0.26">Maple district</text>
+              <circle class="pulse-ring" cx="430" cy="154" r="22" fill="none" stroke="#E25555" stroke-width="1"></circle>
+              <circle cx="430" cy="154" r="18" fill="#E25555"></circle>
+              <circle cx="430" cy="154" r="5" fill="#ffffff"></circle>
+              <circle cx="642" cy="198" r="13" fill="#E59A3A"></circle>
+              <circle cx="642" cy="198" r="4" fill="#ffffff"></circle>
+              <circle cx="710" cy="104" r="9" fill="#5B8FE8"></circle>
+              <circle cx="710" cy="104" r="3" fill="#ffffff"></circle>
+            </svg>
+          </div>
+          <div class="legend" aria-label="Map legend">
+            <span class="legend-item sev1"><span class="pin-dot"></span>SEV1 · magnitude 14</span>
+            <span class="legend-item sev2"><span class="pin-dot"></span>SEV2 · magnitude 6</span>
+            <span class="legend-item sev3"><span class="pin-dot"></span>SEV3 · magnitude 2</span>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1042 · auto</span><span class="near-breach">SLA 15:00</span></div>
+          <h2 class="card-title">Oak Street power line down</h2>
+          <div class="severity-row">
+            <span class="severity-pill sev1">SEV1</span>
+            <span class="severity-pill">Magnitude 14</span>
+          </div>
+          <div class="incident-meta">
+            <div class="metric"><span class="mono">Queue</span>field-operations</div>
+            <div class="metric near-breach"><span class="mono">Clock</span>near breach</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1043 · auto</span><span>SLA 1:00:00</span></div>
+          <h2 class="card-title">Intermittent outage — Maple district</h2>
+          <div class="severity-row">
+            <span class="severity-pill sev2">SEV2</span>
+            <span class="severity-pill">Magnitude 6</span>
+          </div>
+          <div class="incident-meta">
+            <div class="metric"><span class="mono">Queue</span>engineering</div>
+            <div class="metric"><span class="mono">Clock</span>active</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Incident AC-1044 · auto</span><span>SLA 4:00:00</span></div>
+          <h2 class="card-title">Billing portal returning 500s</h2>
+          <div class="severity-row">
+            <span class="severity-pill sev3">SEV3</span>
+            <span class="severity-pill">Magnitude 2</span>
+          </div>
+          <div class="incident-meta">
+            <div class="metric"><span class="mono">Queue</span>customer-comms</div>
+            <div class="metric"><span class="mono">Clock</span>active</div>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="eyebrow"><span>Sitrep · pinned by: "give me a sitrep"</span><span>Draft</span></div>
+          <div class="sitrep">
+            <p>Oak Street has an active downed power-line incident with life-safety indicators <span class="citation">[AC-1042]</span>.</p>
+            <p>The latest inbound caller is the fourteenth report attached to the same incident <span class="citation">[signal #14]</span>.</p>
+            <p>RouterExecutor attached the report through dedup at 0.91 similarity and escalated to field operations <span class="citation">[routing decision]</span>.</p>
+          </div>
+          <div class="button-row" style="margin-top:18px">
+            <button type="button" data-testid="show-sources-button">Show sources</button>
+            <button type="button" data-testid="edit-draft-button">Edit draft</button>
+          </div>
+        </article>
+
+        <article class="card wide">
+          <div class="eyebrow"><span>Decision receipt · AC-1042 · auto</span><span>Authority boundary</span></div>
+          <div class="receipt" aria-label="Decision receipt rows">
+            <div class="receipt-row">QueryAgent · gpt-4.1 · classified infrastructure-hazard (0.94)</div>
+            <div class="receipt-row">RouterExecutor · deterministic · no LLM · dedup 0.91 ≥ 0.83 → attach; SEV1; escalate</div>
+            <div class="receipt-row">ActionAgent · gpt-4.1 · create_incident + generate_sitrep</div>
+          </div>
+          <div class="approval-gate">
+            <div class="button-row">
+              <button class="primary" type="button" data-testid="approve-publish-button">Approve &amp; publish</button>
+              <button type="button" data-testid="review-routing-button">Review routing</button>
+            </div>
+            <div class="undo-note">15-minute undo window</div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

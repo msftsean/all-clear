@@ -9,7 +9,7 @@
 
 ---
 
-> 🌟 **STRETCH GOAL**: This lab is for participants who finish Labs 01-06 early. Completing this lab is optional and will not affect your ability to pass the boot camp.
+> 🌟 **STRETCH GOAL**: This lab is for participants who finish Labs 01-06 early. Completing this lab is optional and will not affect your ability to pass the builder track.
 
 ---
 
@@ -23,7 +23,7 @@ Checkpoints:
 □ Step 2: Create the MCP Server Module
 □ Step 3: Create MCP Server Entry Point
 □ Step 4: Configure VS Code for MCP
-□ Step 5: Implement the 4 Required Tools
+□ Step 5: Implement the 3 ActionAgent Tools
 □ Step 6: Test with Copilot Agent Mode
 ```
 
@@ -31,14 +31,22 @@ Checkpoints:
 
 ## 🌟 Overview
 
-Transform your 47 Doors FastAPI backend into a Model Context Protocol (MCP) server, enabling direct integration with AI assistants like GitHub Copilot in VS Code.
+Transform your All Clear FastAPI backend into a Model Context Protocol (MCP) server, enabling direct integration with AI assistants like GitHub Copilot in VS Code.
+
+This lab exposes All Clear's incident-triage capabilities as bounded tools. External clients can help triage inbound **signals**, but they do not bypass the pipeline:
+
+```
+signal → QueryAgent (classify) → RouterExecutor (dedup → severity → SLA → escalate) → ActionAgent
+```
+
+ActionAgent has exactly three required tools: `create_incident`, `search_knowledge`, and `generate_sitrep`.
 
 ## 🎯 Learning Objectives
 
 By the end of this lab, you will be able to:
 
 1. 📚 **Understand the MCP Tool/Resource Model** - Learn how AI assistants discover and invoke tools through MCP
-2. 🔌 **Expose 47 Doors as an MCP Server** - Convert your existing FastAPI endpoints into MCP-compatible tools
+2. 🔌 **Expose All Clear as an MCP Server** - Convert incident-triage capabilities into MCP-compatible tools
 3. 🧪 **Test with Copilot Agent Mode** - Use your MCP server directly from VS Code's Copilot chat
 
 ## 🤔 What is MCP (Model Context Protocol)?
@@ -49,8 +57,8 @@ The Model Context Protocol (MCP) is an open standard that defines how AI assista
 
 | 📋 Concept | 📝 Description |
 |-----------|-------------|
-| 🔧 **Tools** | Functions that AI can invoke (e.g., `university_support_query`, `list_categories`) |
-| 📚 **Resources** | Data sources that AI can read (e.g., FAQ database, ticket history) |
+| 🔧 **Tools** | Functions that AI can invoke (e.g., `create_incident`, `search_knowledge`, `generate_sitrep`) |
+| 📚 **Resources** | Data sources that AI can read (e.g., open incidents, source records, runbooks, SOPs) |
 | 📝 **Prompts** | Pre-defined templates for common interactions |
 | 🖥️ **Server** | Your application that exposes tools and resources via MCP |
 
@@ -60,15 +68,16 @@ Without MCP, every AI assistant needs custom integrations for every tool. With M
 - ✍️ Write once, use everywhere (Copilot, Claude, ChatGPT, etc.)
 - 🔒 Standardized security and authentication
 - 🔍 AI can discover what tools are available and how to use them
+- 🧱 All Clear preserves **bounded authority**: QueryAgent classifies, RouterExecutor decides with zero LLM calls, and ActionAgent acts only through its tools
 
 ## 📋 Prerequisites
 
 Before starting this lab, ensure you have:
 
-- [ ] ✅ Lab 05 completed with working RAG pipeline
+- [ ] ✅ Lab 05 completed with working QueryAgent → RouterExecutor → ActionAgent orchestration
 - [ ] 🤖 VS Code with GitHub Copilot extension installed
 - [ ] 🐍 Python 3.11+ environment active
-- [ ] 🔧 FastAPI backend running locally
+- [ ] 🔧 FastAPI backend running locally or mock mode configured
 
 ---
 
@@ -84,7 +93,8 @@ pip install "mcp>=1.6.0"
 ```
 
 Add to `requirements.txt`:
-```
+
+```text
 mcp>=1.6.0
 ```
 
@@ -94,197 +104,137 @@ Create a new file `backend/app/mcp_server.py`:
 
 ```python
 """
-🔌 MCP Server for 47 Doors University Support
-Exposes RAG-powered support tools via Model Context Protocol
+🔌 MCP Server for All Clear incident triage.
+Exposes bounded ActionAgent tools via Model Context Protocol.
 """
 import asyncio
+import time
 from typing import Any
+
 from mcp.server import Server
-# InitializationOptions removed in MCP SDK 1.1+; server info is set via Server() constructor
 from mcp.server.stdio import stdio_server
-from mcp.types import (
-    Tool,
-    TextContent,
-    Resource,
-    ResourceTemplate,
-)
+from mcp.types import Resource, TextContent, Tool
 
-from app.services.rag_service import RAGService
-from app.core.config import get_settings
-
-# 🔌 Initialize MCP server
-server = Server("47doors-university-support")
-
-# 🔍 Initialize RAG service (reuse your existing implementation)
-rag_service = None
-
-async def get_rag_service():
-    """Lazy initialization of RAG service."""
-    global rag_service
-    if rag_service is None:
-        settings = get_settings()
-        rag_service = RAGService(settings)
-        await rag_service.initialize()
-    return rag_service
+server = Server("allclear-incident-triage")
 
 
 @server.list_tools()
 async def handle_list_tools() -> list[Tool]:
-    """
-    📋 List available tools for the AI assistant.
-    This is called when the AI needs to discover what tools are available.
-    """
+    """📋 List available tools for the AI assistant."""
     return [
         Tool(
-            name="university_support_query",
-            description="🎓 Answer university support questions using the 47 Doors knowledge base. "
-                       "Use this for questions about admissions, financial aid, housing, "
-                       "registration, student services, and general university policies.",
+            name="create_incident",
+            description="🚨 Open an All Clear incident from an inbound signal. Use after RouterExecutor returns OPEN_INCIDENT.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "question": {
-                        "type": "string",
-                        "description": "The student's question about university services or policies"
-                    },
-                    "category": {
-                        "type": "string",
-                        "description": "Optional category filter (admissions, financial_aid, housing, etc.)",
-                        "enum": ["admissions", "financial_aid", "housing", "registration", "student_services", "general"]
-                    }
+                    "signal_text": {"type": "string", "description": "Raw inbound signal, e.g. Power line down across Main St"},
+                    "severity": {"type": "string", "enum": ["SEV1", "SEV2", "SEV3", "SEV4"]},
+                    "queue": {"type": "string", "enum": ["field-operations", "customer-comms", "compliance-desk", "engineering", "escalations"]},
+                    "intent_category": {"type": "string"},
                 },
-                "required": ["question"]
-            }
+                "required": ["signal_text", "severity", "queue"],
+            },
         ),
         Tool(
-            name="list_faq_categories",
-            description="📚 List all available FAQ categories in the knowledge base.",
-            inputSchema={
-                "type": "object",
-                "properties": {}
-            }
-        ),
-        Tool(
-            name="get_category_faqs",
-            description="🏷️ Get all FAQs for a specific category.",
+            name="search_knowledge",
+            description="📚 Search All Clear runbooks and SOPs for citation-grounded guidance.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "category": {
-                        "type": "string",
-                        "description": "The category to retrieve FAQs for"
-                    }
+                    "query": {"type": "string"},
+                    "queue": {"type": "string"},
+                    "max_results": {"type": "integer", "default": 3},
                 },
-                "required": ["category"]
-            }
+                "required": ["query"],
+            },
         ),
         Tool(
-            name="submit_support_ticket",
-            description="🎫 Create a support ticket when the knowledge base cannot answer a question. "
-                       "Use this as a fallback when university_support_query returns low confidence.",
+            name="generate_sitrep",
+            description="📝 Generate a citation-grounded situation report. Every factual claim must cite a source record.",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "subject": {
-                        "type": "string",
-                        "description": "Brief summary of the issue"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Detailed description of the student's question or issue"
-                    },
-                    "student_email": {
-                        "type": "string",
-                        "description": "Student's email for follow-up"
-                    },
-                    "priority": {
-                        "type": "string",
-                        "enum": ["low", "medium", "high"],
-                        "description": "Ticket priority level"
-                    }
+                    "incident_id": {"type": "string", "description": "All Clear incident id, format AC-####"},
+                    "include_citations": {"type": "boolean", "default": True},
                 },
-                "required": ["subject", "description"]
-            }
-        )
+                "required": ["incident_id"],
+            },
+        ),
+        Tool(
+            name="classify_signal",
+            description="🔎 Optional helper that asks QueryAgent to classify one signal. Authority: classify only.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "signal_text": {"type": "string"},
+                    "channel": {"type": "string", "description": "chat, voice, phone, or report"},
+                },
+                "required": ["signal_text"],
+            },
+        ),
     ]
 
 
 @server.call_tool()
 async def handle_call_tool(name: str, arguments: dict[str, Any]) -> list[TextContent]:
-    """
-    ⚡ Handle tool invocation from the AI assistant.
-    """
-    rag = await get_rag_service()
+    """⚡ Handle tool invocation from the AI assistant."""
+    if name == "create_incident":
+        incident_id = f"AC-{int(time.time()) % 10000:04d}"
+        response_text = f"""## 🚨 Incident Created
 
-    if name == "university_support_query":
-        question = arguments["question"]
-        category = arguments.get("category")
-
-        # 🔍 Use your existing RAG pipeline
-        result = await rag.query(question, category_filter=category)
-
-        response_text = f"""## 💬 Answer
-
-{result.answer}
-
-## 📊 Confidence
-{result.confidence:.0%}
-
-## 📚 Sources
-"""
-        for source in result.sources:
-            response_text += f"- {source.title} (relevance: {source.score:.0%})\n"
-
-        return [TextContent(type="text", text=response_text)]
-
-    elif name == "list_faq_categories":
-        categories = await rag.get_categories()
-
-        response_text = "## 📚 Available FAQ Categories\n\n"
-        for cat in categories:
-            response_text += f"- **{cat.name}**: {cat.description} ({cat.faq_count} FAQs)\n"
-
-        return [TextContent(type="text", text=response_text)]
-
-    elif name == "get_category_faqs":
-        category = arguments["category"]
-        faqs = await rag.get_faqs_by_category(category)
-
-        response_text = f"## 🏷️ FAQs in {category}\n\n"
-        for faq in faqs:
-            response_text += f"### {faq.question}\n{faq.answer}\n\n"
-
-        return [TextContent(type="text", text=response_text)]
-
-    elif name == "submit_support_ticket":
-        # 🎫 In a real implementation, this would create a ticket in your system
-        ticket_id = f"TKT-{int(__import__("time").time()):.0f}"
-
-        response_text = f"""## 🎫 Support Ticket Created
-
-**Ticket ID**: {ticket_id}
-**Subject**: {arguments['subject']}
-**Priority**: {arguments.get('priority', 'medium')}
-
-A support representative will follow up shortly. ✅
+**Incident ID**: {incident_id}
+**Severity**: {arguments["severity"]}
+**Queue**: {arguments["queue"]}
+**Magnitude**: 1 report
+**Signal**: {arguments["signal_text"]}
 """
         return [TextContent(type="text", text=response_text)]
 
-    else:
-        return [TextContent(type="text", text=f"❌ Unknown tool: {name}")]
+    if name == "search_knowledge":
+        response_text = f"""## 📚 Knowledge Results
+
+Query: {arguments["query"]}
+
+- SOP-POWER-001 — Establish a perimeter and notify field-operations.
+- RUNBOOK-SURGE-004 — During a surge, preserve every signal and attach duplicates as reports.
+"""
+        return [TextContent(type="text", text=response_text)]
+
+    if name == "generate_sitrep":
+        incident_id = arguments["incident_id"]
+        response_text = f"""## 📝 Sitrep for {incident_id}
+
+{incident_id} is open for field-operations review [incident:{incident_id}].
+
+## Citations
+- incident:{incident_id} — Incident record
+- SOP-POWER-001 — Downed power line field safety SOP
+"""
+        return [TextContent(type="text", text=response_text)]
+
+    if name == "classify_signal":
+        response_text = """## 🔎 SignalClassification
+
+Intent category: FIELD_HAZARD
+Target queue: field-operations
+Severity indicators: downed line, public road
+PII detected: false
+"""
+        return [TextContent(type="text", text=response_text)]
+
+    return [TextContent(type="text", text=f"❌ Unknown tool: {name}")]
 
 
 @server.list_resources()
 async def handle_list_resources() -> list[Resource]:
-    """
-    📚 List available resources (data sources) for the AI assistant.
-    """
+    """📚 List available resources for the AI assistant."""
     return [
         Resource(
-            uri="47doors://faq/all",
-            name="All FAQs",
-            description="Complete FAQ database for university support",
-            mimeType="application/json"
+            uri="allclear://incidents/open",
+            name="Open Incidents",
+            description="Open All Clear incidents with severity, queue, SLA clock, magnitude, and status",
+            mimeType="application/json",
         )
     ]
 
@@ -292,10 +242,7 @@ async def handle_list_resources() -> list[Resource]:
 async def main():
     """🚀 Run the MCP server using stdio transport."""
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            )
+        await server.run(read_stream, write_stream)
 
 
 if __name__ == "__main__":
@@ -308,11 +255,11 @@ Create `backend/mcp_main.py` to run the MCP server:
 
 ```python
 """
-🚀 Entry point for running 47 Doors as an MCP server.
+🚀 Entry point for running All Clear as an MCP server.
 """
 import asyncio
-import sys
 import os
+import sys
 
 # Add the app directory to the path
 sys.path.insert(0, os.path.dirname(__file__))
@@ -330,32 +277,39 @@ Create or update `.vscode/mcp.json` in your project root:
 ```json
 {
   "mcpServers": {
-    "47doors": {
+    "allclear": {
       "command": "python",
       "args": ["backend/mcp_main.py"],
       "env": {
         "AZURE_OPENAI_ENDPOINT": "${env:AZURE_OPENAI_ENDPOINT}",
         "AZURE_OPENAI_API_KEY": "${env:AZURE_OPENAI_API_KEY}",
         "AZURE_SEARCH_ENDPOINT": "${env:AZURE_SEARCH_ENDPOINT}",
-        "AZURE_SEARCH_API_KEY": "${env:AZURE_SEARCH_API_KEY}"
+        "AZURE_SEARCH_API_KEY": "${env:AZURE_SEARCH_API_KEY}",
+        "MOCK_MODE": "${env:MOCK_MODE}"
       }
     }
   }
 }
 ```
 
-### 🔹 Step 5: Implement the 4 Required Tools (15 minutes)
+### 🔹 Step 5: Implement the 3 ActionAgent Tools (15 minutes)
 
-Your MCP server should expose these four tools:
+Your MCP server should expose these three required tools:
 
 | 🔧 Tool | 📝 Purpose | 📥 Input |
 |------|---------|-------|
-| `university_support_query` | RAG-powered Q&A | question, optional category |
-| `list_faq_categories` | List all categories | none |
-| `get_category_faqs` | Get FAQs by category | category name |
-| `submit_support_ticket` | Create support ticket | subject, description, email, priority |
+| `create_incident` | Open an incident when RouterExecutor returns `OPEN_INCIDENT` | signal_text, severity, queue, optional intent_category |
+| `search_knowledge` | Retrieve runbooks/SOPs with citations | query, optional queue, max_results |
+| `generate_sitrep` | Produce a citation-grounded sitrep | incident_id, include_citations |
 
-The code in Step 2 implements all four. Customize them to match your existing service layer.
+Optional helpers are useful but must preserve authority boundaries:
+
+| 🔧 Tool | 📝 Purpose | 📥 Input |
+|------|---------|-------|
+| `classify_signal` | Ask QueryAgent for `SignalClassification` | signal_text, optional channel |
+| `route_signal` | Ask RouterExecutor for dedup, severity, SLA, escalation | signal_text, classification |
+
+Keep the rules intact: QueryAgent classifies only; RouterExecutor is deterministic and uses zero LLM calls; ActionAgent acts only through the three required tools.
 
 ### 🔹 Step 6: Test with Copilot Agent Mode (10 minutes)
 
@@ -365,30 +319,30 @@ The code in Step 2 implements all four. Customize them to match your existing se
 
 3. ✅ **Verify MCP Server Connection**:
    - In the chat input, click the **Tools** icon to see available MCP tools
-   - You should see tools from your `47doors` MCP server listed (e.g., `university_support_query`, `list_faq_categories`)
+   - You should see tools from your `allclear` MCP server listed (e.g., `create_incident`, `search_knowledge`, `generate_sitrep`)
    - MCP tools are automatically discovered in Agent Mode -- no `@` prefix is needed
 
 4. 🧪 **Test Each Tool**:
 
    ```
-   What are the housing options for freshmen?
+   Classify this signal: Power line down across Main St
    ```
-   Expected: RAG-powered response with sources ✅
+   Expected: `SignalClassification` with `FIELD_HAZARD`, severity indicators, and `field-operations` ✅
 
    ```
-   List all FAQ categories
+   Create an incident for Power line down across Main St with severity SEV1 and queue field-operations
    ```
-   Expected: List of categories with descriptions ✅
+   Expected: Incident `AC-####`, severity `SEV1`, queue `field-operations`, magnitude `1` ✅
 
    ```
-   Show me all financial aid FAQs
+   Search knowledge for downed power line field safety SOPs
    ```
-   Expected: FAQs from the financial_aid category ✅
+   Expected: Runbooks/SOPs with source records ✅
 
    ```
-   I can't find information about parking permits, please create a ticket
+   Generate a sitrep for AC-0001
    ```
-   Expected: Support ticket confirmation ✅
+   Expected: Citation-grounded sitrep ✅
 
 5. 🐛 **Debug if Needed**:
    - Check VS Code Output panel (select "MCP" from dropdown)
@@ -404,9 +358,11 @@ The code in Step 2 implements all four. Customize them to match your existing se
 When you complete this lab, verify the following:
 
 - [ ] 🚀 MCP server starts without errors
-- [ ] 🔧 `university_support_query` tool responds to questions
+- [ ] 🔧 `create_incident` opens incidents with `AC-####` ids
+- [ ] 📚 `search_knowledge` returns citation-ready source records
+- [ ] 📝 `generate_sitrep` produces a grounded sitrep
 - [ ] 💬 Copilot Agent Mode invokes your MCP tools correctly
-- [ ] ✅ All four tools are discoverable and functional
+- [ ] ✅ All required tools are discoverable and functional
 
 ---
 
@@ -423,7 +379,7 @@ Error: ModuleNotFoundError: No module named 'mcp'
 
 1. 📄 Check that `.vscode/mcp.json` exists and has valid JSON
 2. 🔄 Restart VS Code completely (not just reload window)
-3. 📦 Check VS Code version supports MCP (1.85+)
+3. 📦 Check VS Code version supports MCP (1.96+ recommended)
 4. 📋 Look for errors in Output > MCP
 
 ### ❌ Tool Invocation Fails
@@ -433,15 +389,19 @@ Error: Connection refused
 ```
 **Solution**:
 1. ✅ Verify environment variables are set correctly
-2. 🔧 Ensure your RAG service is properly initialized
-3. ☁️ Check that Azure services are accessible
+2. 🔧 Ensure your All Clear services are properly initialized
+3. ☁️ Check that Azure services are accessible, or set `MOCK_MODE=true` for offline work
 
-### ❌ RAG Service Errors
+### ❌ Knowledge Search Errors
 
 ```
-Error: Azure OpenAI endpoint not configured
+Error: Azure AI Search endpoint not configured
 ```
-**Solution**: Ensure your `.env` file has all required variables and they're passed to the MCP server via the config.
+**Solution**: Ensure your `.env` file has all required variables and they're passed to the MCP server via the config. In mock mode, verify the mock twin for knowledge search is enabled.
+
+### ❌ Sitrep Has Unsupported Claims
+
+**Solution**: Every factual claim in a sitrep needs a citation. If you cannot cite a source record, remove the claim or escalate to a human queue.
 
 ---
 
@@ -458,18 +418,18 @@ Error: Azure OpenAI endpoint not configured
                                          │ stdio
                                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    47 Doors MCP Server                          │
+│                    All Clear MCP Server                         │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │                     mcp_server.py                         │  │
-│  │  • 📋 list_tools() → Expose 4 tools                      │  │
+│  │  • 📋 list_tools() → Expose ActionAgent tools            │  │
 │  │  • ⚡ call_tool() → Handle invocations                   │  │
-│  │  • 📚 list_resources() → Expose FAQ database             │  │
+│  │  • 📚 list_resources() → Expose incident resources       │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                              │                                   │
 │                              ▼                                   │
 │  ┌──────────────────────────────────────────────────────────┐  │
-│  │                    RAG Service                            │  │
-│  │  (Reuses Lab 05 implementation)                          │  │
+│  │ QueryAgent → RouterExecutor → ActionAgent                │  │
+│  │ classify → dedup/severity/SLA/escalate → act             │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                              │                                   │
 └──────────────────────────────│───────────────────────────────────┘
@@ -477,8 +437,8 @@ Error: Azure OpenAI endpoint not configured
                                ▼
 ┌──────────────────┐    ┌──────────────────┐
 │  Azure OpenAI    │    │  Azure AI Search │
-│  (Embeddings +   │    │  (Vector Store)  │
-│   Completions)   │    │                  │
+│  (classification │    │  (Vector Store   │
+│   + embeddings)  │    │   for SOPs)      │
 └──────────────────┘    └──────────────────┘
 ```
 
@@ -486,18 +446,18 @@ Error: Azure OpenAI endpoint not configured
 
 ## ➡️ Next Steps
 
-After completing this lab, you have built a full-stack AI-powered application:
+After completing this lab, you have built a full-stack AI-powered incident-triage application:
 
 1. 🎨 **Labs 01-02**: Understanding agents and Azure MCP setup
-2. 🔧 **Labs 03-04**: Spec-driven development and RAG pipeline
-3. 🔍 **Lab 05**: RAG pipeline with vector search
+2. 🔧 **Labs 03-04**: Spec-driven development and RAG / knowledge
+3. 🔍 **Lab 05**: Orchestration with dedup, severity, SLA, and escalation
 4. 🚀 **Lab 06**: Deployment to Azure
 5. 🔌 **Lab 07**: MCP server for AI assistant integration
 
 Consider these extensions:
 - 🔒 Add authentication to your MCP server
-- 📊 Implement MCP resources for real-time data
-- 📝 Create custom MCP prompts for common workflows
+- 📊 Implement MCP resources for real-time ClearBoard data
+- 📝 Create custom MCP prompts for surge triage workflows
 - 🔗 Explore other MCP clients (Claude Desktop, custom integrations)
 
 ---
@@ -505,7 +465,7 @@ Consider these extensions:
 ## 📚 Resources
 
 - 📖 [MCP Specification](https://spec.modelcontextprotocol.io/)
-- 🐍 [MCP Python SDK](https://github.com/anthropics/mcp)
+- 🐍 [MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk)
 - 💻 [VS Code MCP Documentation](https://code.visualstudio.com/docs/copilot/mcp)
 - 🏗️ [Building MCP Servers](https://modelcontextprotocol.io/docs/concepts/servers)
 
@@ -524,8 +484,8 @@ Consider these extensions:
 
 <div align="center">
 
-[← Lab 06](../06-deploy-with-azd/README.md) | **Lab 07** | 🏆 Boot Camp Complete!
+[← Lab 06](../06-deploy-with-azd/README.md) | **Lab 07** | 🏆 Builder Track Complete!
 
-📅 Last Updated: 2026-02-26 | 📝 Version: 1.1.0
+📅 Last Updated: 2026-06-12 | 📝 Version: 2.0.0
 
 </div>

@@ -1,6 +1,6 @@
 # Lab 02 Setup Notes
 
-Configured Azure MCP setup in this repository and validated all prerequisites.
+Configured Azure MCP setup for the All Clear repository and validated the prerequisites used to inspect Azure OpenAI, Azure AI Search, and Azure Container Apps from VS Code.
 
 ## Steps Completed
 
@@ -9,7 +9,7 @@ Configured Azure MCP setup in this repository and validated all prerequisites.
 3. ✅ Created `.vscode/mcp.json` with Azure MCP server configuration.
 4. ✅ Verified Azure MCP server is accessible via npx (v2.0.0-beta.22).
 5. ✅ Authenticated Azure CLI using device code flow.
-6. ✅ Verified subscription and resource group access.
+6. ✅ Verified subscription and resource group access for All Clear deployment resources.
 
 ## Verification Status
 
@@ -23,7 +23,7 @@ Rubric score: EXEMPLARY
 
 **Subscription:** Microsoft Azure Sponsorship  
 **Resource Group:** rg-azureday-user-11-use2  
-**User:** azureday-user-11@estdcorp.onmicrosoft.com
+**Workload:** All Clear incident-triage resources
 
 ## MCP Configuration
 
@@ -60,4 +60,6 @@ python3 labs/02-azure-mcp-setup/test_lab02.py
 After completing setup, test in VS Code Copilot Chat:
 - `@azure List my subscriptions`
 - `@azure What resource groups do I have?`
-
+- `@azure Show me Azure OpenAI resources that can power QueryAgent classification`
+- `@azure Show me Azure AI Search indexes for incident runbooks and SOPs`
+- `@azure Show me Azure Container Apps resources for the All Clear backend`

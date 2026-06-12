@@ -2,7 +2,7 @@
 
 ## Learning Objective
 
-By the end of this exercise, you will be able to **write effective system prompts for agents** that produce consistent, accurate, and well-structured responses.
+By the end of this exercise, you will be able to **write effective system prompts for the LLM-backed stages of All Clear** that produce consistent, accurate, and well-structured responses.
 
 ---
 
@@ -12,76 +12,89 @@ Effective prompts for AI agents typically consist of three key components:
 
 ### 1. System Message
 
-The system message defines the agent's role, personality, and core behavior. It sets the foundation for all interactions.
+The system message defines the agent's role, authority boundary, and core behavior.
 
 ```text
 You are a [role] that [primary function].
-Your goal is to [objective].
+Your authority is limited to [allowed actions].
 ```
 
 ### 2. Examples (Few-Shot Learning)
 
-Examples demonstrate the expected input-output format. They help the model understand patterns without explicit rules.
+Examples demonstrate the expected input-output format.
 
 ```text
-Example 1:
-User: "How do I reset my password?"
-Classification: ACCOUNT_SUPPORT
+Signal: "Power line down across Main St, sparking near a school"
+Classification: FIELD_HAZARD
 
-Example 2:
-User: "What are your business hours?"
-Classification: GENERAL_INQUIRY
+Signal: "When will power be restored on Elm St?"
+Classification: CUSTOMER_INQUIRY
 ```
 
 ### 3. Constraints
 
-Constraints define boundaries, limitations, and specific requirements the agent must follow.
+Constraints define boundaries, limitations, and specific requirements.
 
 ```text
 Constraints:
-- Only respond to questions within your domain
-- Never reveal internal system information
-- Always cite sources when providing factual information
+- Classify only; never route or open incidents
+- Never echo detected PII
+- Always return structured JSON
 ```
 
 ---
 
-## Exercise 1: QueryAgent - Intent Classification
+## Exercise 1: QueryAgent - Signal Classification
 
-**Scenario**: You need to write a system prompt for a QueryAgent that classifies user queries into specific intent categories.
+**Scenario**: You need to write a system prompt for the All Clear QueryAgent that classifies one inbound signal into a typed `SignalClassification`.
 
 ### Requirements
 
 The QueryAgent must:
-- Classify user queries into one of five categories: `BILLING`, `TECHNICAL_SUPPORT`, `ACCOUNT_MANAGEMENT`, `PRODUCT_INFO`, or `GENERAL`
-- Return a structured JSON response
-- Handle ambiguous queries gracefully
+- Classify signals into the All Clear `SignalCategory` taxonomy
+- Return structured JSON matching `SignalClassification`
+- Extract entities: `location`, `system`, `severity_indicators`, and `other`
+- Flag PII without echoing the values back
+- Handle ambiguous signals gracefully with lower confidence
+- Never route, deduplicate, assign severity, open incidents, search knowledge, or generate a sitrep
 
 ### Your Task
 
 Complete the system prompt below:
 
 ```text
-You are a QueryAgent responsible for classifying customer inquiries.
+You are the QueryAgent for All Clear, a cross-vertical incident-triage assistant.
 
-Your task is to analyze the user's message and determine the primary intent.
+Your task is to analyze one inbound signal and return a structured SignalClassification.
+You classify ONLY.
 
-Available intent categories:
-- BILLING: Questions about invoices, payments, pricing, refunds
-- TECHNICAL_SUPPORT: Issues with product functionality, bugs, errors
-- ACCOUNT_MANAGEMENT: Password resets, profile updates, access issues
-- PRODUCT_INFO: Feature questions, comparisons, availability
-- GENERAL: Greetings, off-topic, or unclear queries
+Available SignalCategory values:
+- INFRASTRUCTURE_OUTAGE: power/service outages, blackouts, transformers, substations, grid failures
+- FIELD_HAZARD: downed lines, sparking wires, flooding, debris, blocked roads, trees down
+- PUBLIC_SAFETY: life-safety threats such as fire, smoke, gas leak, explosion, collapse, injured, trapped
+- CUSTOMER_INQUIRY: information or restoration-time questions such as "when will power be restored"
+- SERVICE_REQUEST: routine non-urgent service requests
+- COMPLIANCE_REPORT: NFIRS, NIBRS, recalls, breach notifications, statutory reporting windows
+- STATUS_CHECK: follow-up on an existing incident such as AC-####
+- HUMAN_REQUEST: explicit request for a human, representative, manager, or supervisor
+- GENERAL_INQUIRY: greetings, thanks, off-topic, or unclear signals
 
-[ADD YOUR EXAMPLES HERE - Include at least 3 examples]
-
-[ADD YOUR CONSTRAINTS HERE - Include at least 3 constraints]
+[ADD YOUR EXAMPLES HERE]
+[ADD YOUR CONSTRAINTS HERE]
 
 Response format:
 {
-  "intent": "<CATEGORY>",
+  "intent": "<specific intent such as report_field_hazard>",
+  "intent_category": "<SignalCategory>",
+  "target_queue": "field-operations | customer-comms | compliance-desk | engineering | escalations",
   "confidence": <0.0-1.0>,
-  "reasoning": "<brief explanation>"
+  "entities": {"location": "<place or null>", "system": "<asset or null>", "severity_indicators": [], "other": []},
+  "requires_escalation": <true|false>,
+  "escalation_reason": "life_safety | statutory_clock | user_requested_human | policy_keyword_detected | pii_exposure | sentiment_safety | confidence_too_low | null",
+  "pii_detected": <true|false>,
+  "pii_types": [],
+  "sentiment": "NEUTRAL | FRUSTRATED | URGENT | SATISFIED",
+  "urgency_indicators": []
 }
 ```
 
@@ -91,151 +104,82 @@ Response format:
 <summary>Click to reveal a sample solution</summary>
 
 ```text
-You are a QueryAgent responsible for classifying customer inquiries.
+You are the QueryAgent for All Clear. You classify inbound operational signals from field crews, customers, sensors, and partner systems.
 
-Your task is to analyze the user's message and determine the primary intent.
-
-Available intent categories:
-- BILLING: Questions about invoices, payments, pricing, refunds
-- TECHNICAL_SUPPORT: Issues with product functionality, bugs, errors
-- ACCOUNT_MANAGEMENT: Password resets, profile updates, access issues
-- PRODUCT_INFO: Feature questions, comparisons, availability
-- GENERAL: Greetings, off-topic, or unclear queries
+Your task is to analyze each signal and return a structured SignalClassification. You classify ONLY: never open incidents, attach reports, search knowledge, assign severity, decide SLA, or choose dedup outcome. The RouterExecutor makes the binding routing decision with zero LLM calls.
 
 Examples:
+Signal: "Power line down across Main St, sparking near a school."
+Response: {"intent":"report_field_hazard","intent_category":"FIELD_HAZARD","target_queue":"field-operations","confidence":0.94,"entities":{"location":"Main St near a school","system":"power line","severity_indicators":["down","sparking"],"other":[]},"requires_escalation":false,"escalation_reason":null,"pii_detected":false,"pii_types":[],"sentiment":"URGENT","urgency_indicators":[]}
 
-User: "I was charged twice for my subscription this month."
-Response: {"intent": "BILLING", "confidence": 0.95, "reasoning": "User mentions being charged, indicating a billing issue"}
+Signal: "Smell of gas near the community center."
+Response: {"intent":"report_safety_threat","intent_category":"PUBLIC_SAFETY","target_queue":"field-operations","confidence":0.96,"entities":{"location":"community center","system":"gas","severity_indicators":["smell of gas"],"other":[]},"requires_escalation":true,"escalation_reason":"life_safety","pii_detected":false,"pii_types":[],"sentiment":"URGENT","urgency_indicators":[]}
 
-User: "The app crashes every time I try to upload a file."
-Response: {"intent": "TECHNICAL_SUPPORT", "confidence": 0.92, "reasoning": "User reports a crash/bug in product functionality"}
-
-User: "Can I change the email address on my account?"
-Response: {"intent": "ACCOUNT_MANAGEMENT", "confidence": 0.88, "reasoning": "User wants to update profile information"}
+Signal: "Need to file the NFIRS report for last night's fire."
+Response: {"intent":"file_compliance_report","intent_category":"COMPLIANCE_REPORT","target_queue":"compliance-desk","confidence":0.93,"entities":{"location":null,"system":null,"severity_indicators":[],"other":["NFIRS"]},"requires_escalation":true,"escalation_reason":"statutory_clock","pii_detected":false,"pii_types":[],"sentiment":"NEUTRAL","urgency_indicators":[]}
 
 Constraints:
-- Always return valid JSON in the specified format
-- If the query could fit multiple categories, choose the most specific one
-- Set confidence below 0.7 if the intent is unclear or ambiguous
-- Never attempt to resolve the issue; only classify it
-- Do not make assumptions about information not provided in the query
-
-Response format:
-{
-  "intent": "<CATEGORY>",
-  "confidence": <0.0-1.0>,
-  "reasoning": "<brief explanation>"
-}
+- Always return valid JSON in the exact response format.
+- If a signal could fit multiple categories, choose the most specific; life safety wins.
+- Set confidence below 0.7 when classification is ambiguous.
+- Flag PII by type but never echo PII values.
+- Never route, deduplicate, open incidents, attach reports, search knowledge, or generate a sitrep.
 ```
 
 </details>
 
 ---
 
-## Exercise 2: RouterAgent - Department Selection
+## Exercise 2: RouterExecutor - No Prompt Required
 
-**Scenario**: You need to write a system prompt for a RouterAgent that routes customer requests to the appropriate department.
+**Scenario**: You need to explain why the middle stage does not need a system prompt.
 
 ### Requirements
 
-The RouterAgent must:
-- Select the best department from a predefined list
-- Consider urgency and complexity
-- Provide routing rationale for audit purposes
+The RouterExecutor must:
+- Make **zero LLM calls**
+- Deduplicate within the same `intent_category`
+- Choose `ATTACH_TO_INCIDENT` at or above the 0.83 cosine threshold, otherwise `OPEN_INCIDENT`
+- Map severity as `SEV1`-`SEV4` using deterministic rules
+- Set SLA minutes from severity
+- Apply escalation rules for SEV1, statutory clocks, PII exposure, safety sentiment, explicit human request, and low confidence
+- Produce auditable `routing_rules_applied`
 
 ### Your Task
 
-Write a complete system prompt for the RouterAgent:
+Write a short rule card, not a prompt:
 
 ```text
-[YOUR SYSTEM PROMPT HERE]
-
-Departments:
-- TIER1_SUPPORT: Basic inquiries, FAQ-level questions
-- TIER2_SUPPORT: Complex technical issues requiring investigation
-- BILLING_DEPT: Payment disputes, refunds, pricing inquiries
-- ACCOUNT_SECURITY: Suspicious activity, compromised accounts
-- ESCALATION: Urgent matters, VIP customers, legal concerns
-
-[YOUR EXAMPLES HERE]
-
-[YOUR CONSTRAINTS HERE]
-
-Response format:
-{
-  "department": "<DEPARTMENT>",
-  "priority": "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-  "rationale": "<explanation for routing decision>"
-}
+RouterExecutor rule card:
+1. Dedup: compare signal embedding to open incidents in same intent_category.
+2. Outcome: similarity >= 0.83 -> ATTACH_TO_INCIDENT; else OPEN_INCIDENT.
+3. Severity: map severity_indicators to SEV1-SEV4 by fixed table.
+4. SLA: SEV1=15 minutes, SEV2=60 minutes, SEV3=240 minutes, SEV4=next business day.
+5. Escalation: always escalate SEV1 and statutory-clock incidents.
+6. Audit: record every rule used in routing_rules_applied.
 ```
 
-### Solution Template
+### Checkpoint
 
-<details>
-<summary>Click to reveal a sample solution</summary>
-
-```text
-You are a RouterAgent responsible for directing customer requests to the appropriate department.
-
-Analyze the incoming request and determine:
-1. Which department is best equipped to handle this request
-2. The priority level based on urgency and impact
-3. A clear rationale for the routing decision
-
-Departments:
-- TIER1_SUPPORT: Basic inquiries, FAQ-level questions, simple how-to questions
-- TIER2_SUPPORT: Complex technical issues requiring investigation, multi-step problems
-- BILLING_DEPT: Payment disputes, refunds, pricing inquiries, subscription changes
-- ACCOUNT_SECURITY: Suspicious activity, compromised accounts, unauthorized access
-- ESCALATION: Urgent matters, VIP customers, legal concerns, executive complaints
-
-Priority Guidelines:
-- LOW: Informational queries, no immediate impact
-- MEDIUM: Standard issues affecting user experience
-- HIGH: Significant problems blocking user from core functionality
-- URGENT: Security threats, legal issues, or VIP customers
-
-Examples:
-
-User: "How do I export my data to CSV?"
-Response: {"department": "TIER1_SUPPORT", "priority": "LOW", "rationale": "Standard how-to question covered in documentation"}
-
-User: "Someone logged into my account from another country and changed my password."
-Response: {"department": "ACCOUNT_SECURITY", "priority": "URGENT", "rationale": "Potential account compromise requiring immediate security review"}
-
-User: "I've been trying to integrate your API for 3 days but keep getting 500 errors with this payload: [technical details]"
-Response: {"department": "TIER2_SUPPORT", "priority": "MEDIUM", "rationale": "Complex technical issue requiring investigation of API behavior"}
-
-Constraints:
-- Always route to exactly one department
-- When in doubt about priority, err on the side of higher priority
-- Security-related keywords (hacked, unauthorized, stolen) should trigger ACCOUNT_SECURITY review
-- Never route directly to ESCALATION unless explicit urgency markers are present
-- Include specific details from the request in your rationale
-
-Response format:
-{
-  "department": "<DEPARTMENT>",
-  "priority": "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-  "rationale": "<explanation for routing decision>"
-}
-```
-
-</details>
+- [ ] You did **not** write a RouterExecutor prompt
+- [ ] You can explain why deterministic routing is safer than model-based routing
+- [ ] You can explain why severity is set by rules, never by model vibes
 
 ---
 
-## Exercise 3: ActionAgent - Response with Citations
+## Exercise 3: ActionAgent - Sitrep with Citations
 
-**Scenario**: You need to write a system prompt for an ActionAgent that provides helpful responses to users while citing knowledge base sources.
+**Scenario**: You need to write a system prompt for the ActionAgent. The ActionAgent has exactly three tools: `create_incident`, `search_knowledge`, and `generate_sitrep`.
 
 ### Requirements
 
 The ActionAgent must:
-- Answer user questions using provided knowledge base context
-- Include citations for all factual claims
-- Acknowledge when information is unavailable
-- Maintain a professional, helpful tone
+- Trust the `RoutingDecision`; never re-decide severity, queue, SLA, dedup outcome, or escalation
+- Use `create_incident` on the `OPEN_INCIDENT` path
+- Use `search_knowledge` for incident runbooks/SOPs on the `OPEN_INCIDENT` path
+- Use `generate_sitrep` to produce a citation-grounded situation report
+- Skip knowledge search on the `ATTACH_TO_INCIDENT` path and acknowledge the report
+- Include citations for every factual claim in the sitrep or response
 
 ### Your Task
 
@@ -244,11 +188,15 @@ Write a complete system prompt for the ActionAgent:
 ```text
 [YOUR SYSTEM PROMPT HERE]
 
-[YOUR EXAMPLES HERE]
+Available tools:
+- create_incident
+- search_knowledge
+- generate_sitrep
 
+[YOUR EXAMPLES HERE]
 [YOUR CONSTRAINTS HERE]
 
-Citation format: [Source: <document_id>]
+Citation format: cite source records using the provided Citation objects.
 ```
 
 ### Solution Template
@@ -257,44 +205,29 @@ Citation format: [Source: <document_id>]
 <summary>Click to reveal a sample solution</summary>
 
 ```text
-You are an ActionAgent responsible for answering customer questions using our knowledge base.
+You are the ActionAgent for All Clear. You execute the already-decided RoutingDecision through exactly three tools: create_incident, search_knowledge, and generate_sitrep.
 
 Your role is to:
-1. Understand the customer's question
-2. Find relevant information from the provided context
-3. Craft a clear, helpful response
-4. Cite all sources used
-
-You will receive context in the following format:
-<context>
-[Document ID: KB-001]
-Content about topic A...
-
-[Document ID: KB-002]
-Content about topic B...
-</context>
+1. Trust the RoutingDecision exactly as provided.
+2. On OPEN_INCIDENT, call create_incident with the target queue, severity, SLA, and classification context.
+3. Search incident runbooks/SOPs with search_knowledge after the incident is created.
+4. Generate a citation-grounded sitrep with generate_sitrep.
+5. On ATTACH_TO_INCIDENT, do not search knowledge; acknowledge that the signal was attached as a report and include the incident id if provided.
 
 Examples:
+RoutingDecision: OPEN_INCIDENT, queue=field-operations, severity=SEV1, signal="Smell of gas near the community center"
+Action: create_incident, search_knowledge for gas leak response SOP, generate_sitrep with citations, then respond with the incident id and escalation status.
 
-Context provided: [Document ID: KB-101] "Password reset can be done via Settings > Security > Reset Password. Users must verify their email within 24 hours."
-
-User: "How do I reset my password?"
-Response: "To reset your password, navigate to Settings > Security > Reset Password. After initiating the reset, you'll need to verify your email within 24 hours to complete the process. [Source: KB-101]"
-
-Context provided: [Document ID: KB-205] "Premium plans include priority support with 4-hour response time."
-
-User: "What's the response time for support?"
-Response: "Response times depend on your plan. For Premium plan subscribers, we offer priority support with a 4-hour response time. [Source: KB-205] For information about other plan tiers, I'd recommend checking our pricing page or I can connect you with our sales team."
+RoutingDecision: ATTACH_TO_INCIDENT, matched_incident_id=AC-0042, magnitude=38, signal="Power still out on Elm St"
+Action: skip knowledge search and acknowledge that the report was added to AC-0042.
 
 Constraints:
-- Only use information from the provided context; do not invent facts
-- Every factual statement must include a citation in the format [Source: <document_id>]
-- If the context does not contain the answer, clearly state: "I don't have specific information about that in my knowledge base. Let me connect you with a specialist who can help."
-- Do not cite a source if you're not directly using information from it
-- Maintain a professional, empathetic tone
-- Keep responses concise but complete
-
-Citation format: [Source: <document_id>]
+- Never change severity, queue, SLA, escalation, or dedup outcome.
+- Never suppress or weaken escalation.
+- Use only the three available tools.
+- Every factual claim in a sitrep must cite a source record.
+- Never echo PII from the signal.
+- If a tool fails, return a safe fallback that preserves the RoutingDecision and requests human review.
 ```
 
 </details>
@@ -303,43 +236,14 @@ Citation format: [Source: <document_id>]
 
 ## Exercise 4: Voice System Prompt (Extension)
 
-Voice interactions use the **same three-agent pipeline** but need a different system prompt because spoken responses must be:
-- **Concise** (2–3 sentences max — nobody wants a lecture in their ear)
-- **Phonetically clear** (spell out ticket IDs character-by-character: "T-K-T dash I-T dash 0-0-4-2")
-- **PII-safe** (never echo back SSN, phone numbers, student IDs — the caller already knows them)
+Voice interactions use the **same three-stage pipeline** but need modality-specific constraints because spoken responses must be:
+- **Concise** (2-3 sentences max)
+- **Phonetically clear** (spell out incident IDs character-by-character: "A-C dash zero zero four two")
+- **PII-safe** (never echo back SSN, phone numbers, DOB, or other sensitive personal data)
 
 ### Your Task
 
-Write a voice-specific system prompt for the QueryAgent that:
-1. Maintains the same intent classification accuracy as your text prompt
-2. Adds constraints for spoken output (conciseness, phonetic clarity)
-3. Includes a PII-filtering instruction
-4. Handles the "I didn't catch that" case (VAD silence timeout)
-
-### Starter Template
-
-```text
-You are a university student support agent responding by VOICE.
-[Your prompt here — adapt your QueryAgent text prompt for spoken interaction]
-```
-
-<details>
-<summary>💡 Hint: What makes voice prompts different?</summary>
-
-Compare the production voice prompt in `backend/app/services/azure/realtime.py`:
-- "Keep answers to 2–3 sentences"
-- "Spell out ticket IDs character by character"
-- "Never repeat PII the student provides"
-- "If you're unsure, ask a clarifying question rather than guessing"
-
-The key insight: **the intelligence is the same, but the output format changes for the modality.**
-</details>
-
-### Checkpoint
-- [ ] Voice prompt classifies "How do I reset my password?" correctly (it_support)
-- [ ] Response would be ≤3 sentences when spoken aloud
-- [ ] Prompt includes PII-filtering instruction
-- [ ] Prompt handles silence/unclear input gracefully
+Write a voice-specific response prompt for the ActionAgent that trusts the same QueryAgent -> RouterExecutor -> ActionAgent pipeline, keeps spoken responses short, spells `AC-####` IDs clearly, filters PII, and handles the "I didn't catch that" case without guessing.
 
 ---
 
@@ -354,151 +258,59 @@ You are a helpful assistant.
 
 **Write:**
 ```text
-You are a customer support agent for Acme Corp specializing in billing inquiries. You help customers understand their invoices, process refund requests, and explain pricing tiers.
+You are the QueryAgent for All Clear. You classify one inbound signal into SignalClassification and cannot route, open incidents, attach reports, search knowledge, or generate a sitrep.
 ```
 
 ### 2. Use Examples
 
-Examples are often more effective than lengthy explanations. Show the model what you want:
-
 ```text
-Example input: "Why was I charged $99?"
-Example output: {"intent": "BILLING", "subtype": "CHARGE_INQUIRY"}
+Example input: "Water main break flooding the 200 block"
+Example output: {"intent_category":"FIELD_HAZARD","target_queue":"field-operations"}
 ```
 
 ### 3. Set Clear Boundaries
 
-Define what the agent should NOT do:
-
 ```text
 Constraints:
-- Do not provide legal or medical advice
-- Do not access or reference data outside the provided context
-- Do not promise specific timelines for issue resolution
-- Do not share internal process details with customers
+- QueryAgent classifies only
+- RouterExecutor needs no prompt and makes zero LLM calls
+- ActionAgent must not re-decide severity or suppress escalation
+- Never echo detected PII
 ```
 
 ### 4. Define Output Format
 
-Specify the exact structure you expect:
-
-```text
-Always respond with valid JSON:
-{
-  "field1": "type and description",
-  "field2": "type and description"
-}
-```
+Specify the exact structure you expect, preferably the `SignalClassification` schema.
 
 ### 5. Handle Edge Cases
 
-Anticipate unusual scenarios:
-
-```text
-If the user's request is unclear:
-- Ask one clarifying question
-- Do not make assumptions
-
-If the user is frustrated:
-- Acknowledge their concern
-- Focus on resolution, not explanation
-```
+If the signal is unclear, set low confidence, use `GENERAL_INQUIRY` when no category is supported, and do not invent location, system, or severity indicators.
 
 ---
 
 ## Common Mistakes to Avoid
 
-### 1. Vague Instructions
-
-**Bad:** "Be helpful and answer questions."
-
-**Good:** "Provide step-by-step instructions for technical questions. Include relevant documentation links. If you cannot solve the issue, explain what information you need."
-
-### 2. Missing Examples
-
-Without examples, models may interpret instructions differently than intended. Always include 2-3 representative examples.
-
-### 3. Conflicting Constraints
-
-**Bad:**
-```text
-- Always provide a complete answer
-- Keep responses under 50 words
-```
-
-**Good:**
-```text
-- Provide complete answers
-- For complex topics, summarize the key points (under 100 words) and offer to elaborate
-```
-
-### 4. Assuming Context
-
-**Bad:** "Use the customer's history to personalize responses."
-
-**Good:** "Customer context will be provided in the <customer_profile> tags. If no profile is provided, treat the customer as new and gather necessary information."
-
-### 5. Overly Complex Prompts
-
-If your prompt exceeds 500 words, consider:
-- Breaking it into multiple specialized agents
-- Using a separate document for examples
-- Simplifying the task definition
+1. **Vague Instructions**: say exactly which stage you are prompting and what it may do.
+2. **Missing Examples**: include downed lines, gas smell, restoration-time questions, NFIRS reports, and `AC-####` status checks.
+3. **Contradicting Bounded Authority**: never ask QueryAgent to open an incident or ActionAgent to re-decide severity.
+4. **Assuming Context**: RouterExecutor performs dedup; the model should not guess duplicates from memory.
+5. **Overly Complex Prompts**: move deterministic rules into code and keep prompts focused.
 
 ---
 
 ## Testing Prompts with GitHub Copilot
 
-You can use GitHub Copilot to test and iterate on your prompts quickly.
-
-### Method 1: Copilot Chat
-
-1. Open Copilot Chat in VS Code (Ctrl+Shift+I or Cmd+Shift+I)
-2. Paste your system prompt
-3. Follow up with test user inputs
-4. Iterate based on the responses
-
-### Method 2: Inline Testing
-
 Create a test file to document prompt behavior:
 
 ```python
-# prompt_tests.py
-
-SYSTEM_PROMPT = """
-Your system prompt here...
-"""
-
+SYSTEM_PROMPT = """Your QueryAgent system prompt here..."""
 TEST_CASES = [
-    {
-        "input": "I was charged twice",
-        "expected_intent": "BILLING",
-        "notes": "Clear billing issue"
-    },
-    {
-        "input": "Hello",
-        "expected_intent": "GENERAL",
-        "notes": "Greeting should be classified as general"
-    },
+    {"input": "Smell of gas near the community center", "expected_category": "PUBLIC_SAFETY"},
+    {"input": "Hello", "expected_category": "GENERAL_INQUIRY"},
 ]
-
-# Use Copilot to generate additional test cases by typing:
-# Generate 5 more test cases for edge cases like...
 ```
 
-### Method 3: Prompt Comparison
-
-Use Copilot to compare prompt variations:
-
-```text
-@workspace Compare these two prompt approaches for intent classification:
-
-Approach A: [paste prompt A]
-
-Approach B: [paste prompt B]
-
-Which is more likely to produce consistent results and why?
-```
+Use Copilot to generate additional test cases for outage surge, product recall, and low-confidence signals.
 
 ---
 
@@ -507,14 +319,16 @@ Which is more likely to produce consistent results and why?
 Before moving on, verify you can:
 
 - [ ] Explain the three components of an effective prompt
-- [ ] Write a system prompt with role definition, examples, and constraints
+- [ ] Write a QueryAgent prompt with role definition, examples, constraints, and structured output
+- [ ] Explain why RouterExecutor needs no prompt
+- [ ] Write an ActionAgent prompt that uses exactly three tools
 - [ ] Define clear output formats using JSON schemas
 - [ ] Identify and fix common prompt engineering mistakes
 - [ ] Test prompts iteratively using Copilot
-- [ ] (Extension) Voice system prompt written with modality-specific constraints
+- [ ] (Extension) Voice response prompt written with modality-specific constraints
 
 ---
 
 ## Next Steps
 
-Continue to [Exercise 01c: Agent Orchestration](./01c-agent-orchestration.md) to learn how to coordinate multiple agents working together.
+Continue to [Exercise 01c: Agent Orchestration](./01c-agent-orchestration.md) to learn how to coordinate the bounded-authority pipeline.

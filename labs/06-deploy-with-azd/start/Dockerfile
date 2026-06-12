@@ -1,4 +1,4 @@
-# Backend Dockerfile for University Front Door Agent
+# Backend Dockerfile for All Clear
 # Lab 06: Deploy with azd
 #
 # TODO: Complete this Dockerfile to containerize the backend application

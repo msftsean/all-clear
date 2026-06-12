@@ -28,8 +28,8 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. ⚙️ **Configure Azure MCP Server for Copilot** - Set up the Model Context Protocol server to enable natural language interactions with Azure resources
-2. 💬 **Test natural language Azure queries** - Use natural language Azure queries in Copilot Agent Mode to interact with your Azure environment through Copilot
+1. ⚙️ **Configure Azure MCP Server for Copilot** - Set up the Model Context Protocol server so Copilot can inspect the Azure resources that host All Clear: Azure OpenAI, Azure AI Search, and Azure Container Apps
+2. 💬 **Test natural language Azure queries** - Use natural language Azure queries in Copilot Agent Mode to verify the model for QueryAgent classification, the knowledge base behind `search_knowledge`, and the deploy target for the incident-triage backend
 
 ---
 
@@ -43,14 +43,16 @@ The **Model Context Protocol (MCP)** is an open standard that enables AI assista
 
 ### 🌟 Why MCP Matters for Azure Development
 
-Without MCP, asking Copilot "What resources are in my resource group?" would require you to:
+All Clear is an **incident-triage** system. Its agent pipeline lives in [`../../backend/app/agents/`](../../backend/app/agents/): QueryAgent classifies one inbound **signal**, RouterExecutor deterministically performs dedup → severity → SLA → escalation, and ActionAgent acts through `create_incident`, `search_knowledge`, and `generate_sitrep`.
+
+Without MCP, checking the Azure resources behind that pipeline would require you to:
 
 1. 💻 Open a terminal
-2. ⌨️ Run `az resource list --resource-group myRG`
+2. ⌨️ Run `az resource list --resource-group <your-resource-group>`
 3. 📋 Parse the JSON output
 4. 📝 Copy relevant information back to your conversation
 
-With Azure MCP Server configured, you can simply ask "What resources are in my resource group?" in Copilot Agent Mode and get a natural language response directly in VS Code. 🎉
+With Azure MCP Server configured, you can ask Copilot Agent Mode questions such as "What Azure OpenAI deployments are in my resource group?" or "What Azure AI Search service indexes the incident runbooks and SOPs?" and get a natural language response directly in VS Code. 🎉
 
 ### 🏗️ MCP Architecture
 
@@ -68,7 +70,7 @@ With Azure MCP Server configured, you can simply ask "What resources are in my r
                            +------------------+
 ```
 
-The Azure MCP Server acts as a bridge between Copilot and Azure, translating natural language queries into Azure API calls and formatting responses for human consumption.
+The Azure MCP Server acts as a bridge between Copilot and Azure, translating natural language queries into Azure API calls and formatting responses for human consumption. In All Clear, this lets you inspect the Azure services that power classification, citation-grounded knowledge retrieval, and deployment without leaving the editor.
 
 ---
 
@@ -193,10 +195,10 @@ What resource groups exist in my subscription?
 
 **Expected Response:** A list of resource groups with their names and locations. ✅
 
-#### 📦 Resource Inventory
+#### 📦 All Clear Resource Inventory
 
 ```
-List all resources in the [your-resource-group] resource group
+List the Azure OpenAI, Azure AI Search, and Azure Container Apps resources in the [your-resource-group] resource group
 ```
 
 **Expected Response:** A detailed list of Azure resources including their types, names, and locations. ✅
@@ -206,15 +208,15 @@ List all resources in the [your-resource-group] resource group
 Try these additional queries to explore MCP capabilities:
 
 ```
-What App Services do I have deployed?
+Show me the Azure OpenAI deployments that can power QueryAgent classification
 ```
 
 ```
-Show me the configuration for my OpenAI resource
+Show me the Azure AI Search indexes available for incident runbooks and SOPs
 ```
 
 ```
-What is the pricing tier of my Azure AI Search service?
+What Azure Container Apps environments and apps are deployed for All Clear?
 ```
 
 ---
@@ -227,7 +229,7 @@ Before moving to the next lab, confirm the following:
 - [ ] 📦 Azure MCP Server is installed (`npx -y @azure/mcp@latest --version` returns a version)
 - [ ] ⚙️ VS Code settings include MCP configuration
 - [ ] ✅ Asking "List my Azure subscriptions" in Agent Mode returns results
-- [ ] 💬 Natural language Azure queries in Agent Mode return relevant resource information
+- [ ] 💬 Natural language Azure queries in Agent Mode return relevant information about Azure OpenAI, Azure AI Search, and Azure Container Apps
 
 ---
 
@@ -312,7 +314,7 @@ azd auth login --client-id <AZURE_CLIENT_ID> --client-secret <AZURE_CLIENT_SECRE
 **Solution:**
 
 1. ✅ Verify you're querying the correct subscription: `az account show`
-2. 📦 Check that resources exist in the queried scope
+2. 📦 Check that Azure OpenAI, Azure AI Search, or Azure Container Apps resources exist in the queried scope
 3. 🔍 Try more specific queries with resource group names
 4. 🔑 Ensure your account has appropriate RBAC permissions
 
@@ -343,10 +345,10 @@ With Azure MCP configured, you can now:
 
 ### 💡 Example Workflow Integration
 
-When building your AI agents in later labs, you can use MCP to:
+When building All Clear agents in later labs, you can use MCP to inspect the services each pipeline stage depends on:
 
 ```
-What is the endpoint URL for my Azure OpenAI resource?
+What is the endpoint URL for the Azure OpenAI resource used by QueryAgent?
 ```
 
 Then immediately use that information in your code without leaving VS Code. 🎉
@@ -359,13 +361,13 @@ Once the MCP server successfully invokes Azure MCP tools in Agent Mode, proceed 
 
 **[Lab 03 - Spec-Driven Development](../03-spec-driven-development/README.md)** 📝
 
-In the next lab, you will learn how to write specifications that guide AI-assisted code generation.
+In the next lab, you will write specifications that protect All Clear's bounded-authority pipeline while adding new incident-triage capabilities.
 
 ---
 
 ## 🆘 Need Help?
 
-Raise your hand or ask in the boot camp chat channel. 💬
+Raise your hand or ask in the workshop chat channel. 💬
 
 ---
 
@@ -375,9 +377,9 @@ Raise your hand or ask in the boot camp chat channel. 💬
 | -------------------- | ----------------- | -------------- |
 | 📦 Node.js           | 20+               | 20.20.0        |
 | ☁️ Azure CLI         | 2.60+             | 2.77.0         |
-| 🔌 Azure MCP Package | @azure/mcp latest | latest   |
+| 🔌 Azure MCP Package | @azure/mcp latest | latest         |
 | 🤖 GitHub Copilot    | Latest            | 1.x            |
-| 🖥️ VS Code           | 1.85+             | 1.99+         |
+| 🖥️ VS Code           | 1.85+             | 1.99+          |
 
 ---
 

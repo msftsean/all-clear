@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/architecture/allclear-logo.png" alt="All Clear" width="520" />
+
 # 🚨 All Clear: Surge-Grade Incident Triage
 
 **Many signals. Few incidents. One clear board.**

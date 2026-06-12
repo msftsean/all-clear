@@ -35,7 +35,7 @@ export function MonoPill({
   testid?: string;
 }) {
   const tones: Record<string, string> = {
-    default: "border-nline text-nink bg-night/40",
+    default: "border-nline/70 text-nink bg-panel/70",
     clear: "border-clear/50 text-clear bg-clear/10",
     voice: "border-voice/50 text-voice bg-voice/10",
   };
@@ -43,7 +43,7 @@ export function MonoPill({
     <span
       data-testid={testid}
       title={title}
-      className={`inline-flex items-center gap-1 rounded-chip border px-1.5 py-0.5 font-mono text-[10px] ${tones[tone]}`}
+      className={`inline-flex items-center gap-1 rounded-tag border px-1.5 py-0.5 font-mono text-[10px] ${tones[tone]}`}
     >
       {children}
     </span>
@@ -55,7 +55,7 @@ export function SeverityBadge({ sev }: { sev: Severity }) {
   return (
     <span
       data-testid="severity-badge"
-      className={`inline-flex items-center gap-1.5 rounded-chip border ${s.border} ${s.soft} px-2 py-0.5 font-mono text-[10px] ${s.text}`}
+      className={`inline-flex items-center gap-1.5 rounded-tag border ${s.border} ${s.soft} px-2 py-0.5 font-mono text-[10px] ${s.text}`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {sev}
@@ -70,12 +70,12 @@ export function Waveform({ live }: { live: boolean }) {
     <div
       data-testid="waveform"
       aria-hidden="true"
-      className="flex h-5 items-center gap-[3px]"
+      className="flex h-6 items-center gap-[4px]"
     >
-      {bars.map((d, i) => (
+      {bars.map((_, i) => (
         <span
           key={i}
-          className={`w-[3px] rounded-full bg-voice ${live ? "animate-bar" : ""}`}
+          className={`w-[4px] rounded-full bg-voice ${live ? "animate-bar" : ""}`}
           style={{
             height: "100%",
             transformOrigin: "center",
@@ -107,7 +107,7 @@ export function Card({
   return (
     <section
       data-testid={testid}
-      className={`animate-rise rounded-card border border-nline bg-panel p-3.5 ${
+      className={`animate-rise rounded-card border border-nline/70 bg-panel/90 p-4 shadow-dark-glass backdrop-blur ${
         span ? "col-span-2" : ""
       }`}
     >
