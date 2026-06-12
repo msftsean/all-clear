@@ -88,6 +88,10 @@ async def acs_media_bridge(ws: WebSocket) -> None:
 
     openai_ws = None
     session_ready = asyncio.Event()
+    # Set once ACS sends AudioMetadata — i.e. the outbound media path to the
+    # caller is established and ready to accept audio frames. The greeting must
+    # not fire before this or its audio frames are silently dropped (dead air).
+    acs_ready = asyncio.Event()
     greeting_sent = False
     # Accumulator for caller transcription deltas keyed by item_id.
     # Some Azure Realtime API (preview) sessions emit `.delta` events but
@@ -119,6 +123,45 @@ async def acs_media_bridge(ws: WebSocket) -> None:
             "call_id": call_id,
         })
 
+    async def _send_greeting() -> None:
+        """Make the agent speak first so the caller never hears dead air.
+
+        Waits until BOTH the realtime session is configured (session.update
+        sent) AND the ACS outbound media path is ready (AudioMetadata received)
+        before asking the model to greet. Sending the greeting earlier causes
+        the first audio frames to be dropped by ACS, which the caller
+        experiences as silence until they speak.
+        """
+        nonlocal greeting_sent
+        await session_ready.wait()
+        try:
+            # ACS normally sends AudioMetadata almost immediately; cap the wait
+            # so a missing metadata frame can't leave the caller in silence.
+            await asyncio.wait_for(acs_ready.wait(), timeout=3.0)
+        except asyncio.TimeoutError:
+            logger.warning(
+                "Media bridge: ACS audio not ready after 3s — greeting anyway"
+            )
+        # Small buffer so the very first PCM frames aren't clipped.
+        await asyncio.sleep(0.4)
+        if greeting_sent or openai_ws is None:
+            return
+        greeting_sent = True
+        await openai_ws.send(json.dumps({
+            "type": "response.create",
+            "response": {
+                "modalities": ["audio", "text"],
+                "instructions": (
+                    "Speak in English. Greet the caller now, briefly and "
+                    "calmly, with exactly this: \"Thanks for calling All Clear. "
+                    "Tell me what's happening and where — and if anyone is in "
+                    "danger, hang up and call 9 1 1 first.\" Then wait for the "
+                    "caller to respond."
+                ),
+            },
+        }))
+        logger.info("Media bridge: greeting response.create sent")
+
     try:
         token = await _token_mgr.get_token()
 
@@ -143,7 +186,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         # Coroutine: read OpenAI messages, forward audio & handle events
         # ------------------------------------------------------------------
         async def _openai_receiver() -> None:
-            nonlocal openai_ws, greeting_sent
+            nonlocal openai_ws
             realtime_svc = get_realtime_service()
             tools = await realtime_svc.get_tool_definitions()
             tool_defs = [
@@ -190,28 +233,13 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                     }))
                     logger.info("Media bridge: session.update sent")
                     session_ready.set()
+                    # Speak first once both the session is configured and the
+                    # ACS outbound path is ready (handled inside _send_greeting).
+                    asyncio.create_task(_send_greeting())
                     continue
 
                 if t == "session.updated":
                     logger.info("Media bridge: session.updated confirmed")
-                    # Speak first so the caller never hears dead air. Trigger a
-                    # model response with an explicit English greeting. Guarded so
-                    # it only fires once even if session.updated repeats.
-                    if not greeting_sent:
-                        greeting_sent = True
-                        await openai_ws.send(json.dumps({
-                            "type": "response.create",
-                            "response": {
-                                "instructions": (
-                                    "Speak in English. Greet the caller now, briefly and "
-                                    "calmly, with exactly this: \"Thanks for calling All Clear. "
-                                    "Tell me what's happening and where — and if anyone is in "
-                                    "danger, hang up and call 9 1 1 first.\" Then wait for the "
-                                    "caller to respond."
-                                ),
-                            },
-                        }))
-                        logger.info("Media bridge: greeting response.create sent")
                     continue
 
                 # -- Audio to caller (via ACS) ----------------------------
@@ -367,6 +395,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                             f"enc={meta.get('encoding')} "
                             f"ch={meta.get('channels')}"
                         )
+                        acs_ready.set()
                         continue
 
                     if kind == "AudioData":

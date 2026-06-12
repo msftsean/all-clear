@@ -3,6 +3,7 @@ import { ApiError, getHealth, submitSignal } from "./api";
 import type { PipelineResult } from "./types";
 import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
+import LiveCalls from "./LiveCalls";
 
 type Role = "caller" | "agent" | "system";
 interface Msg {
@@ -59,6 +60,7 @@ export default function BriefingRoom() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [published, setPublished] = useState<Set<string>>(new Set());
   const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
+  const [liveOpen, setLiveOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -110,6 +112,14 @@ export default function BriefingRoom() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              data-testid="live-calls-toggle"
+              onClick={() => setLiveOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
+              title="Watch live phone calls"
+            >
+              📞 live calls
+            </button>
             {health ? (
               <span
                 data-testid="health-pill"
@@ -227,6 +237,8 @@ export default function BriefingRoom() {
           onClose={() => setReceiptOpen(false)}
         />
       ) : null}
+
+      {liveOpen ? <LiveCalls onExit={() => setLiveOpen(false)} /> : null}
     </div>
   );
 }
