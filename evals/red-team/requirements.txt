@@ -1,0 +1,4 @@
+# Red team + content-filter dependencies
+azure-ai-evaluation[redteam]>=1.13.0
+azure-identity>=1.19.0
+httpx>=0.27.0

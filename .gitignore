@@ -79,3 +79,5 @@ docs/azure-support-ticket-*.md
 
 # Drop-in seed package (already applied; redundant binary)
 allclear-dropin.zip
+.venv-redteam/
+.scan_*/

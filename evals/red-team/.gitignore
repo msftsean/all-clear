@@ -1,0 +1,6 @@
+# Red team scan runtime artifacts (not committed)
+redteam_results.json/
+*.json/
+.scan_*/
+.venv-redteam/
+__pycache__/
