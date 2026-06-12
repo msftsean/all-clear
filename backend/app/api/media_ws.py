@@ -79,7 +79,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         "type": "call_started",
         "call_id": call_id,
         "timestamp": call_start.isoformat(),
-        "phone_number": "+19132171946",
+        "phone_number": settings.acs_phone_number or "",
     })
     logger.info(
         "Media bridge: published call_started (call_id=%s, subscribers=%d)",
@@ -88,6 +88,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
 
     openai_ws = None
     session_ready = asyncio.Event()
+    greeting_sent = False
     # Accumulator for caller transcription deltas keyed by item_id.
     # Some Azure Realtime API (preview) sessions emit `.delta` events but
     # never a `.completed` event, which would leave the caller transcript
@@ -142,7 +143,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         # Coroutine: read OpenAI messages, forward audio & handle events
         # ------------------------------------------------------------------
         async def _openai_receiver() -> None:
-            nonlocal openai_ws
+            nonlocal openai_ws, greeting_sent
             realtime_svc = get_realtime_service()
             tools = await realtime_svc.get_tool_definitions()
             tool_defs = [
@@ -177,7 +178,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                             "voice": settings.realtime_voice,
                             "input_audio_format":  "pcm16",
                             "output_audio_format": "pcm16",
-                            "input_audio_transcription": {"model": "whisper-1"},
+                            "input_audio_transcription": {"model": "whisper-1", "language": "en"},
                             "turn_detection": {
                                 "type": "server_vad",
                                 "threshold": 0.5,
@@ -193,6 +194,24 @@ async def acs_media_bridge(ws: WebSocket) -> None:
 
                 if t == "session.updated":
                     logger.info("Media bridge: session.updated confirmed")
+                    # Speak first so the caller never hears dead air. Trigger a
+                    # model response with an explicit English greeting. Guarded so
+                    # it only fires once even if session.updated repeats.
+                    if not greeting_sent:
+                        greeting_sent = True
+                        await openai_ws.send(json.dumps({
+                            "type": "response.create",
+                            "response": {
+                                "instructions": (
+                                    "Speak in English. Greet the caller now, briefly and "
+                                    "calmly, with exactly this: \"Thanks for calling All Clear. "
+                                    "Tell me what's happening and where — and if anyone is in "
+                                    "danger, hang up and call 9 1 1 first.\" Then wait for the "
+                                    "caller to respond."
+                                ),
+                            },
+                        }))
+                        logger.info("Media bridge: greeting response.create sent")
                     continue
 
                 # -- Audio to caller (via ACS) ----------------------------
