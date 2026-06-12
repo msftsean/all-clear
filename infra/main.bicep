@@ -451,6 +451,10 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               secretRef: 'search-api-key'
             }
             {
+              name: 'AZURE_SEARCH_INDEX'
+              value: 'knowledge-base'
+            }
+            {
               name: 'AZURE_ACS_ENDPOINT'
               value: mockMode ? '' : 'https://${acs.properties.hostName}'
             }

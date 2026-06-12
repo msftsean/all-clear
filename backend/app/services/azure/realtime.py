@@ -16,16 +16,20 @@ from app.models.voice_schemas import RealtimeSessionResponse, ToolCallResponse, 
 from app.services.interfaces import RealtimeServiceInterface
 from app.services.pii import redact_pii
 
-VOICE_SYSTEM_PROMPT = """You are the 47 Doors Universal Front Door Support Agent,
-speaking with a university student or staff member.
+VOICE_SYSTEM_PROMPT = """You are All Clear, an emergency and incident-triage assistant speaking with a caller by voice.
+
+The caller may be reporting something happening right now — a power outage, a downed or sparking line, a gas leak, a fire, a water main break, flooding, a blocked road — or asking about a bill, the status of an incident, or asking for a person.
 
 Voice-specific instructions:
 - Speak concisely and naturally. Do not use markdown formatting.
-- Spell out ticket IDs character by character (e.g., "T-K-T dash I-T dash two zero two six...").
-- Do NOT repeat personal identifying information (SSN, email, phone, student ID).
-- If you cannot understand the request, ask for clarification politely.
-- Summarize the top search result conversationally rather than listing all results.
-- Acknowledge the student's concern before providing solutions.
+- For any life-safety situation (fire, gas, downed/sparking line, someone injured or trapped, carbon monoxide), tell the caller to get to safety and call 911 first, then escalate.
+- Always ask for the location early, and whether anyone is in danger.
+- Spell out incident and ticket IDs character by character (e.g., "I-N-C dash one zero two four").
+- Do NOT repeat personal identifying information (SSN, account number, email, phone).
+- If you cannot understand the request, ask one short clarifying question.
+- Summarize the most relevant guidance conversationally rather than listing everything.
+- Acknowledge the caller's situation before giving instructions, and stay calm and reassuring.
+- Drafts and public statements always need human approval before they go out.
 """
 
 logger = logging.getLogger(__name__)
@@ -246,15 +250,17 @@ class AzureRealtimeService(RealtimeServiceInterface):
             ToolDefinition(
                 name="analyze_and_route_query",
                 description=(
-                    "Analyze a student support query, classify intent, and route to the "
-                    "appropriate department."
+                    "Analyze an inbound incident report or question, classify what is "
+                    "happening (outage, field hazard, public-safety/life-safety, customer "
+                    "inquiry, status check, or human request), and route it to the right "
+                    "queue. Use this for any new report the caller describes."
                 ),
                 parameters={
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "The user's support query",
+                            "description": "The caller's report or question, in their own words",
                         }
                     },
                     "required": ["query"],
@@ -262,13 +268,13 @@ class AzureRealtimeService(RealtimeServiceInterface):
             ),
             ToolDefinition(
                 name="check_ticket_status",
-                description="Check the current status of a support ticket by its ID.",
+                description="Check the current status of an incident or ticket by its ID.",
                 parameters={
                     "type": "object",
                     "properties": {
                         "ticket_id": {
                             "type": "string",
-                            "description": "Ticket ID to check status for",
+                            "description": "Incident or ticket ID to check status for",
                         }
                     },
                     "required": ["ticket_id"],
@@ -276,13 +282,17 @@ class AzureRealtimeService(RealtimeServiceInterface):
             ),
             ToolDefinition(
                 name="search_knowledge_base",
-                description="Search the university knowledge base for articles related to a query.",
+                description=(
+                    "Search the All Clear incident knowledge base for response guidance "
+                    "and standard procedures related to a situation (e.g. downed line, gas "
+                    "leak, outage, water main break)."
+                ),
                 parameters={
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "Search query for knowledge base",
+                            "description": "Search query for incident response guidance",
                         }
                     },
                     "required": ["query"],
@@ -291,11 +301,11 @@ class AzureRealtimeService(RealtimeServiceInterface):
             ToolDefinition(
                 name="escalate_to_human",
                 description=(
-                    "Transfer the student to a human support agent. Use this when the student "
-                    "explicitly asks for a human, mentions policy-related topics (appeals, "
-                    "waivers, refunds, financial aid), or discusses sensitive topics (Title IX, "
-                    "mental health, discrimination, threats, safety). Provide the reason and set "
-                    "priority to 'urgent' for Title IX and mental health topics."
+                    "Transfer the caller to a human dispatcher. Use this when the caller "
+                    "explicitly asks for a person, when there is a life-safety threat (fire, "
+                    "gas, downed/sparking line, injury, someone trapped, carbon monoxide), or "
+                    "when a statutory/compliance reporting clock applies. Provide the reason "
+                    "and set priority to 'urgent' for any life-safety situation."
                 ),
                 parameters={
                     "type": "object",
@@ -306,7 +316,7 @@ class AzureRealtimeService(RealtimeServiceInterface):
                         },
                         "department": {
                             "type": "string",
-                            "description": "Target department",
+                            "description": "Target queue or team",
                         },
                     },
                     "required": ["reason"],

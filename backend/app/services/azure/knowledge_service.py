@@ -20,7 +20,7 @@ from app.services.interfaces import KnowledgeServiceInterface
 
 logger = logging.getLogger(__name__)
 
-EMBEDDING_MODEL = "text-embedding-ada-002"
+EMBEDDING_MODEL = "text-embedding-3-small"
 
 
 class AzureSearchKnowledgeService(KnowledgeServiceInterface):
@@ -45,7 +45,7 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
             self._openai = AzureOpenAI(
                 azure_endpoint=openai_endpoint,
                 api_key=openai_api_key,
-                api_version="2024-02-15-preview",
+                api_version="2024-10-21",
             )
         else:
             credential = DefaultAzureCredential()
@@ -55,7 +55,7 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
             self._openai = AzureOpenAI(
                 azure_endpoint=openai_endpoint,
                 azure_ad_token_provider=token_provider,
-                api_version="2024-02-15-preview",
+                api_version="2024-10-21",
             )
 
         self._index_name = index_name
