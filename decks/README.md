@@ -29,6 +29,36 @@ these token roles:
 Toggleable dark/light is **not** needed for these decks — they are presentation slides, not the
 runbook. Default to the navy-hero + light-surface rhythm above.
 
+## The audience — SLED ISVs (write to this room)
+
+The audience is **almost entirely State, Local & Education (SLED) ISVs** — software vendors whose
+customers are government agencies and public institutions, handling some of the most regulated data
+that exists. They are *not* building consumer apps. Every "Why It Matters" line should read like it
+was written for a vendor whose buyer has a compliance officer, an auditor, and an attorney.
+
+| Vertical | ~Share | Companies in the room | Compliance that lands |
+| -------- | ------ | --------------------- | --------------------- |
+| Public Safety & Law Enforcement | ~50% | Mark43, KOLOGIK, CyberTech, Lexipol, NICHE, Flock Safety, Ten8Tech, Omnigo, Imagetrend, NC4 | **CJIS** (mandatory; the one AWS/GCP struggle with) |
+| Government Human Services | ~20% | Caseworthy, YoungWilliams, Redmane | **HIPAA**, sensitive minor/family case data |
+| Courts & Legal / E-Discovery | ~10% | FTR (For The Record), Exterro | **Chain of custody** |
+| Higher Education | ~10% | Ellucian | **FERPA** |
+
+**How this reshapes the six domains for this room** (already baked into Deck 1):
+- **Identity** → per-agency tenant isolation is the *contract* (Fulton County PD ≠ DeKalb County).
+- **Safety** → CJIS: criminal-justice data must never leave a controlled environment; logging prompts
+  to shared telemetry can fail an audit.
+- **Observability** → audit logs are a standard RFP line item ("what did the agent do, on whose
+  behalf?").
+- **Evals** → annual certifications; a model update that changes warrant-request handling is an
+  incident.
+- **Memory & State** → a case spans 40+ sessions over 18 months — a record of care, not a context
+  window.
+- **Cost Governance** → per-agency contracts; know exactly what each county costs you.
+
+**Headline differentiator to lean on:** CJIS / HIPAA / FERPA inside a controlled Azure boundary is
+where Microsoft carries the compliance story AWS and GCP struggle with. Name **CJIS** explicitly —
+it lands immediately with the ~50% public-safety majority.
+
 ## The through-line (every slide should reinforce it)
 
 ISVs in the room are **interested but not converting** — they've sat through AI overviews before.

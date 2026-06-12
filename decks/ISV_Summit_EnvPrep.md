@@ -28,7 +28,8 @@ Walk out of this room with a green checkmark on every prerequisite so Stage 0 st
 - **Layout:** Full-bleed **navy hero gradient** (`#001033 → #0050f8 → #5fbdf7`). Centered.
 - **Eyebrow:** SHIP IT! · ISV SUMMIT · DAY 1 · ENVIRONMENT PREP
 - **Title (serif, white):** Environment Prep for Day 2
-- **Subtitle:** Get every prerequisite green tonight so we start building at 11:00 sharp
+- **Subtitle:** Get every prerequisite green tonight so we start building a government-grade agent at
+  11:00 sharp
 - **Footer:** Sean Gayle & Adrian Wright · June 16, 2026
 - **Design note:** Two presenter names balanced on the footer row; thin chartreuse rule under title.
 
@@ -168,7 +169,9 @@ Walk out of this room with a green checkmark on every prerequisite so Stage 0 st
   | Copilot not suggesting | Not signed in / no active subscription | GitHub: Sign In; confirm Copilot is active; reload window |
   | Codespace slow or timed out | 30-min idle timeout / resource pressure | Resume from github.com/codespaces; rebuild container; restart servers |
 - **Callout:** "And on Azure quota: Stage 4's gateway is **APIM Consumption** — we tested **20 people
-  creating one simultaneously: 20/20 succeeded, ~3.5 min, $0.** You won't run out."
+  creating one simultaneously: 20/20 succeeded, ~3.5 min, $0.** You won't run out. (And because it's
+  Azure, the same gateway is your story for keeping **CJIS / HIPAA / FERPA** data inside a controlled
+  boundary — not a side quest.)"
 - **Design note:** Keep the table airy; the APIM callout sits in a chartreuse-edged info box below —
   it's the confidence-builder.
 
