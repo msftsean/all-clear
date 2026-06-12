@@ -150,7 +150,6 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         await openai_ws.send(json.dumps({
             "type": "response.create",
             "response": {
-                "modalities": ["audio", "text"],
                 "instructions": (
                     "Speak in English. Greet the caller now, briefly and "
                     "calmly, with exactly this: \"Thanks for calling All Clear. "
