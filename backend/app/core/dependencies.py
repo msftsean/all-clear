@@ -277,7 +277,11 @@ def get_embedding_fn():  # type: ignore[no-untyped-def]
         )
 
     async def _embed(text: str) -> list[float]:
-        response = await client.get_embeddings([text])
+        from app.agents.retry import with_rate_limit_retry
+
+        response = await with_rate_limit_retry(
+            lambda: client.get_embeddings([text])
+        )
         return list(response[0].vector) if response else []
 
     return _embed

@@ -18,6 +18,8 @@ in-memory fake and never requires a live Cosmos account offline. Use
 
 from __future__ import annotations
 
+import asyncio
+import random
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -31,7 +33,21 @@ _COUNTER_ID = "__incident_seq__"
 # Fields the store manages on the persisted document but that are not part of the
 # IncidentRecord schema. Stripped before reconstructing the record.
 _NON_RECORD_FIELDS = {"id", "embedding", "reports"}
-_MAX_CAS_RETRIES = 8
+# Optimistic-concurrency (CAS) retry budget. Concurrent reports about the SAME
+# incident (or new incidents racing on the shared counter doc) all contend on one
+# document; without backoff they livelock and exhaust a small budget. The budget
+# is generous and paired with jittered exponential backoff so bursts converge.
+_MAX_CAS_RETRIES = 16
+_CAS_BACKOFF_BASE_S = 0.02
+_CAS_BACKOFF_CAP_S = 0.4
+
+
+async def _cas_backoff(attempt: int) -> None:
+    """Sleep a jittered, exponentially-growing interval between CAS retries so a
+    burst of writers contending on one document spreads out instead of colliding
+    on every round (livelock)."""
+    ceiling = min(_CAS_BACKOFF_CAP_S, _CAS_BACKOFF_BASE_S * (2 ** attempt))
+    await asyncio.sleep(random.uniform(0.0, ceiling))
 
 
 class AuditEntry:
@@ -125,7 +141,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
             CosmosResourceNotFoundError,
         )
 
-        for _ in range(_MAX_CAS_RETRIES):
+        for attempt in range(_MAX_CAS_RETRIES):
             try:
                 doc = await self._container.read_item(
                     item=_COUNTER_ID, partition_key=_COUNTER_PARTITION
@@ -140,6 +156,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
                     await self._container.create_item(seed)
                     return "AC-0001"
                 except CosmosResourceExistsError:
+                    await _cas_backoff(attempt)
                     continue  # another worker seeded it; re-read and increment
             else:
                 next_seq = int(doc["seq"]) + 1
@@ -153,6 +170,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
                     )
                     return f"AC-{next_seq:04d}"
                 except _precondition_failures():
+                    await _cas_backoff(attempt)
                     continue  # lost the race; retry with a fresh read
         raise RuntimeError("next_incident_id exceeded CAS retry budget")
 
@@ -176,7 +194,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
     async def attach_report(self, incident_id: str, signal_text: str) -> IncidentRecord:
         from azure.core import MatchConditions
 
-        for _ in range(_MAX_CAS_RETRIES):
+        for attempt in range(_MAX_CAS_RETRIES):
             doc = await self._find_doc(incident_id)
             if doc is None:
                 raise KeyError(f"unknown incident {incident_id}")
@@ -192,6 +210,7 @@ class AzureCosmosIncidentStore(IncidentStoreInterface):
                     match_condition=MatchConditions.IfNotModified,
                 )
             except _precondition_failures():
+                await _cas_backoff(attempt)
                 continue  # concurrent attach; re-read and retry
             record = self._to_record(updated if updated is not None else doc)
             self.audit.append(

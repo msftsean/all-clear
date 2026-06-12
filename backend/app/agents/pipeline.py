@@ -31,6 +31,7 @@ from agent_framework import (
 from app.agents.action_agent import ActionExecutor, ActionToolbox
 from app.agents.envelopes import ClassifiedSignal, RoutedSignal
 from app.agents.query_agent import build_query_agent
+from app.agents.retry import with_rate_limit_retry
 from app.agents.router_agent import RouterExecutor
 from app.agents.schemas import (
     IncidentAction,
@@ -80,8 +81,10 @@ class QueryStage(Executor):
 
 async def classify_signal(agent: Agent, text: str) -> SignalClassification:
     """Run the QueryAgent and return its typed SignalClassification."""
-    response = await agent.run(
-        text, options=ChatOptions(response_format=SignalClassification)
+    response = await with_rate_limit_retry(
+        lambda: agent.run(
+            text, options=ChatOptions(response_format=SignalClassification)
+        )
     )
     value = response.value
     if not isinstance(value, SignalClassification):  # pragma: no cover - defensive

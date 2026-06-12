@@ -84,7 +84,7 @@ resource openAiDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023
   }
   sku: {
     name: 'GlobalStandard'
-    capacity: 5
+    capacity: 150
   }
 }
 
