@@ -23,13 +23,14 @@ Scores are 1-5 (higher is better), plus a pass-rate (`*_passed`) at the default 
 
 ## Latest run
 
-`all-clear-quality-eval` - 10 signals, all lines completed.
+`all-clear-quality-eval` (Foundry evaluation `b4f0e276-ce67-4ed9-8f54-15cd9fb69809`,
+2026-06-12) - 10 signals, all lines completed.
 
 | Metric | Score (avg) | Pass rate |
 | ------ | ----------- | --------- |
-| Relevance | 3.2 | 0.7 |
-| Coherence | 3.1 | 0.6 |
-| Fluency   | 3.3 | 1.0 |
+| Relevance | 3.1 | 0.8 |
+| Coherence | 3.7 | 0.9 |
+| Fluency   | 4.0 | 1.0 |
 
 Open in the portal: **Azure AI Foundry -> project `allclear-redteam` -> Evaluations**
 (turn the "New Foundry" toggle **off** if the run does not render in the preview UI).
