@@ -189,7 +189,7 @@ export default function BriefingRoom() {
               data-testid="send-signal"
               type="submit"
               disabled={busy || !input.trim()}
-              className="rounded-chip bg-cta px-5 py-2 font-sans text-[13px] font-semibold text-ctaink shadow-antimetal-cta transition hover:brightness-105 disabled:opacity-40"
+              className="rounded-chip bg-grad px-5 py-2 font-sans text-[13px] font-semibold text-white shadow-antimetal-cta transition hover:brightness-105 disabled:opacity-40"
             >
               Send
             </button>

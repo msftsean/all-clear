@@ -115,14 +115,14 @@ function MapCard({ r }: { r: PipelineResult }) {
     <Card title="map" testid="map-card">
       <div className="relative overflow-hidden rounded-[16px] border border-nline bg-night shadow-dark-glass">
         <svg viewBox="0 0 320 150" className="h-[150px] w-full" role="img" aria-label={`Map: ${loc}`}>
-          <rect width="320" height="150" fill="#001033" />
+          <rect width="320" height="150" fill="#070b1a" />
           {Array.from({ length: 7 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#26345c" strokeWidth="1" />
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#2a335f" strokeWidth="1" />
           ))}
           {Array.from({ length: 11 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#26345c" strokeWidth="1" />
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#2a335f" strokeWidth="1" />
           ))}
-          <path d="M0 96 L120 70 L210 92 L320 60" fill="none" stroke="#5fbdf7" strokeWidth="2" opacity="0.55" />
+          <path d="M0 96 L120 70 L210 92 L320 60" fill="none" stroke="#7b5cff" strokeWidth="2" opacity="0.6" />
           <g>
             <circle cx="166" cy="78" r="16" fill={sevVar} opacity="0.18" />
             <circle cx="166" cy="78" r="5" fill={sevVar} />
@@ -278,7 +278,7 @@ export function ApprovalGate({
           <button
             data-testid="approve-publish"
             onClick={onApprove}
-            className="mt-3 w-full rounded-chip bg-cta px-5 py-2.5 font-sans text-[13px] font-semibold text-ctaink shadow-antimetal-cta transition hover:brightness-105"
+            className="mt-3 w-full rounded-chip bg-clear px-5 py-2.5 font-sans text-[13px] font-semibold text-white shadow-[0_10px_26px_-6px_rgba(55,194,129,0.55)] transition hover:brightness-105"
           >
             Approve &amp; publish
           </button>

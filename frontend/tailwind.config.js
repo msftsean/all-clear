@@ -4,21 +4,21 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Paper world (conversation column)
-        paper: "#f8f9fc",
+        // Paper world (conversation column) — Antigravity light surface
+        paper: "#f4f6fe",
         paper2: "#ffffff",
-        paperline: "#dfe3ea",
-        inkwarm: "#1b2540",
-        midwarm: "#6b7184",
-        voice: "#0050f8",
-        // Night world (canvas)
-        night: "#001033",
-        panel: "#14213f",
-        nline: "#26345c",
-        nink: "#e0f6ff",
-        ndim: "#9fb6d8",
-        cta: "#d0f100",
-        ctaink: "#1b2540",
+        paperline: "#e7eaf6",
+        inkwarm: "#161b33",
+        midwarm: "#565d7a",
+        voice: "#4f6bff",
+        // Night world (canvas) — Antigravity deep space
+        night: "#070b1a",
+        panel: "#141a3a",
+        nline: "#2a335f",
+        nink: "#eef1ff",
+        ndim: "#9aa6d6",
+        cta: "#4f6bff",
+        ctaink: "#ffffff",
         // Status (both worlds)
         sev1: "#E25555",
         sev2: "#E59A3A",
@@ -27,9 +27,9 @@ export default {
         clear: "#37C281",
       },
       fontFamily: {
-        display: ["Fraunces", "Georgia", "serif"],
-        sans: ["DM Sans", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "Menlo", "monospace"],
+        display: ["Google Sans Flex", "Google Sans", "Segoe UI", "system-ui", "sans-serif"],
+        sans: ["Google Sans Flex", "Google Sans", "Segoe UI", "system-ui", "sans-serif"],
+        mono: ["Google Sans Code", "ui-monospace", "Menlo", "monospace"],
       },
       borderRadius: {
         card: "20px",
@@ -38,17 +38,20 @@ export default {
         tag: "6px",
       },
       boxShadow: {
+        // Antigravity "lift" — floating cards with violet-tinted depth
         "antimetal-card":
-          "rgba(0,39,80,0.03) 0px 56px 72px -16px, rgba(0,39,80,0.03) 0px 32px 32px -16px, rgba(0,39,80,0.04) 0px 6px 12px -3px, rgba(0,39,80,0.04) 0px 0px 0px 1px",
+          "0 1px 2px rgba(20,28,72,0.05), 0 10px 28px -10px rgba(48,60,150,0.20), 0 28px 56px -28px rgba(48,60,150,0.22)",
         "antimetal-soft":
-          "rgba(255,255,255,0.72) 0px 1px 1px 0px inset, rgba(4,33,80,0.02) 0px 8px 16px 0px, rgba(4,33,80,0.03) 0px 4px 12px 0px, rgba(4,33,80,0.06) 0px 1px 2px 0px, rgba(4,33,80,0.04) 0px 0px 0px 1px",
+          "0 1px 2px rgba(20,28,72,0.05), 0 8px 20px -12px rgba(48,60,150,0.18)",
         "antimetal-cta":
-          "rgba(24,37,66,0.32) 0px 1px 3px 0px, rgba(24,37,66,0.12) 0px 0.5px 0.5px 0px, rgba(24,37,66,0.44) 0px 12px 24px -12px, rgba(219,247,255,0.06) 0px 8px 16px 0px inset, rgba(219,247,255,0.48) 0px 0.5px 0.5px 0px inset",
+          "0 10px 26px -6px rgba(99,90,255,0.55)",
         "dark-glass":
-          "rgba(24,37,66,0.32) 0px 1px 3px 0px, rgba(24,37,66,0.44) 0px 12px 24px -12px, rgba(219,247,255,0.48) 0px 0.5px 0.5px 0px inset, rgba(219,247,255,0.04) 0px -4px 8px 0px inset",
+          "0 1px 2px rgba(0,0,0,0.40), 0 18px 40px -16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
       },
       backgroundImage: {
-        "antimetal-hero": "linear-gradient(180deg,#001033 0%,#0050f8 55%,#5fbdf7 100%)",
+        "antimetal-hero":
+          "radial-gradient(125% 145% at 86% -22%, #2a3470 0%, #0e1330 46%, #070b1a 100%)",
+        grad: "linear-gradient(100deg, #3d7bfd 0%, #7b5cff 52%, #d957d5 100%)",
       },
       keyframes: {
         bar: {
