@@ -327,3 +327,20 @@ def get_pipeline():  # type: ignore[no-untyped-def]
     toolbox = ActionToolbox(store, knowledge, embed, settings)
     action = ActionExecutor(toolbox, store)
     return AllClearPipeline(query_agent, router, action, store=store)
+
+
+@lru_cache
+def get_loadtest_coordinator():  # type: ignore[no-untyped-def]
+    """Return the singleton coach load-test coordinator.
+
+    Live mode reuses the durable Cosmos `incidents` container for a shared
+    cross-replica lock; mock mode keeps the lock in process memory.
+    """
+    from app.services.demo_loadtest import LoadTestCoordinator
+
+    settings = get_settings()
+    if settings.use_mock_services:
+        return LoadTestCoordinator(container=None)
+
+    store = get_incident_store()
+    return LoadTestCoordinator(container=getattr(store, "_container", None))

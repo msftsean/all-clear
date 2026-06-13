@@ -20,7 +20,11 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from app.agents.pipeline import AllClearPipeline
 from app.agents.schemas import KnowledgeArticle, PipelineResult
 from app.core.config import Settings, get_settings
-from app.core.dependencies import get_knowledge_service, get_pipeline
+from app.core.dependencies import (
+    get_knowledge_service,
+    get_loadtest_coordinator,
+    get_pipeline,
+)
 from app.services.interfaces import KnowledgeServiceInterface
 
 router = APIRouter()
@@ -212,3 +216,30 @@ async def demo_clearboard(mode: Literal["blank", "loaded"] = "loaded") -> dict:
             "incidents": [],
         }
     return DEMO_CLEARBOARD
+
+
+@router.get("/demo/loadtest", tags=["Demo"], summary="Coach load-test job status")
+async def demo_loadtest_status(coordinator=Depends(get_loadtest_coordinator)) -> dict:
+    """Return the shared status of the coach load-test job (idle or running).
+
+    Any browser/coach polls this to see live progress and to know whether a run
+    is already in flight before starting another.
+    """
+    return await coordinator.status()
+
+
+@router.post("/demo/loadtest", tags=["Demo"], summary="Start a coach load-test surge")
+async def demo_loadtest_start(
+    *,
+    count: int = Body(default=40, embed=True, ge=1, le=150),
+    mode: str = Body(default="varied", embed=True),
+    started_by: str = Body(default="coach", embed=True),
+    coordinator=Depends(get_loadtest_coordinator),
+) -> dict:
+    """Fire a burst of realistic signals through the live pipeline (demo surge).
+
+    Single-flight and idempotent: if a run is already active (this browser, a
+    second click, or another coach), no new run starts and the in-flight job's
+    status is returned unchanged.
+    """
+    return await coordinator.start(count=count, mode=mode, started_by=started_by)

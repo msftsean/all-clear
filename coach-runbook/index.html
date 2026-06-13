@@ -217,6 +217,7 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#bigpicture"><span class="n">01</span>The big picture</a>
       <a class="sec">Coach toolkit</a>
       <a href="#props"><span class="n">P</span>Demo props &amp; canned signals</a>
+      <a href="#simulate"><span class="n">S</span>Simulate load (live surge)</a>
       <a class="sec">Guided exercises</a>
       <a href="#ex1"><span class="n">E1</span>Submit a signal</a>
       <a href="#ex2"><span class="n">E2</span>Severity &amp; approval gate</a>
@@ -346,6 +347,48 @@ html.js main section.in{opacity:1;transform:none}
         <tr><td><button type="button" class="pill copy-signal" data-copy="There's water pouring out of the ceiling on the third floor of the library."><span>There's water pouring out of the ceiling on the third floor of the library.</span><span class="copy-status">copy</span></button></td><td>Runs through the same classification, routing, action, and audit path.</td></tr>
         <tr><td><button type="button" class="pill copy-signal" data-copy="Someone collapsed in the food court and isn't responding."><span>Someone collapsed in the food court and isn't responding.</span><span class="copy-status">copy</span></button></td><td><span class="sev sev1">SEV1</span>, <span class="pill">life_safety</span>.</td></tr>
       </table>
+    </section>
+
+    <section id="simulate">
+      <h2>S &middot; Simulate load (live surge)</h2>
+      <p class="tag">Goal: fill the board on demand &mdash; fire a burst of realistic signals at the live pipeline and watch dedup funnel them into a few incidents whose magnitude climbs.</p>
+      <p>This runs the same thing as <span class="mono">backend/scripts/load_test_map.py</span>, but from this browser. It sends real Oak&nbsp;Street reports through the live three-agent pipeline on the deployed backend, so the <a href="https://allclear-kt5fw24guxoxy-frontend.nicebay-0aac45bb.eastus.azurecontainerapps.io" target="_blank" rel="noopener">ClearBoard</a> fills live.</p>
+      <div class="note"><span class="eyebrow">Single-flight &amp; idempotent</span><p style="margin:.4em 0 0">Only one surge runs at a time. If a run is already going &mdash; a second click, or <strong>another coach on another machine</strong> &mdash; the button locks and shows that run's live progress instead of starting a duplicate. The lock is shared on the backend, so every coach sees the same state.</p></div>
+
+      <div class="card" style="margin-top:14px">
+        <div style="display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end">
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Signals
+            <select id="simCount" style="font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink)">
+              <option value="20">20</option>
+              <option value="40" selected>40</option>
+              <option value="80">80</option>
+              <option value="120">120</option>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Spread
+            <select id="simMode" style="font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink)">
+              <option value="varied" selected>varied — many phrasings, a few incidents</option>
+              <option value="same">same — one message, funnels to one incident</option>
+            </select>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--muted)">Your name
+            <input id="simBy" type="text" value="Sean" style="font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);width:120px">
+          </label>
+          <button type="button" id="simStart" class="btn" style="cursor:pointer;font-size:14px">▶ Simulate load</button>
+        </div>
+
+        <div style="margin-top:18px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
+            <strong id="simState">Checking status…</strong>
+            <span id="simCounts" class="mono" style="font-size:12px;color:var(--muted)"></span>
+          </div>
+          <div style="height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0">
+            <div id="simBar" style="height:100%;width:0%;background:var(--accent);transition:width .4s"></div>
+          </div>
+          <p id="simMsg" style="margin:.3em 0 0;font-size:13px;color:var(--muted)">&nbsp;</p>
+        </div>
+      </div>
+      <div class="coach"><span class="eyebrow">Coach demo move</span><p style="margin:.4em 0 0">Open the board on the projector, click <strong>Simulate load</strong> (varied, 40), and narrate: &ldquo;40 signals coming in &mdash; watch them collapse into a handful of incidents as dedup recognizes the same Oak&nbsp;Street event.&rdquo; Use <strong>same</strong> to show one incident's magnitude climb cleanly.</p></div>
     </section>
 
     <section id="ex1">
@@ -556,6 +599,67 @@ azd deploy frontend            # rebuild & ship just the UI</pre>
       fallback(text);done();
     }
   });
+})();
+</script>
+<script>
+(function(){
+  var BACKEND="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io";
+  var startBtn=document.getElementById("simStart");
+  if(!startBtn){return;}
+  var stateEl=document.getElementById("simState");
+  var countsEl=document.getElementById("simCounts");
+  var barEl=document.getElementById("simBar");
+  var msgEl=document.getElementById("simMsg");
+  var countSel=document.getElementById("simCount");
+  var modeSel=document.getElementById("simMode");
+  var bySel=document.getElementById("simBy");
+
+  function render(s){
+    if(!s){
+      stateEl.textContent="Status unavailable";
+      msgEl.textContent="Could not reach the backend. Is it awake? Try the Health button.";
+      return;
+    }
+    var total=s.total||0, sent=s.sent||0;
+    var pct=total>0?Math.round(sent/total*100):0;
+    barEl.style.width=pct+"%";
+    if(s.running){
+      stateEl.textContent="● Surge running"+(s.started_by?(" — started by "+s.started_by):"");
+      countsEl.textContent=sent+" / "+total+" signals · "+(s.incidents||0)+" incidents · max mag "+(s.max_magnitude||0);
+      startBtn.disabled=true;
+      startBtn.textContent="surge running…";
+      startBtn.style.opacity="0.55";
+      startBtn.style.cursor="not-allowed";
+    }else{
+      stateEl.textContent= sent>0 ? "✓ Idle — last run complete" : "Idle — ready";
+      countsEl.textContent= sent>0 ? (s.ok||0)+" fired · "+(s.incidents||0)+" incidents · max mag "+(s.max_magnitude||0) : "";
+      startBtn.disabled=false;
+      startBtn.textContent="▶ Simulate load";
+      startBtn.style.opacity="1";
+      startBtn.style.cursor="pointer";
+    }
+    msgEl.innerHTML=s.message?escapeHtml(s.message):"&nbsp;";
+  }
+  function escapeHtml(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML;}
+
+  function poll(){
+    fetch(BACKEND+"/api/demo/loadtest",{method:"GET"})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(render)
+      .catch(function(){render(null);});
+  }
+
+  startBtn.addEventListener("click",function(){
+    startBtn.disabled=true;startBtn.style.opacity="0.55";startBtn.textContent="starting…";
+    fetch(BACKEND+"/api/demo/loadtest",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({count:parseInt(countSel.value,10)||40,mode:modeSel.value,started_by:(bySel.value||"coach").trim()})
+    }).then(function(r){return r.ok?r.json():null;}).then(render).catch(function(){render(null);});
+  });
+
+  poll();
+  window.setInterval(poll,1500);
 })();
 </script>
 </body>
