@@ -235,7 +235,7 @@ All Clear adopts a **CJIS mindset** everywhere — even where it doesn't legally
 
 ### 👥 Contributors
 
-- **Sean Gillespie** ([@msftsean](https://github.com/msftsean)) — Operational dashboards, foundry integration, evals harness, guardrails infrastructure
+- **Sean Gayle** ([@msftsean](https://github.com/msftsean)) — Operational dashboards, foundry integration, evals harness, guardrails infrastructure
 
 ---
 
