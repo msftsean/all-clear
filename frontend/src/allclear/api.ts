@@ -1,4 +1,4 @@
-import type { DemoClearBoard, HealthStatus, PipelineResult } from "./types";
+import type { DemoClearBoard, HealthStatus, ModelStatus, PipelineResult } from "./types";
 
 // In production the nginx sidecar proxies /api -> BACKEND_URL, so a relative
 // base works everywhere. VITE_API_BASE_URL can override for local dev.
@@ -55,6 +55,10 @@ export function submitSignal(
 
 export function getHealth(): Promise<HealthStatus> {
   return req<HealthStatus>("/health");
+}
+
+export function getModelStatus(): Promise<ModelStatus> {
+  return req<ModelStatus>("/health/models");
 }
 
 export function getDemoClearBoard(): Promise<DemoClearBoard> {

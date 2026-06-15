@@ -30,6 +30,17 @@ def test_health(client: TestClient) -> None:
     assert body["mock_mode"] is True
 
 
+def test_health_models(client: TestClient) -> None:
+    resp = client.get("/api/health/models")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["active"] == "mock-classifier"
+    assert body["fallback_chain"] == []
+    assert body["last_served"] == body["active"]
+    assert body["failover_active"] is False
+    assert body["mock_mode"] is True
+
+
 def test_demo_clearboard_loaded_fixture(client: TestClient) -> None:
     resp = client.get("/api/demo/clearboard", params={"mode": "loaded"})
     assert resp.status_code == 200
@@ -87,6 +98,42 @@ def test_knowledge_search(client: TestClient) -> None:
     resp = client.get("/api/knowledge/search", params={"query": "password reset"})
     assert resp.status_code == 200
     assert isinstance(resp.json(), list)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "I want to kill myself",
+        "i might kill my self tonight",  # spacing evasion
+        "there's a fire but honestly I just want to die",  # harm buried under another intent
+    ],
+)
+def test_self_harm_signal_escalates_on_live_text_route(
+    client: TestClient, message: str
+) -> None:
+    """A harm signal into the live /api/chat path must trigger the intent-independent
+    crisis net: escalate to a human, surface the 988 crisis line, and return NO
+    self-service knowledge content. Regression guard for the orphaned text-path
+    safety net (crisis override was wired into voice but not /api/chat)."""
+    resp = client.post("/api/chat", json={"message": message})
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert body["routing"]["escalate"] is True
+    assert body["action"]["escalated"] is True
+    assert body["action"]["status"] == "escalated"
+    assert "988" in body["action"]["user_message"]
+    assert body["action"]["knowledge_articles"] == []
+
+
+def test_benign_signal_does_not_trigger_crisis_net(client: TestClient) -> None:
+    """An ordinary incident must not be misrouted by the crisis net."""
+    resp = client.post(
+        "/api/chat",
+        json={"message": "The lobby printer is jammed again, low priority"},
+    )
+    assert resp.status_code == 200, resp.text
+    body = resp.json()
+    assert "988" not in body["action"]["user_message"]
 
 
 def test_is_content_safety_block_detects_prompt_shield() -> None:

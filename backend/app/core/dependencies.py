@@ -216,27 +216,95 @@ def get_chat_client():  # type: ignore[no-untyped-def]
 
     from agent_framework.openai import OpenAIChatClient
 
+    from app.services.azure.failover_chat_client import build_failover_client
+
     # The gpt-5.1 Responses API surface (/openai/v1/) accepts only api-version
     # "preview"; dated versions return 400 (001-maf-rehost T13). Force it here so
     # the chat client is correct regardless of the configured default.
     chat_api_version = "preview"
 
     api_key = settings.azure_openai_api_key or None
-    if api_key:
-        return OpenAIChatClient(
-            model=settings.azure_openai_deployment,
-            azure_endpoint=settings.azure_openai_endpoint,
-            api_version=chat_api_version,
-            api_key=api_key,
-        )
-    from azure.identity import DefaultAzureCredential
+    credential = None
+    if not api_key:
+        from azure.identity import DefaultAzureCredential
 
-    return OpenAIChatClient(
-        model=settings.azure_openai_deployment,
-        azure_endpoint=settings.azure_openai_endpoint,
-        api_version=chat_api_version,
-        credential=DefaultAzureCredential(),
-    )
+        credential = DefaultAzureCredential()
+
+    def _make(model: str, endpoint: str, api_version: str) -> OpenAIChatClient:
+        if api_key:
+            return OpenAIChatClient(
+                model=model,
+                azure_endpoint=endpoint,
+                api_version=api_version,
+                api_key=api_key,
+            )
+        return OpenAIChatClient(
+            model=model,
+            azure_endpoint=endpoint,
+            api_version=api_version,
+            credential=credential,
+        )
+
+    clients = [
+        _make(settings.azure_openai_deployment, settings.azure_openai_endpoint, chat_api_version)
+    ]
+    names = [settings.azure_openai_deployment]
+
+    # Model-agnostic failover (018): when a fallback deployment is configured, the
+    # pipeline keeps triaging on the fallback if the primary model becomes
+    # unavailable. Empty fallback => single-model no-op (unchanged behavior).
+    if settings.azure_openai_fallback_deployment:
+        clients.append(
+            _make(
+                settings.azure_openai_fallback_deployment,
+                settings.azure_openai_fallback_endpoint or settings.azure_openai_endpoint,
+                settings.azure_openai_fallback_api_version or chat_api_version,
+            )
+        )
+        names.append(settings.azure_openai_fallback_deployment)
+
+    return build_failover_client(clients, names)
+
+
+def get_model_status() -> dict:
+    """Report the active chat model, the configured fallback chain, and the
+    model that served the most recent request (018-model-agnostic-failover).
+
+    Mock-safe: returns synthetic names with no Azure credentials.
+    """
+    settings = get_settings()
+
+    if settings.use_mock_services:
+        return {
+            "active": "mock-classifier",
+            "fallback_chain": [],
+            "last_served": "mock-classifier",
+            "failover_active": False,
+            "mock_mode": True,
+        }
+
+    names = [settings.azure_openai_deployment]
+    if settings.azure_openai_fallback_deployment:
+        names.append(settings.azure_openai_fallback_deployment)
+
+    last_served = names[0]
+    failover_active = False
+
+    from app.services.azure.failover_chat_client import FailoverChatClient
+
+    client = get_chat_client()
+    if isinstance(client, FailoverChatClient):
+        names = client.model_names
+        last_served = client.last_used_model
+        failover_active = client.failover_active
+
+    return {
+        "active": names[0],
+        "fallback_chain": names[1:],
+        "last_served": last_served,
+        "failover_active": failover_active,
+        "mock_mode": False,
+    }
 
 
 @lru_cache

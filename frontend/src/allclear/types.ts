@@ -79,6 +79,14 @@ export interface HealthStatus {
   domain: string;
 }
 
+export interface ModelStatus {
+  active?: string | null;
+  fallback_chain?: string[];
+  last_served?: string | null;
+  failover_active?: boolean;
+  mock_mode?: boolean;
+}
+
 export interface DemoClearBoardIncident {
   incident_id: string;
   title: string;

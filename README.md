@@ -89,6 +89,10 @@ Severity is mapped from classification indicators by RouterExecutor rules — ne
 
 > ⚖️ A **statutory clock** (breach-notification / recall windows) forces SEV1 regardless of other indicators. Breached SLA clocks highlight on the ClearBoard and are written to the audit log.
 
+### 🔁 Model continuity & failover
+
+Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_chat_client.py), which wraps an **ordered list of models** (primary first). When the primary returns a *model-unavailability* condition (404 `DeploymentNotFound`, 401/403 access denied, 503 service unavailable), classification automatically advances to the next configured model — so a model being pulled or restricted doesn't stop triage. It **does not** route around `429` rate limits (those stay on the retry/back-off path) or content-filter / Prompt-Shield blocks (a safety block is the system working, not an outage). The layer is a **no-op until a fallback is configured** (`AZURE_OPENAI_FALLBACK_DEPLOYMENT`), so single-model deployments are unchanged. `GET /api/health/models` and the ClearBoard model badge surface the active model, the fallback chain, and whether failover is active.
+
 ### ☁️ Azure Infrastructure
 
 ![All Clear Azure deployment](./docs/architecture/allclear-deployment-infrastructure.png)
@@ -96,7 +100,7 @@ Severity is mapped from classification indicators by RouterExecutor rules — ne
 | 🔧 Service | 📝 Purpose |
 | ---------- | ---------- |
 | 🛡️ API Management | **AI gateway** in front of the API/model — rate limits · token budgets · JWT validation · usage metrics *(Day-1 production posture; not provisioned by `azd up`)* |
-| 🤖 Azure OpenAI | Signal classification + sitrep generation (`gpt-5.1`) |
+| 🤖 Azure OpenAI | Signal classification + sitrep generation (`gpt-5.1`) — model-agnostic via [`FailoverChatClient`](./backend/app/services/azure/failover_chat_client.py): set `AZURE_OPENAI_FALLBACK_DEPLOYMENT` to arm automatic chat failover |
 | 🧠 Azure OpenAI Embeddings | `text-embedding-3-small` (1536-dim) for dedup similarity |
 | 🔍 Azure AI Search | Knowledge base retrieval (`text-embedding-3-small` index) |
 | 📦 Container Apps | Backend API hosting (managed ingress · scale-to-zero) |
@@ -154,6 +158,7 @@ azd up
 | `POST` | `/api/chat` | 💬 Submit a signal (chat alias of `/api/signals`) |
 | `GET` | `/api/knowledge/search` | 📚 Search the knowledge base |
 | `GET` | `/api/health` | 💚 Service health |
+| `GET` | `/api/health/models` | 🔁 Active chat model, fallback chain, last-served model, and failover state |
 | `POST` | `/api/realtime/session` | 🎤 Create an ephemeral realtime (voice) session |
 | `WS` | `/api/realtime/ws` | 🎤 Realtime tool relay |
 | `GET` | `/api/realtime/health` | 🎤 Realtime availability |

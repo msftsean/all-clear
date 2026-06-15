@@ -23,6 +23,7 @@ from app.core.config import Settings, get_settings
 from app.core.dependencies import (
     get_knowledge_service,
     get_loadtest_coordinator,
+    get_model_status,
     get_pipeline,
 )
 from app.services.interfaces import KnowledgeServiceInterface
@@ -198,6 +199,17 @@ async def health_check(settings: Settings = Depends(get_settings)) -> dict:
         "mock_mode": settings.use_mock_services,
         "domain": "all-clear-incident-triage",
     }
+
+
+@router.get("/health/models", tags=["Health"], summary="Active model + failover chain")
+async def model_status() -> dict:
+    """Report the active chat model, the configured fallback chain, and the model
+    that served the most recent request (018-model-agnostic-failover).
+
+    Lets an operator (or the stage demo) see that triage keeps running on a
+    fallback model if the primary is pulled or restricted.
+    """
+    return get_model_status()
 
 
 @router.get("/demo/clearboard", tags=["Demo"], summary="Idempotent ClearBoard demo fixture")

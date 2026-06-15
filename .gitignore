@@ -81,3 +81,7 @@ docs/azure-support-ticket-*.md
 allclear-dropin.zip
 .venv-redteam/
 .scan_*/
+
+# Hypothesis test database/cache
+.hypothesis/
+backend/.hypothesis/

@@ -30,13 +30,21 @@ from agent_framework import (
 
 from app.agents.action_agent import ActionExecutor, ActionToolbox
 from app.agents.envelopes import ClassifiedSignal, RoutedSignal
+from app.agents.escalation_rules import contains_harm_signal
 from app.agents.query_agent import build_query_agent
 from app.agents.retry import with_rate_limit_retry
 from app.agents.router_agent import RouterExecutor
+from app.agents.safety import CRISIS_MESSAGE
 from app.agents.schemas import (
+    ActionStatus,
+    EscalationReason,
     IncidentAction,
     PipelineResult,
+    Queue,
+    RoutingDecision,
     RoutingOutcome,
+    Severity,
+    SignalCategory,
     SignalClassification,
 )
 from app.core.config import Settings, get_settings
@@ -132,6 +140,16 @@ class AllClearPipeline:
         """Run text through classify -> route -> act, publishing events per stage."""
         started = time.perf_counter()
 
+        # Intent-INDEPENDENT crisis safety net. Fires purely on harm-signal
+        # detection BEFORE classification/routing, so a mis-classified or
+        # adversarially spoofed intent can never suppress a crisis escalation,
+        # and a harm signal is never answered with self-service KB content. This
+        # mirrors the voice tool chokepoint (safety.voice_crisis_result) and
+        # keeps the live text path (/api/chat, /api/signals) in lockstep with
+        # voice (007 demo hardening / Constitution Art. I + V).
+        if contains_harm_signal(text):
+            return await self._handle_crisis(text, session_id, channel, started)
+
         # Classify on the raw text so the QueryAgent can still detect/flag PII
         # (pii_detected/pii_types stay accurate for routing). After classification
         # the raw text is dropped: every downstream use (dedup embedding, attached
@@ -188,6 +206,93 @@ class AllClearPipeline:
             },
         )
 
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        result = PipelineResult(
+            session_id=session_id,
+            channel=channel,
+            signal_text=safe_text,
+            classification=classification,
+            routing=decision,
+            action=action,
+            processing_ms=elapsed_ms,
+        )
+        await self._publish(
+            session_id, {"type": "pipeline.complete", "processing_ms": elapsed_ms}
+        )
+        return result
+
+    async def _handle_crisis(
+        self, text: str, session_id: str, channel: str, started: float
+    ) -> PipelineResult:
+        """Build and publish a deterministic crisis escalation for a harm signal.
+
+        Skips the LLM classifier, dedup/routing, and the knowledge search so a
+        crisis utterance is always escalated to a human with the crisis-line
+        message and is NEVER answered with self-service content. The PII in the
+        stored signal text is redacted so it is not echoed back or persisted.
+        """
+        safe_text = redact_pii_text(text)
+        classification = SignalClassification(
+            intent="self_harm_crisis",
+            intent_category=SignalCategory.PUBLIC_SAFETY,
+            target_queue=Queue.ESCALATIONS,
+            confidence=1.0,
+            requires_escalation=True,
+            escalation_reason=EscalationReason.SENTIMENT_SAFETY,
+        )
+        decision = RoutingDecision(
+            outcome=RoutingOutcome.OPEN_INCIDENT,
+            target_queue=Queue.ESCALATIONS,
+            severity=Severity.SEV1,
+            sla_minutes=15,
+            escalate=True,
+            escalation_reason=EscalationReason.SENTIMENT_SAFETY,
+            routing_rules_applied=["escalate_safety_override"],
+        )
+        action = IncidentAction(
+            status=ActionStatus.ESCALATED,
+            incident_id=None,
+            queue=Queue.ESCALATIONS,
+            severity=Severity.SEV1,
+            knowledge_articles=[],
+            sitrep=None,
+            citations=[],
+            estimated_response_time="immediately",
+            escalated=True,
+            user_message=CRISIS_MESSAGE,
+        )
+        await self._publish(
+            session_id,
+            {
+                "type": "signal.classified",
+                "channel": channel,
+                "intent_category": classification.intent_category.value,
+                "confidence": classification.confidence,
+                "safety_override": True,
+            },
+        )
+        await self._publish(
+            session_id,
+            {
+                "type": "signal.routed",
+                "outcome": decision.outcome.value,
+                "severity": decision.severity.value,
+                "queue": decision.target_queue.value,
+                "matched_incident_id": None,
+                "escalate": True,
+            },
+        )
+        await self._publish(
+            session_id,
+            {
+                "type": "incident.opened",
+                "incident_id": None,
+                "severity": decision.severity.value,
+                "queue": decision.target_queue.value,
+                "escalated": True,
+                "safety_override": True,
+            },
+        )
         elapsed_ms = int((time.perf_counter() - started) * 1000)
         result = PipelineResult(
             session_id=session_id,

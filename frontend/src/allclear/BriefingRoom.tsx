@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { ApiError, getDemoClearBoard, getHealth, submitSignal } from "./api";
-import type { DemoClearBoard, PipelineResult } from "./types";
+import { ApiError, getDemoClearBoard, getHealth, getModelStatus, submitSignal } from "./api";
+import type { DemoClearBoard, ModelStatus, PipelineResult } from "./types";
 import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
 import LiveCalls from "./LiveCalls";
@@ -68,6 +68,7 @@ export default function BriefingRoom() {
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [published, setPublished] = useState<Set<string>>(new Set());
   const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
+  const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [liveOpen, setLiveOpen] = useState(false);
   const [demoMode, setDemoMode] = useState<"blank" | "loaded" | null>(() => initialDemoMode());
   const [demoBoard, setDemoBoard] = useState<DemoClearBoard | null>(
@@ -87,6 +88,12 @@ export default function BriefingRoom() {
     getHealth()
       .then((h) => setHealth({ ok: h.status === "healthy", live: !h.mock_mode }))
       .catch(() => setHealth({ ok: false, live: false }));
+  }, []);
+
+  useEffect(() => {
+    getModelStatus()
+      .then((status) => setModelStatus(status?.active ? status : null))
+      .catch(() => setModelStatus(null));
   }, []);
 
   useEffect(() => {
@@ -245,6 +252,7 @@ export default function BriefingRoom() {
                 {health.ok ? (health.live ? "● live" : "● mock") : "○ offline"}
               </span>
             ) : null}
+            {modelStatus ? <ModelStatusBadge status={modelStatus} /> : null}
           </div>
         </header>
 
@@ -363,6 +371,39 @@ export default function BriefingRoom() {
 
       {liveOpen ? <LiveCalls onExit={() => setLiveOpen(false)} /> : null}
     </div>
+  );
+}
+
+function ModelStatusBadge({ status }: { status: ModelStatus }) {
+  const active = status.active?.trim();
+  if (!active) return null;
+
+  const failoverActive = Boolean(status.failover_active);
+  const lastServed = status.last_served?.trim();
+  const displayModel = failoverActive && lastServed ? lastServed : active;
+  const label = failoverActive ? "fallback" : status.mock_mode ? "mock" : "primary";
+  const title = [
+    `Active model: ${active}`,
+    lastServed ? `Last served: ${lastServed}` : null,
+    status.fallback_chain?.length ? `Fallback chain: ${status.fallback_chain.join(" → ")}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return (
+    <span
+      data-testid="model-status-badge"
+      title={title}
+      className={`hidden items-center gap-1.5 rounded-chip border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft sm:inline-flex ${
+        failoverActive
+          ? "border-sev1/50 bg-sev1/10 text-sev1"
+          : "border-paperline bg-paper text-midwarm"
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${failoverActive ? "bg-sev1" : "bg-clear"}`} />
+      model: {displayModel}
+      <span className="text-midwarm/70">· {label}</span>
+    </span>
   );
 }
 

@@ -62,6 +62,31 @@ class Settings(BaseSettings):
         description="Azure OpenAI API version"
     )
 
+    # ------------------------------------------------------------------
+    # Model-agnostic failover (018-model-agnostic-failover)
+    #
+    # When a fallback deployment is set, the chat client becomes a
+    # FailoverChatClient that automatically routes to the fallback model if the
+    # primary returns a model-unavailability error (404 DeploymentNotFound,
+    # 403/401 access denied, 503 service unavailable). Empty default => no-op:
+    # the chat client stays a single-model client and behavior is unchanged.
+    # Rate limits (429) and content-filter blocks are NEVER failover triggers.
+    # ------------------------------------------------------------------
+    azure_openai_fallback_deployment: str = Field(
+        default="",
+        description="Fallback Azure OpenAI chat deployment used if the primary model is unavailable. "
+                    "Empty => failover disabled (single-model behavior)."
+    )
+    azure_openai_fallback_endpoint: str = Field(
+        default="",
+        description="Endpoint hosting the fallback deployment. When empty, falls back to "
+                    "azure_openai_endpoint (the fallback model lives in the same account)."
+    )
+    azure_openai_fallback_api_version: str = Field(
+        default="preview",
+        description="API version for the fallback chat deployment (Responses surface uses 'preview')."
+    )
+
     # ==========================================================================
     # Azure Cosmos DB Settings
     # ==========================================================================

@@ -196,6 +196,20 @@ html.js main section.in{opacity:1;transform:none}
   section:first-of-type::before{margin-bottom:8px}
   .grid2{grid-template-columns:1fr}
 }
+/* Tyler CTO demo — additive, scoped */
+.seg{margin:16px 0}
+.seg .eyebrow{color:var(--accent);margin-bottom:10px}
+.seg .lbl{font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;color:var(--faint);display:block;margin:14px 0 2px}
+.seg .lbl.do{color:#3f6fd0}.seg .lbl.say{color:#6a4cf0}.seg .lbl.land{color:#1d7a4f}
+.seg .say{font-family:var(--font-display);font-weight:400;font-size:15.5px;line-height:1.5;letter-spacing:-.012em;color:var(--ink);padding-left:14px;border-left:3px solid var(--g2);margin:7px 0}
+.seg .land{margin:6px 0 0;color:var(--body)}
+details.qa{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:2px 20px;margin:12px 0;box-shadow:var(--lift)}
+details.qa>summary{cursor:pointer;list-style:none;padding:14px 0;font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--ink)}
+details.qa>summary::-webkit-details-marker{display:none}
+details.qa>summary::before{content:"+";display:inline-block;width:1.2em;color:var(--accent);font-weight:700}
+details.qa[open]>summary::before{content:"–"}
+details.qa .say{margin-bottom:16px}
+
 @media(max-width:600px){
   .masthead{padding:28px 24px 30px}
   .masthead-title{font-size:33px}
@@ -224,12 +238,15 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#ex3"><span class="n">E3</span>Dedup &amp; community</a>
       <a href="#ex4"><span class="n">E4</span>Safety &amp; guardrails</a>
       <a href="#ex5"><span class="n">E5</span>The decision receipt</a>
+      <a href="#ex6"><span class="n">E6</span>Model continuity &amp; failover</a>
       <a class="sec">Audio</a>
       <a href="#voice"><span class="n">A1</span>Voice (browser STT/TTS)</a>
       <a href="#phone"><span class="n">A2</span>Phone call-in &amp; speak-back</a>
       <a class="sec">Operate</a>
       <a href="#deploy"><span class="n">OP</span>Deploy &amp; manage</a>
       <a href="#handoff"><span class="n">✓</span>Summary</a>
+      <a class="sec">Executive demo</a>
+      <a href="#tyler"><span class="n">T</span>Tyler CTO Demo</a>
     </nav>
   </aside>
 
@@ -260,7 +277,7 @@ html.js main section.in{opacity:1;transform:none}
       <h2>00 &middot; Quick start (5 minutes)</h2>
       <ol class="steps">
         <li>Open the <a href="https://allclear-kt5fw24guxoxy-frontend.nicebay-0aac45bb.eastus.azurecontainerapps.io" target="_blank" rel="noopener">All Clear UI</a>. You'll see the conversation column on the left, an empty board on the right (&ldquo;The board is quiet&rdquo;).</li>
-        <li>Check it's live: the header shows <span class="pill">● live</span> when the backend is healthy and running the real model. (Click <a href="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io/api/health" target="_blank" rel="noopener">Health</a> to see the raw JSON.)</li>
+        <li>Check it's live: the header shows <span class="pill">● live</span> when the backend is healthy and running the real model, and a <span class="pill">model · gpt-5.1</span> badge shows which model is actually serving. (Click <a href="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io/api/health" target="_blank" rel="noopener">Health</a> to see the raw JSON; <a href="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io/api/health/models" target="_blank" rel="noopener">Health · models</a> shows the active model and fallback chain &mdash; see E6.)</li>
         <li>Click one of the suggested signals, or type your own and press <span class="pill">Send</span>. Try: <em>&ldquo;There's a downed power line sparking on Oak Street near the school.&rdquo;</em></li>
         <li>Watch the board fill in: an <strong>incident card</strong>, a <strong>classification card</strong>, and a <strong>map</strong>. Chips appear under the transcript.</li>
         <li>Click <span class="pill">Show decision receipt</span> on the incident card to see exactly how the decision was made &mdash; and the <span class="pill clear">Approve &amp; publish</span> gate.</li>
@@ -467,6 +484,19 @@ html.js main section.in{opacity:1;transform:none}
       <div class="coach"><span class="eyebrow">Coach talking point</span><p style="margin:.4em 0 0">&ldquo;If anyone ever asks &lsquo;why did it do that?&rsquo;, the receipt is the answer &mdash; every number, every rule, every source, in order.&rdquo;</p></div>
     </section>
 
+    <section id="ex6">
+      <h2>E6 &middot; Model continuity &amp; failover</h2>
+      <p class="tag">Goal: show that &ldquo;model-agnostic&rdquo; is real in the code, not a slide. This is the resilience story behind the talk track &mdash; when a frontier model can be pulled overnight, a regulated system can't depend on exactly one deployment.</p>
+      <ol class="steps">
+        <li>Open <a href="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io/api/health/models" target="_blank" rel="noopener"><code>/api/health/models</code></a>. Read the four fields: <span class="mono">active</span> (the chat model in front), <span class="mono">fallback_chain</span> (the ordered list of standby models), <span class="mono">last_served</span> (what actually answered the most recent request), and <span class="mono">failover_active</span> (<code>true</code> only after the primary has been routed around).</li>
+        <li>Point at the header <span class="pill">model · gpt-5.1</span> badge &mdash; it reads the same endpoint. When a fallback is serving, the badge turns to the fallback model with a <span class="pill voice">fallback</span> label, so an operator sees model state at a glance.</li>
+        <li>Explain the mechanism: chat goes through <span class="mono">FailoverChatClient</span>, which wraps an ordered list of models. If the primary returns a <em>model-unavailability</em> condition &mdash; 404 deployment-not-found, 401/403 access denied, 503 service unavailable &mdash; All Clear advances to the next model and classification keeps moving.</li>
+      </ol>
+      <div class="note"><span class="eyebrow">What it deliberately does <em>not</em> route around</span><p style="margin:.4em 0 0">A <span class="pill">429</span> rate limit stays on the retry/back-off path (it's a &ldquo;slow down,&rdquo; not an outage). A <strong>content-filter or Prompt-Shield block</strong> is never bypassed &mdash; that's the system working (E4), not an outage to escape. Failover is for availability, never for safety.</p></div>
+      <div class="expect"><span class="eyebrow">In this reference environment</span><p style="margin:.4em 0 0"><span class="mono">fallback_chain</span> is empty and <span class="mono">failover_active</span> is <code>false</code> &mdash; one model is deployed, so the layer is a deliberate <strong>no-op</strong> and single-model behavior is unchanged. To make it live, set <code class="mono">AZURE_OPENAI_FALLBACK_DEPLOYMENT</code> (and optional <code class="mono">…_ENDPOINT</code>/<code class="mono">…_API_VERSION</code>) and redeploy &mdash; the chain activates and the endpoint/badge reflect it. So the honest claim is: <em>per-task model selection today, automatic chat failover when configured, no safety bypass.</em></p></div>
+      <div class="coach"><span class="eyebrow">Coach talking point</span><blockquote>&ldquo;The future isn't about picking the right model &mdash; it's about building systems that work no matter which model is available. Same governed Azure boundary; the model behind it can change without rewriting the app.&rdquo;</blockquote></div>
+    </section>
+
     <section id="voice">
       <h2>A1 &middot; Voice &mdash; browser speech-to-text &amp; text-to-speech</h2>
       <p>Spoken conversation is powered by the <strong>Azure OpenAI Realtime API</strong> (model <span class="mono">gpt-realtime</span>, deployed in Sweden Central). The model does both directions natively: it transcribes audio (STT) and speaks its replies (TTS) in one low-latency stream. This same realtime engine is what answers the <a href="#phone">phone line (A2)</a>, which is <strong>live now</strong>. In the browser, the agent's tools run on the backend after a short-lived token from <code>POST /api/realtime/session</code>.</p>
@@ -513,6 +543,7 @@ html.js main section.in{opacity:1;transform:none}
         <tr><td>Backend (API)</td><td><a href="https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io/api/health" target="_blank" rel="noopener">allclear-…-backend</a></td></tr>
         <tr><td>Frontend (UI)</td><td><a href="https://allclear-kt5fw24guxoxy-frontend.nicebay-0aac45bb.eastus.azurecontainerapps.io" target="_blank" rel="noopener">allclear-…-frontend</a></td></tr>
         <tr><td>Model</td><td class="mono">gpt-5.1 + text-embedding-3-small (managed identity, no keys)</td></tr>
+        <tr><td>Model continuity</td><td class="mono">FailoverChatClient · set AZURE_OPENAI_FALLBACK_DEPLOYMENT to arm the chain · GET /api/health/models</td></tr>
         <tr><td>Voice / phone</td><td class="mono">gpt-realtime (Sweden Central) · ACS +1 855-636-2834 · Event Grid IncomingCall</td></tr>
         <tr><td>Data</td><td class="mono">Cosmos DB (durable incident store) · AI Search · Key Vault · Log Analytics</td></tr>
       </table>
@@ -534,6 +565,7 @@ azd deploy frontend            # rebuild & ship just the UI</pre>
       <ul>
         <li>Three-agent triage pipeline on Microsoft Agent Framework, 276 tests green.</li>
         <li>Deployed to Azure Container Apps on <span class="mono">gpt-5.1</span>; classification eval 100%; red-teamed (PII, injection, authority bounds) &mdash; all pass.</li>
+        <li><strong>Model-agnostic chat failover.</strong> <span class="mono">FailoverChatClient</span> routes around an unavailable model (404/401/403/503) without bypassing rate limits or safety filters; <span class="mono">GET /api/health/models</span> and the header model badge surface the active model and fallback chain (section E6). No-op until a fallback is configured.</li>
         <li>Briefing-room UI live, matching the design system.</li>
         <li><strong>Durable storage.</strong> Incidents persist in the Cosmos <code>incidents</code> store (<span class="mono">AzureCosmosIncidentStore</span>, spec 016 D1/D2) &mdash; they survive a restart.</li>
         <li><strong>Phone call-in &amp; speak-back live</strong> &mdash; call <span class="mono">+1 855-636-2834</span>; <span class="mono">gpt-realtime</span> deployed, ACS number + Event Grid wired, transcripts stream into the board (section A2).</li>
@@ -545,6 +577,200 @@ azd deploy frontend            # rebuild & ship just the UI</pre>
         <li><strong>Developer's runbook</strong> (coming next): code structure, the Constitution, how to add an agent/tool, the test &amp; eval harness.</li>
       </ul>
       <p class="footer">All Clear &mdash; coach's runbook. A running, demoable incident-triage system, built and deployed. Detailed deployment &amp; eval notes live in <code>specs/016-production-deployment/</code>.</p>
+    </section>
+
+    <section id="tyler" aria-label="All Clear — Tyler CTO Demo Runbook">
+      <span class="tag">Executive demo &middot; Sean Gayle &rarr; Russell Gainford (Tyler Technologies), with John Maneikis</span>
+      <h2>All Clear &mdash; Tyler CTO Demo Runbook</h2>
+      <p class="lead">Freedom of model choice. Cost control. Deterministic routing. Governed agentic operations.</p>
+
+      <h3>Demo intent &mdash; what this must prove</h3>
+      <ul>
+        <li>All Clear is not just an incident-triage app; it is a <strong>reusable agentic architecture pattern</strong>.</li>
+        <li>The app can <strong>switch models without changing the business workflow</strong>.</li>
+        <li>Cost is controlled through architecture: API Management, deduplication, selective tool calls, and avoiding unnecessary token usage.</li>
+        <li>Critical operational decisions are <strong>deterministic where they must be</strong>: severity, SLA, queue routing, escalation, and audit.</li>
+      </ul>
+
+      <h3>Audience frame</h3>
+      <p>This version is for a <strong>CTO audience</strong>. The goal is not to sell incident triage as Tyler's final use case. The goal is to show a production-shaped pattern Tyler can map to courts, permitting, case management, compliance, citizen services, support, or public-sector workflows.</p>
+      <div class="coach"><span class="eyebrow">Use this framing</span><blockquote>The domain is incident triage, but the architecture shape is what matters: classify, route, act, audit. Swap the schema and you can apply the same pattern to a Tyler workflow.</blockquote></div>
+
+      <h3>Pre-flight checklist</h3>
+      <ul>
+        <li>All Clear backend is running and healthy.</li>
+        <li>Frontend ClearBoard is open.</li>
+        <li>Model switcher is visible and tested.</li>
+        <li>At least two model options are available in the app configuration.</li>
+        <li>Demo data includes duplicate surge signals.</li>
+        <li>Audit/log view is ready.</li>
+        <li>Optional: Azure AI Foundry model catalog is open in a second tab.</li>
+        <li>Optional: API Management is open in a second tab if available.</li>
+        <li>Browser zoom is set for executive readability.</li>
+        <li>Notifications are muted.</li>
+      </ul>
+      <div class="note"><span class="eyebrow">Backup path</span><p style="margin:.4em 0 0">If the model switch fails, continue the story from the ClearBoard, architecture, and audit trail.</p></div>
+
+      <h3>12-minute live demo timeline</h3>
+      <table>
+        <tr><th>Time</th><th>Segment</th><th>Land</th></tr>
+        <tr><td><span class="mono">0:00&ndash;1:00</span></td><td>Open: set the CTO frame</td><td>A real app, but the reusable pattern is classify, route, act, audit.</td></tr>
+        <tr><td><span class="mono">1:00&ndash;2:30</span></td><td>Architecture: three agents, bounded authority</td><td>The model interprets and generates; business-critical routing stays deterministic.</td></tr>
+        <tr><td><span class="mono">2:30&ndash;4:00</span></td><td>Model choice: show the switcher</td><td>Model choice is an architectural feature, not a one-off demo trick.</td></tr>
+        <tr><td><span class="mono">4:00&ndash;6:00</span></td><td>Surge scenario: collapse noise into incidents</td><td>Cost control is architecture that avoids unnecessary model work.</td></tr>
+        <tr><td><span class="mono">6:00&ndash;7:30</span></td><td>Switch model and re-run</td><td>Different model, same governed operating model.</td></tr>
+        <tr><td><span class="mono">7:30&ndash;9:00</span></td><td>Cost and control plane</td><td>Cost management belongs in the platform, not in every prompt.</td></tr>
+        <tr><td><span class="mono">9:00&ndash;10:30</span></td><td>Governance and audit</td><td>Model flexibility does not mean governance fragmentation.</td></tr>
+        <tr><td><span class="mono">10:30&ndash;11:30</span></td><td>SLA and escalation</td><td>Use AI where it helps; deterministic controls where correctness matters.</td></tr>
+        <tr><td><span class="mono">11:30&ndash;12:00</span></td><td>Close</td><td>The proof point for a governed, model-flexible agentic architecture.</td></tr>
+      </table>
+
+      <div class="card seg">
+        <div class="eyebrow">0:00&ndash;1:00 &middot; Open: set the CTO frame</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Open the ClearBoard. Show the app name and the incident board.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;I'm going to show you All Clear. It takes a surge of inbound signals &mdash; calls, chats, reports, voice, or system events &mdash; and collapses them into a small number of real incidents so teams work the event, not the noise.&rdquo;</p>
+        <p class="say">&ldquo;But the important part for today is not the incident domain. The important part is the architecture pattern: model choice, deterministic routing, cost control, and governance in one agentic pipeline.&rdquo;</p>
+        <p class="say">&ldquo;So as you watch this, don't think only about storms or outages. Think about courts, permitting, citizen services, case management, compliance, or any Tyler workflow where many inbound signals need to become a clean operational queue.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">This is a real app, but the reusable pattern is classify, route, act, audit.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">1:00&ndash;2:30 &middot; Architecture: three agents, bounded authority</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Show the architecture view if available. If not, explain over the running app.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;All Clear uses a three-stage Microsoft Agent Framework pipeline.&rdquo;</p>
+        <p class="say">&ldquo;The <strong>QueryAgent</strong> classifies the signal. It has one job: understand the incoming message.&rdquo;</p>
+        <p class="say">&ldquo;The <strong>RouterExecutor</strong> is deterministic. It maps severity, queue, SLA, deduplication, and escalation rules. This is intentionally not model vibes. For important operational decisions, rules win.&rdquo;</p>
+        <p class="say">&ldquo;The <strong>ActionAgent</strong> can only use approved tools: create an incident, search knowledge, or generate a sitrep. That gives us bounded authority. Each part of the system has a job, and each job has limits.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">The model helps interpret and generate, but business-critical routing stays deterministic.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">2:30&ndash;4:00 &middot; Model choice: show the switcher</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Show the model selector in All Clear. If available, show two or more model options.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;This is the model choice point. The system is not hard-wired to one model. The pipeline can use different models for classification or sitrep generation without changing the workflow.&rdquo;</p>
+        <p class="say">&ldquo;That matters because model availability, model quality, latency, and price all move. The architecture should let Tyler pick the best model for the job instead of rebuilding every time the frontier changes.&rdquo;</p>
+        <p class="say">&ldquo;The application remains the same. The workflow remains the same. The operational controls remain the same. Only the model behind the step changes.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Model choice is an architectural feature, not a one-off demo trick.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">4:00&ndash;6:00 &middot; Surge scenario: collapse noise into incidents</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Run or simulate a surge of inbound reports. Show duplicate signals attaching to existing incidents. Show magnitude increasing. Show fewer incidents than signals.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;Now I'll create the surge. In a real event, forty people may report the same outage, recall, road issue, or service disruption.&rdquo;</p>
+        <p class="say">&ldquo;Most systems turn that into forty tickets. All Clear treats every inbound message as attributable, but it does not turn every signal into a new incident.&rdquo;</p>
+        <p class="say">&ldquo;When a signal is similar enough to an open incident, it attaches as a report. Magnitude goes up, the history is preserved, and the queue stays proportional to real incidents instead of raw noise.&rdquo;</p>
+        <span class="lbl say">Say while it runs</span>
+        <p class="say">&ldquo;This is also a cost control pattern. A duplicate does not need another full knowledge search. It does not need another full sitrep. It does not need the expensive path every time. Deduplication keeps surge cost and latency flatter.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Cost control is not only pricing; it is architecture that avoids unnecessary model work.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">6:00&ndash;7:30 &middot; Switch model and re-run</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Switch to another model in the app. Re-run one or more signals.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;Now I'll switch the model and run the same kind of signal again.&rdquo;</p>
+        <p class="say">&ldquo;Same input pattern. Same pipeline. Same deterministic router. Different model.&rdquo;</p>
+        <p class="say">&ldquo;This is the flexibility Russell asked about. The team can evaluate quality, latency, and cost by model without replacing the application. If one model is better for classification and another is better for sitreps, the architecture can support that.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Different model, same governed operating model.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">7:30&ndash;9:00 &middot; Cost and control plane</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Show API Management if available. If not available, stay in the app and explain the gateway/control-plane pattern.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;In production, I would put API Management in front of this as the AI gateway.&rdquo;</p>
+        <p class="say">&ldquo;That gives us rate limits, token budgets, JWT validation, usage metrics, and policy enforcement before traffic reaches the model.&rdquo;</p>
+        <p class="say">&ldquo;So developers are not each inventing their own cost controls. The control plane sits in front of the model, and the workflow itself avoids unnecessary calls through deduplication and selective tool use.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Cost management belongs in the platform architecture, not inside every developer's prompt.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">9:00&ndash;10:30 &middot; Governance and audit</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Show audit log, traces, Cosmos records, logs, or any available audit view.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;Every operational decision needs a receipt.&rdquo;</p>
+        <p class="say">&ldquo;For each signal, we want to know what came in, how it was classified, whether it attached to an incident or opened a new one, what model was used, which deterministic rule fired, whether a human escalation was required, and what response went back.&rdquo;</p>
+        <p class="say">&ldquo;That is the management story: one governed workflow, even when the model changes.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Model flexibility does not mean governance fragmentation.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">10:30&ndash;11:30 &middot; SLA and escalation</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Show severity, SLA state, escalation, or a breached SLA indicator if available.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;Severity and SLA mapping are rules-based. A statutory clock, life safety issue, outage, or escalation condition should not depend on how poetic the model feels that day.&rdquo;</p>
+        <p class="say">&ldquo;The model can help interpret the signal. But the system owns the routing rules. That is what gives a CTO confidence that this can move from demo to production.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">Use AI where it helps; use deterministic controls where correctness matters.</p>
+      </div>
+
+      <div class="card seg">
+        <div class="eyebrow">11:30&ndash;12:00 &middot; Close</div>
+        <span class="lbl do">Do</span>
+        <p style="margin:.2em 0 0">Return to the ClearBoard. Show active incidents and all-clear state if available.</p>
+        <span class="lbl say">Say</span>
+        <p class="say">&ldquo;The takeaway is simple: this is a production-shaped agentic pattern.&rdquo;</p>
+        <p class="say">&ldquo;You get model choice without re-architecture. You get cost control through API Management, deduplication, and selective tool calls. You get deterministic routing where it matters. And you get an audit trail across the workflow.&rdquo;</p>
+        <p class="say">&ldquo;The domain here is incident triage. But the architecture shape maps cleanly to Tyler workflows: classify the inbound signal, route it deterministically, act through bounded tools, and audit everything.&rdquo;</p>
+        <span class="lbl land">Land</span>
+        <p class="land">All Clear is the proof point for a governed, model-flexible agentic application architecture.</p>
+      </div>
+
+      <h3>Backup answers</h3>
+      <details class="qa">
+        <summary>If asked: Why not just show Foundry?</summary>
+        <p class="say">&ldquo;Foundry is the model and governance platform. All Clear is the proof that a developer can build a real application on top of it. I can show Foundry if we want to look at the catalog or management plane, but the app shows what model choice looks like inside a production-shaped workflow.&rdquo;</p>
+      </details>
+      <details class="qa">
+        <summary>If asked: Does this apply to Tyler?</summary>
+        <p class="say">&ldquo;Yes. The incident domain is only the demo shell. The same shape applies to Tyler workflows where many inputs need to become a governed operational queue: filings, permits, citizen requests, compliance events, support cases, inspections, or product incidents.&rdquo;</p>
+      </details>
+      <details class="qa">
+        <summary>If asked: Where is the cost optimization?</summary>
+        <p class="say">&ldquo;The cost pattern has three parts: model selection for the task, API Management in front of the model for usage controls, and deduplication so duplicate signals do not repeatedly trigger expensive search and generation paths.&rdquo;</p>
+      </details>
+      <details class="qa">
+        <summary>If asked: What should be deterministic?</summary>
+        <p class="say">&ldquo;Severity mapping, SLA clocks, queue routing, escalation rules, and audit writes should be deterministic. The model can classify, summarize, and generate sitreps, but operational control points should be enforced by code and policy.&rdquo;</p>
+      </details>
+      <details class="qa">
+        <summary>If asked: What is the Tyler translation?</summary>
+        <p class="say">&ldquo;Take a Tyler domain like permitting or case management. A signal becomes an inbound request. An incident becomes the canonical case or work item. Reports become related submissions. The queue becomes the operational team. The sitrep becomes a case summary. The same pattern still holds: classify, deduplicate, route, act, audit.&rdquo;</p>
+      </details>
+
+      <h3>Final delivery notes</h3>
+      <ul>
+        <li>Keep this executive and concise.</li>
+        <li>Do not over-explain MAF internals.</li>
+        <li>Do not pitch All Clear as Tyler's final product.</li>
+        <li>Pitch it as a reusable architecture pattern.</li>
+        <li>Lead with Russell's priorities: model choice, flexibility, cost control, management.</li>
+        <li>If the demo breaks, stay on the architecture: the story still lands from the ClearBoard, model selector, and audit trail.</li>
+        <li>If time is short, skip API Management and say the control-plane point verbally.</li>
+        <li>If Russell engages on model choice, spend more time on the model switcher.</li>
+        <li>If Russell engages on cost, spend more time on dedup and gateway controls.</li>
+        <li>If Russell engages on production readiness, spend more time on audit, SLA, and deterministic routing.</li>
+      </ul>
+      <p class="footer">All Clear &mdash; Tyler CTO Demo Runbook. Freedom of model choice, deterministic routing, cost control, and governed agentic operations &mdash; classify, route, act, audit.</p>
     </section>
   </main>
 </div>
