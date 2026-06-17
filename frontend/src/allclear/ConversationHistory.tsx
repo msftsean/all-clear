@@ -51,6 +51,9 @@ function TurnRow({ turn }: { turn: ConversationTurn }) {
 
 function SessionRow({ session }: { session: ConversationSession }) {
   const [expanded, setExpanded] = useState(false);
+  const isVoice = session.conversation_history.some(
+    (t) => t.input_modality === "voice",
+  );
 
   return (
     <div className="rounded-lg bg-zinc-800/60 border border-zinc-700 overflow-hidden">
@@ -59,6 +62,7 @@ function SessionRow({ session }: { session: ConversationSession }) {
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
       >
+        <span className="text-base leading-none">{isVoice ? "📞" : "💬"}</span>
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-medium text-zinc-100 truncate">
             {session.topic_summary ?? "Conversation"}
@@ -98,6 +102,11 @@ interface ConversationHistoryProps {
   onResume?: (sessionId: string) => void;
 }
 
+// Voice and phone call sessions are persisted under this fixed hash
+// (sha256("demo_student") — must match _DEFAULT_STUDENT_HASH in backend/app/api/realtime.py).
+const VOICE_SESSION_HASH =
+  "dc52f8b08ee024ef41618bfcd26d3e6c437c5177d24a779f46867d646264304b";
+
 export default function ConversationHistory({
   studentIdHash,
   onResume,
@@ -113,9 +122,30 @@ export default function ConversationHistory({
     setLoading(true);
     setError(null);
 
-    listSessions(studentIdHash, 20)
-      .then((data) => {
-        if (!cancelled) setSessions(data);
+    // Fetch both the user's text-chat sessions AND voice/phone sessions
+    // (stored under the shared demo hash). Deduplicate and sort by last_active.
+    const userFetch = listSessions(studentIdHash, 20);
+    const voiceFetch =
+      studentIdHash !== VOICE_SESSION_HASH
+        ? listSessions(VOICE_SESSION_HASH, 20)
+        : Promise.resolve([] as typeof sessions);
+
+    Promise.all([userFetch, voiceFetch])
+      .then(([userSessions, voiceSessions]) => {
+        if (cancelled) return;
+        const seen = new Set<string>();
+        const merged = [...userSessions, ...voiceSessions]
+          .filter((s) => {
+            if (seen.has(s.session_id)) return false;
+            seen.add(s.session_id);
+            return true;
+          })
+          .sort(
+            (a, b) =>
+              new Date(b.last_active).getTime() -
+              new Date(a.last_active).getTime(),
+          );
+        setSessions(merged);
       })
       .catch((err) => {
         if (!cancelled)

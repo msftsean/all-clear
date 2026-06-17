@@ -333,6 +333,7 @@ class AzureRealtimeService(RealtimeServiceInterface):
         session_id: str,
     ) -> ToolCallResponse:
         """Delegate a Realtime API tool call to the All Clear MAF pipeline."""
+        import hashlib
         arguments = redact_pii(arguments)
         crisis = voice_crisis_result(arguments)
         if crisis is not None:
@@ -341,6 +342,11 @@ class AzureRealtimeService(RealtimeServiceInterface):
             get_knowledge_service,
             get_pipeline,
         )
+
+        # Voice and phone calls share a single anonymous identity so all call
+        # sessions appear together in the history panel.  The same constant is
+        # used by the API relay layer (_DEFAULT_STUDENT_HASH in realtime.py).
+        _voice_student_hash = hashlib.sha256(b"demo_student").hexdigest()
 
         knowledge_svc = get_knowledge_service()
 
@@ -354,7 +360,8 @@ class AzureRealtimeService(RealtimeServiceInterface):
                 # in the IncidentStore and ClearBoard SSE events fire automatically.
                 pipeline = get_pipeline()
                 outcome = await pipeline.process_signal(
-                    text=query, session_id=session_id, channel="voice"
+                    text=query, session_id=session_id, channel="voice",
+                    student_id_hash=_voice_student_hash,
                 )
                 logger.info(
                     "execute_tool: incident %s queue=%s severity=%s",
@@ -431,7 +438,8 @@ class AzureRealtimeService(RealtimeServiceInterface):
                 pipeline = get_pipeline()
                 escalation_text = f"ESCALATION REQUEST: {reason}"
                 outcome = await pipeline.process_signal(
-                    text=escalation_text, session_id=session_id, channel="voice"
+                    text=escalation_text, session_id=session_id, channel="voice",
+                    student_id_hash=_voice_student_hash,
                 )
                 result = json.dumps({
                     "escalated": True,

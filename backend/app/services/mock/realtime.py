@@ -137,11 +137,14 @@ class MockRealtimeService(RealtimeServiceInterface):
             # Repointed at the All Clear pipeline adapter (001-maf-rehost, T10):
             # the voice tool now runs the real three-agent incident pipeline instead
             # of a bespoke keyword stub, so voice and text stay in lockstep.
+            import hashlib
             from app.agents.pipeline import build_mock_pipeline
 
+            _voice_student_hash = hashlib.sha256(b"demo_student").hexdigest()
             pipeline = self._get_pipeline(build_mock_pipeline)
             outcome = await pipeline.process_signal(
-                text=query, session_id=session_id, channel="voice"
+                text=query, session_id=session_id, channel="voice",
+                student_id_hash=_voice_student_hash,
             )
             result = json.dumps({
                 "intent": outcome.classification.intent,
