@@ -7,18 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: 'rgb(var(--bg-rgb) / <alpha-value>)',
-        fg: 'rgb(var(--fg-rgb) / <alpha-value>)',
-        ink: 'rgb(var(--fg-rgb) / <alpha-value>)',
-        surface: 'rgb(var(--surface-rgb) / <alpha-value>)',
-        'surface-muted': 'rgb(var(--surface-elevated-rgb) / <alpha-value>)',
-        border: 'rgb(var(--border-rgb) / <alpha-value>)',
-        brand: 'rgb(var(--accent-rgb) / <alpha-value>)',
-        accent: 'rgb(var(--danger-rgb) / <alpha-value>)',
-        'dark-text': 'rgb(var(--fg-rgb) / <alpha-value>)',
-        'iu-crimson': 'rgb(var(--danger-rgb) / <alpha-value>)',
-        'microsoft-blue': 'rgb(var(--accent-rgb) / <alpha-value>)',
-        'neutral-gray': 'rgb(var(--surface-elevated-rgb) / <alpha-value>)',
+        ink: '#1B1B1F',
+        surface: '#FFFFFF',
+        'surface-muted': '#F7F8FA',
+        border: '#E6E8EC',
+        brand: '#0F6CBD',
+        accent: '#990000',
+
+        bg: '#F7F8FA',
+        fg: '#1B1B1F',
+        'dark-text': '#1B1B1F',
+        'iu-crimson': '#990000',
+        'microsoft-blue': '#0F6CBD',
+        'neutral-gray': '#F7F8FA',
       },
       fontFamily: {
         display: ['var(--font-display)'],
