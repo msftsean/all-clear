@@ -1,10 +1,32 @@
 /**
  * useVoice — core hook for WebRTC-based voice interaction via Azure OpenAI Realtime API.
+ *
+ * Tool call flow:
+ *   Azure OpenAI (DataChannel) → response.function_call_arguments.done
+ *     → backend WS relay (/api/realtime/ws) → execute_tool (pipeline)
+ *     → conversation.item.create (function_call_output) + response.create → Azure OpenAI
  */
 
 import { useReducer, useCallback, useRef, useEffect, useState } from "react";
 import { VoiceUIState, type VoiceMessage } from "../types/voice";
 import { createRealtimeSession } from "../api/client";
+
+/** Build a ws:// / wss:// URL for the backend tool-relay from the HTTP API base. */
+function buildRelayWsUrl(sessionId: string, token: string): string {
+  const apiBase = (import.meta.env.VITE_API_BASE_URL as string) || "";
+  let base: string;
+  if (apiBase.startsWith("http")) {
+    base = apiBase.replace(/^http/, "ws");
+  } else {
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    base = `${protocol}//${window.location.host}${apiBase}`;
+  }
+  return (
+    `${base}/api/realtime/ws` +
+    `?session_id=${encodeURIComponent(sessionId)}` +
+    `&token=${encodeURIComponent(token)}`
+  );
+}
 
 interface VoiceState {
   voiceState: VoiceUIState;
@@ -80,6 +102,10 @@ export function useVoice(options: UseVoiceOptions = {}) {
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const pendingEscalationCallIdRef = useRef<string | null>(null);
+  // WS relay to backend for tool-call execution
+  const wsRelayRef = useRef<WebSocket | null>(null);
+  // Pending tool calls: call_id → resolve(result)
+  const pendingToolCallsRef = useRef<Map<string, (result: string) => void>>(new Map());
   // Stable ref for onTranscript callback to avoid stale closures
   const onTranscriptRef = useRef(options.onTranscript);
   useEffect(() => {
@@ -145,11 +171,43 @@ export function useVoice(options: UseVoiceOptions = {}) {
         voice: options.voice ?? "marin",
       });
 
-      // 2. Create RTCPeerConnection
+      // 2. Open backend WS relay for tool-call execution
+      // Must happen before the DataChannel can receive tool calls so the relay
+      // is ready by the time Azure OpenAI fires its first function_call_arguments.done.
+      const relayUrl = buildRelayWsUrl(session.session_id, session.token);
+      const wsRelay = new WebSocket(relayUrl);
+      wsRelayRef.current = wsRelay;
+      wsRelay.onmessage = (evt) => {
+        try {
+          const response = JSON.parse(evt.data as string) as {
+            call_id: string;
+            result: string;
+            error?: string | null;
+          };
+          const { call_id, result, error } = response;
+          const resolve = pendingToolCallsRef.current.get(call_id);
+          if (resolve) {
+            pendingToolCallsRef.current.delete(call_id);
+            if (error) {
+              console.error(`[Voice relay] tool ${call_id} error:`, error);
+              resolve(JSON.stringify({ error }));
+            } else {
+              resolve(result ?? "{}");
+            }
+          }
+        } catch (e) {
+          console.error("[Voice relay] message parse error:", e);
+        }
+      };
+      wsRelay.onerror = (e) => {
+        console.error("[Voice relay] WS error:", e);
+      };
+
+      // 3. Create RTCPeerConnection
       const pc = new RTCPeerConnection();
       peerConnectionRef.current = pc;
 
-      // 3. Set up remote audio playback
+      // 4. Set up remote audio playback
       const audioEl = document.createElement("audio");
       audioEl.autoplay = true;
       audioElementRef.current = audioEl;
@@ -158,13 +216,13 @@ export function useVoice(options: UseVoiceOptions = {}) {
         audioEl.srcObject = event.streams[0];
       };
 
-      // 4. Add local mic audio
+      // 5. Add local mic audio
       const micStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
       micStream.getTracks().forEach((track) => pc.addTrack(track, micStream));
 
-      // 5. Create data channel for Realtime API events
+      // 6. Create data channel for Realtime API events
       const dc = pc.createDataChannel("oai-events");
       dataChannelRef.current = dc;
 
@@ -274,6 +332,52 @@ export function useVoice(options: UseVoiceOptions = {}) {
             }
           } else if (data.type === "response.function_call_arguments.done") {
             dispatch({ type: "PROCESSING" });
+            // Execute the tool through the backend relay, then return the
+            // result to Azure OpenAI via the DataChannel so the model can
+            // continue speaking. Without this step, the conversation stalls.
+            const callId: string = data.call_id ?? "";
+            const toolName: string = data.name ?? "";
+            let parsedArgs: Record<string, unknown> = {};
+            try {
+              parsedArgs = JSON.parse(data.arguments || "{}") as Record<string, unknown>;
+            } catch {
+              parsedArgs = {};
+            }
+
+            const relay = wsRelayRef.current;
+            const dc = dataChannelRef.current;
+            if (relay && relay.readyState === WebSocket.OPEN && dc && callId && toolName) {
+              // Register a callback for when the relay responds with this call_id
+              pendingToolCallsRef.current.set(callId, (resultJson: string) => {
+                try {
+                  dc.send(
+                    JSON.stringify({
+                      type: "conversation.item.create",
+                      item: {
+                        type: "function_call_output",
+                        call_id: callId,
+                        output: resultJson,
+                      },
+                    }),
+                  );
+                  dc.send(JSON.stringify({ type: "response.create" }));
+                } catch (e) {
+                  console.error("Failed to send tool result to Azure:", e);
+                }
+              });
+              relay.send(
+                JSON.stringify({
+                  call_id: callId,
+                  tool_name: toolName,
+                  arguments: parsedArgs,
+                }),
+              );
+            } else {
+              console.warn(
+                "[Voice] Cannot execute tool: relay WS not ready",
+                { relay: relay?.readyState, dc: !!dc, callId, toolName },
+              );
+            }
           } else if (data.type === "response.done") {
             dispatch({ type: "LISTENING" });
           } else if (data.type === "response.audio.delta") {
@@ -284,11 +388,11 @@ export function useVoice(options: UseVoiceOptions = {}) {
         }
       };
 
-      // 6. Create and set local offer
+      // 7. Create and set local offer
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      // 7. Exchange SDP with Azure OpenAI Realtime API via WebRTC
+      // 8. Exchange SDP with Azure OpenAI Realtime API via WebRTC
       const sdpResponse = await fetch(
         `${session.endpoint}/openai/v1/realtime/calls`,
         {
@@ -308,7 +412,7 @@ export function useVoice(options: UseVoiceOptions = {}) {
       const answerSdp = await sdpResponse.text();
       await pc.setRemoteDescription({ type: "answer", sdp: answerSdp });
 
-      // 8. Monitor connection state
+      // 9. Monitor connection state
       pc.onconnectionstatechange = () => {
         switch (pc.connectionState) {
           case "connected":
@@ -344,6 +448,11 @@ export function useVoice(options: UseVoiceOptions = {}) {
       audioElementRef.current.srcObject = null;
       audioElementRef.current = null;
     }
+    if (wsRelayRef.current) {
+      wsRelayRef.current.close();
+      wsRelayRef.current = null;
+    }
+    pendingToolCallsRef.current.clear();
     pendingEscalationCallIdRef.current = null;
     dispatch({ type: "STOP" });
   }, []);
