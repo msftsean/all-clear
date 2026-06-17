@@ -69,20 +69,15 @@ async def list_tickets(
     ticket_service: TicketServiceDep,
     ticket_status: Optional[TicketStatus] = Query(default=None, alias="status"),
     department: Optional[Department] = Query(default=None),
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=100),
-    limit: Optional[int] = Query(default=None, ge=1, le=200),
+    limit: int = Query(default=50, ge=1, le=200),
 ) -> TicketListResponse:
     """List all tickets across all departments with optional filters."""
-    # 'limit' is used by the frontend; map it to page_size when provided
-    effective_page_size = limit if limit is not None else page_size
-    result = await ticket_service.list_all_tickets(
+    tickets = await ticket_service.list_all_tickets(
         status_filter=ticket_status,
         department_filter=department,
-        page=page,
-        page_size=effective_page_size,
+        limit=limit,
     )
-    return result
+    return TicketListResponse(tickets=tickets, total=len(tickets))
 
 
 @router.patch(
