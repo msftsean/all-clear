@@ -462,6 +462,11 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               name: 'AZURE_ACS_CONNECTION_STRING'
               secretRef: 'acs-connection-string'
             }
+            {
+              // Container Apps FQDN is stable: {name}.{env-defaultDomain}
+              name: 'PHONE_CALLBACK_BASE_URL'
+              value: mockMode ? '' : 'https://${prefix}-backend.${containerAppEnv.properties.defaultDomain}'
+            }
           ]
           resources: {
             cpu: json('0.5')
@@ -471,14 +476,15 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
       ]
       scale: {
         minReplicas: 1
-        maxReplicas: 2
+        // Single replica: in-memory state (transcript_bus, WS sessions, token
+        // store) must not be split across instances for the demo to work.
+        maxReplicas: 1
       }
     }
   }
 }
 
 // ============================================================================
-// Role Assignments for Managed Identity
 // ============================================================================
 
 // Cognitive Services OpenAI User role definition ID (Azure built-in role)
@@ -519,8 +525,45 @@ resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-
 }
 
 // ============================================================================
-// Frontend Container App
+// ACS → Event Grid → Backend: route IncomingCall events to the phone webhook
 // ============================================================================
+resource acsSystemTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = if (!mockMode) {
+  name: '${prefix}-acs-events'
+  location: 'global'
+  tags: tags
+  properties: {
+    source: acs.id
+    topicType: 'Microsoft.Communication.CommunicationServices'
+  }
+}
+
+resource acsIncomingCallSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = if (!mockMode) {
+  name: 'incoming-call'
+  parent: acsSystemTopic
+  properties: {
+    destination: {
+      endpointType: 'WebHook'
+      properties: {
+        // Backend phone webhook — validated by the SubscriptionValidation handshake
+        // already implemented in app/api/phone.py::handle_incoming_call.
+        endpointUrl: 'https://${prefix}-backend.${containerAppEnv.properties.defaultDomain}/api/phone/incoming'
+      }
+    }
+    filter: {
+      includedEventTypes: [
+        'Microsoft.Communication.IncomingCall'
+      ]
+    }
+    eventDeliverySchema: 'EventGridSchema'
+    retryPolicy: {
+      maxDeliveryAttempts: 10
+      eventTimeToLiveInMinutes: 5
+    }
+  }
+  dependsOn: [backendContainerApp]
+}
+
+
 resource frontendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = {
   name: '${prefix}-frontend'
   location: location
