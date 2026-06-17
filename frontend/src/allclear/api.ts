@@ -1,4 +1,4 @@
-import type { DemoClearBoard, HealthStatus, ModelStatus, PipelineResult } from "./types";
+import type { ConversationSession, DemoClearBoard, HealthStatus, ModelStatus, PipelineResult } from "./types";
 
 // In production the nginx sidecar proxies /api -> BACKEND_URL, so a relative
 // base works everywhere. VITE_API_BASE_URL can override for local dev.
@@ -46,10 +46,11 @@ export function submitSignal(
   message: string,
   sessionId: string | null,
   channel: string,
+  studentIdHash?: string | null,
 ): Promise<PipelineResult> {
   return req<PipelineResult>("/signals", {
     method: "POST",
-    body: JSON.stringify({ message, session_id: sessionId, channel }),
+    body: JSON.stringify({ message, session_id: sessionId, channel, student_id_hash: studentIdHash }),
   });
 }
 
@@ -63,4 +64,18 @@ export function getModelStatus(): Promise<ModelStatus> {
 
 export function getDemoClearBoard(): Promise<DemoClearBoard> {
   return req<DemoClearBoard>("/demo/clearboard?mode=loaded");
+}
+
+// Conversation persistence (019)
+export function getSession(sessionId: string): Promise<ConversationSession> {
+  return req<ConversationSession>(`/sessions/${sessionId}`);
+}
+
+export function listSessions(
+  studentIdHash: string,
+  limit = 20,
+): Promise<ConversationSession[]> {
+  return req<ConversationSession[]>(
+    `/sessions?student_id_hash=${encodeURIComponent(studentIdHash)}&limit=${limit}`,
+  );
 }

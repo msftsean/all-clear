@@ -15,7 +15,9 @@ and the adapter path produce identical incidents and audit entries (Constitution
 from __future__ import annotations
 
 import time
+import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 from agent_framework import (
@@ -53,6 +55,7 @@ from app.services.mock.incident_store import MockIncidentStore
 from app.services.mock.knowledge_service import MockKnowledgeService
 from app.services.mock.maf_chat_client import MockChatClient
 from app.services.pii import redact_pii_text
+from app.services.interfaces import SessionStoreInterface
 from app.services.transcript_bus import transcript_bus
 
 
@@ -123,12 +126,14 @@ class AllClearPipeline:
         *,
         store: MockIncidentStore | None = None,
         bus: Any = transcript_bus,
+        session_store: SessionStoreInterface | None = None,
     ) -> None:
         self._query_agent = query_agent
         self._router = router
         self._action = action
         self._bus = bus
         self.store = store
+        self.session_store = session_store
         self.workflow = build_workflow(query_agent, router, action)
 
     async def process_signal(
@@ -136,6 +141,7 @@ class AllClearPipeline:
         text: str,
         session_id: str = "anonymous",
         channel: str = "chat",
+        student_id_hash: Optional[str] = None,
     ) -> PipelineResult:
         """Run text through classify -> route -> act, publishing events per stage."""
         started = time.perf_counter()
@@ -219,6 +225,17 @@ class AllClearPipeline:
         await self._publish(
             session_id, {"type": "pipeline.complete", "processing_ms": elapsed_ms}
         )
+
+        # Conversation persistence (019): store turn in session when student identity known
+        if student_id_hash and self.session_store:
+            await self._persist_turn(
+                session_id=session_id,
+                student_id_hash=student_id_hash,
+                signal_text=safe_text,
+                result=result,
+                channel=channel,
+            )
+
         return result
 
     async def _handle_crisis(
@@ -313,6 +330,77 @@ class AllClearPipeline:
             return
         payload = {"session_id": session_id, **event}
         await self._bus.publish(payload)
+
+    async def _persist_turn(
+        self,
+        *,
+        session_id: str,
+        student_id_hash: str,
+        signal_text: str,
+        result: PipelineResult,
+        channel: str,
+    ) -> None:
+        """Create or update the session record with the latest conversation turn.
+
+        Constitution Art. III: only PII-safe (already redacted) signal_text is
+        persisted. Raw audio is never stored. Failure is non-fatal — session store
+        outages MUST NOT surface as API errors (Constitution Art. VII).
+        """
+        try:
+            import uuid as _uuid
+            from app.models.schemas import ConversationTurn, Session
+
+            store = self.session_store
+            assert store is not None  # guarded by caller
+
+            # Determine session UUID: parse if valid, otherwise generate stable one
+            try:
+                sid = _uuid.UUID(session_id)
+            except (ValueError, AttributeError):
+                sid = _uuid.uuid5(_uuid.NAMESPACE_URL, f"session:{session_id}")
+
+            now = datetime.now(timezone.utc)
+
+            existing = await store.get_session(sid)
+            if existing is None:
+                session = Session(
+                    session_id=sid,
+                    student_id_hash=student_id_hash,
+                    created_at=now,
+                    last_active=now,
+                    topic_summary=result.classification.intent_category.value.replace("_", " ").title(),
+                )
+            else:
+                session = existing
+                session.last_active = now
+
+            turn_number = len(session.conversation_history) + 1
+            incident_id = result.action.incident_id if result.action else None
+            agent_msg = result.action.user_message if result.action else None
+
+            turn = ConversationTurn(
+                turn_number=turn_number,
+                timestamp=now,
+                intent=result.classification.intent_category.value,
+                ticket_id=None,
+                escalated=result.action.escalated if result.action else False,
+                signal_text=signal_text,
+                agent_response=agent_msg,
+                incident_id=incident_id,
+                input_modality=channel,
+            )
+            session.conversation_history.append(turn)
+
+            if incident_id and incident_id not in session.incident_ids:
+                session.incident_ids.append(incident_id)
+
+            if existing is None:
+                await store.create_session(session)
+            else:
+                await store.update_session(session)
+
+        except Exception:  # noqa: BLE001 — session persistence is non-fatal
+            pass  # Degrade silently; text response already returned to caller
 
 
 def build_mock_pipeline(settings: Optional[Settings] = None) -> AllClearPipeline:

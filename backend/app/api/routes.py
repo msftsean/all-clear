@@ -145,6 +145,7 @@ async def submit_signal(
     message: str = Body(..., embed=True, min_length=1, max_length=4000),
     session_id: Optional[str] = Body(default=None, embed=True),
     channel: str = Body(default="chat", embed=True),
+    student_id_hash: Optional[str] = Body(default=None, embed=True),
     pipeline: AllClearPipeline = Depends(get_pipeline),
 ) -> PipelineResult:
     """Run a signal end-to-end and return the typed PipelineResult."""
@@ -153,6 +154,7 @@ async def submit_signal(
             text=message,
             session_id=session_id or "anonymous",
             channel=channel,
+            student_id_hash=student_id_hash,
         )
     except Exception as exc:  # noqa: BLE001 - translate model safety blocks to 4xx
         if _is_content_safety_block(exc):

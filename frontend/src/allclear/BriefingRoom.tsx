@@ -5,6 +5,8 @@ import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
 import LiveCalls from "./LiveCalls";
 import { HERO_DEMO_BOARD } from "./demo";
+import ConversationHistory from "./ConversationHistory";
+import { useStudentIdentity } from "./useStudentIdentity";
 
 type Role = "caller" | "agent" | "system";
 interface Msg {
@@ -82,7 +84,15 @@ export default function BriefingRoom() {
   const [clearBoardIncidents, setClearBoardIncidents] = useState<
     Record<string, DemoClearBoard["incidents"][number]>
   >({});
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [studentIdHash, setStudentIdHash] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { getHash } = useStudentIdentity();
+
+  // Resolve the student identity hash once on mount
+  useEffect(() => {
+    getHash().then(setStudentIdHash).catch(() => {});
+  }, [getHash]);
 
   useEffect(() => {
     getHealth()
@@ -181,7 +191,7 @@ export default function BriefingRoom() {
     setInput("");
     setMessages((m) => [...m, { id: uid(), role: "caller", text: trimmed, channel, ts: Date.now() }]);
     try {
-      const r = await submitSignal(trimmed, sessionId, channel);
+      const r = await submitSignal(trimmed, sessionId, channel, studentIdHash);
       setLatest(r);
       updateClearBoard(r);
       setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);
@@ -236,6 +246,15 @@ export default function BriefingRoom() {
               />
             ) : null}
             <button
+              data-testid="history-toggle"
+              onClick={() => setHistoryOpen((v) => !v)}
+              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
+              title="My conversation history"
+              aria-expanded={historyOpen}
+            >
+              🕘 history
+            </button>
+            <button
               data-testid="live-calls-toggle"
               onClick={() => setLiveOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
@@ -267,6 +286,28 @@ export default function BriefingRoom() {
             {channel === "phone" ? "● inbound · phone" : "chat"}
           </button>
         </div>
+
+        {/* Conversation history drawer */}
+        {historyOpen && (
+          <div className="border-b border-paperline bg-zinc-900 max-h-64 overflow-y-auto">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800">
+              <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">My History</span>
+              <button
+                onClick={() => setHistoryOpen(false)}
+                className="text-xs text-zinc-500 hover:text-zinc-300"
+                aria-label="Close history"
+              >
+                ✕
+              </button>
+            </div>
+            <ConversationHistory
+              studentIdHash={studentIdHash}
+              onResume={(_sid) => {
+                setHistoryOpen(false);
+              }}
+            />
+          </div>
+        )}
 
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-paper px-5 py-5">
           {messages.map((m) => (

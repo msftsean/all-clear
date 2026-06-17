@@ -12,6 +12,7 @@ from app.api import router
 from app.api.media_ws import router as media_ws_router
 from app.api.phone import router as phone_router
 from app.api.realtime import router as realtime_router
+from app.api.sessions import router as sessions_router
 from app.api.transcripts import router as transcripts_router
 from app.core.config import get_settings
 
@@ -83,6 +84,7 @@ def create_app() -> FastAPI:
     app.include_router(phone_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Call Automation"])
     app.include_router(transcripts_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Transcripts"])
     app.include_router(media_ws_router, prefix="/ws", tags=["Media WebSocket"])
+    app.include_router(sessions_router, prefix=settings.api_prefix)
 
     return app
 

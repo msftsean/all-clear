@@ -88,9 +88,8 @@ def get_session_store(settings: Settings | None = None) -> SessionStoreInterface
         from app.services.mock.session_store import MockSessionStore
         return MockSessionStore()
     else:
-        # TODO: Implement Cosmos DB session store
-        from app.services.mock.session_store import MockSessionStore
-        return MockSessionStore()
+        from app.services.azure.session_store import AzureCosmosSessionStore
+        return AzureCosmosSessionStore.from_settings(settings)
 
 
 @lru_cache
@@ -389,12 +388,13 @@ def get_pipeline():  # type: ignore[no-untyped-def]
     embed = get_embedding_fn()
     store = get_incident_store()
     knowledge = get_knowledge_service()
+    session_store = get_session_store()
 
     query_agent = build_query_agent(client)
     router = RouterExecutor(embed, store, settings)
     toolbox = ActionToolbox(store, knowledge, embed, settings)
     action = ActionExecutor(toolbox, store)
-    return AllClearPipeline(query_agent, router, action, store=store)
+    return AllClearPipeline(query_agent, router, action, store=store, session_store=session_store)
 
 
 @lru_cache
