@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --paper: #f4f6fe;
+  --paper: #F4F8FF;
   --paper2: #ffffff;
-  --paperline: #e7eaf6;
-  --inkwarm: #161b33;
-  --midwarm: #565d7a;
-  --voice: #4f6bff;
-  --night: #070b1a;
-  --panel: #141a3a;
-  --nline: #2a335f;
-  --nink: #eef1ff;
-  --ndim: #9aa6d6;
-  --cta: #4f6bff;
+  --paperline: #D8E6FA;
+  --inkwarm: #172033;
+  --midwarm: #52627A;
+  --voice: #173B8F;
+  --night: #08122B;
+  --panel: #10245A;
+  --nline: #284D9D;
+  --nink: #F4F8FF;
+  --ndim: #B9D8FF;
+  --cta: #D62839;
   --ctaink: #ffffff;
-  --grad: linear-gradient(100deg, #3d7bfd 0%, #7b5cff 52%, #d957d5 100%);
-  --sev1: #E25555;
-  --sev2: #E59A3A;
-  --sev3: #5B8FE8;
-  --sev4: #5B8FE8;
-  --clear: #37C281;
+  --grad: linear-gradient(100deg, #173B8F 0%, #4DA3FF 46%, #D62839 100%);
+  --sev1: #D62839;
+  --sev2: #F06A76;
+  --sev3: #4DA3FF;
+  --sev4: #8ABCF8;
+  --clear: #49C18D;
 }
 
 html, body, #root { height: 100%; }
@@ -42,9 +42,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(58% 42% at 84% -6%, rgba(124, 92, 255, 0.14), transparent 60%),
-    radial-gradient(48% 38% at 6% 6%, rgba(61, 123, 253, 0.11), transparent 60%),
-    radial-gradient(46% 52% at 102% 104%, rgba(217, 87, 213, 0.09), transparent 60%);
+    radial-gradient(58% 42% at 84% -6%, rgba(77, 163, 255, 0.16), transparent 60%),
+    radial-gradient(48% 38% at 6% 6%, rgba(23, 59, 143, 0.11), transparent 60%),
+    radial-gradient(46% 52% at 102% 104%, rgba(214, 40, 57, 0.10), transparent 60%);
 }
 body::after {
   content: "";
@@ -53,7 +53,7 @@ body::after {
   z-index: -2;
   pointer-events: none;
   opacity: 0.45;
-  background-image: radial-gradient(rgba(48, 60, 150, 0.07) 1px, transparent 1.4px);
+  background-image: radial-gradient(rgba(23, 59, 143, 0.07) 1px, transparent 1.4px);
   background-size: 30px 30px;
   -webkit-mask: linear-gradient(180deg, #000, transparent 72%);
   mask: linear-gradient(180deg, #000, transparent 72%);
@@ -75,7 +75,7 @@ body::after {
 
 /* Custom scrollbars, restrained */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #c2c8e0; border-radius: 9999px; }
+::-webkit-scrollbar-thumb { background: #B9D8FF; border-radius: 9999px; }
 
 /* prefers-reduced-motion: freeze waveform at 50%, stop blink/rise */
 @media (prefers-reduced-motion: reduce) {

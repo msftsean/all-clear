@@ -4,27 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Paper world (conversation column) — Antigravity light surface
-        paper: "#f4f6fe",
+        // Paper world (conversation column) — bold blue/red with pastel support
+        paper: "#F4F8FF",
         paper2: "#ffffff",
-        paperline: "#e7eaf6",
-        inkwarm: "#161b33",
-        midwarm: "#565d7a",
-        voice: "#4f6bff",
-        // Night world (canvas) — Antigravity deep space
-        night: "#070b1a",
-        panel: "#141a3a",
-        nline: "#2a335f",
-        nink: "#eef1ff",
-        ndim: "#9aa6d6",
-        cta: "#4f6bff",
+        paperline: "#D8E6FA",
+        inkwarm: "#172033",
+        midwarm: "#52627A",
+        voice: "#173B8F",
+        // Night world (canvas) — heroic blue with red signal accents
+        night: "#08122B",
+        panel: "#10245A",
+        nline: "#284D9D",
+        nink: "#F4F8FF",
+        ndim: "#B9D8FF",
+        cta: "#D62839",
         ctaink: "#ffffff",
         // Status (both worlds)
-        sev1: "#E25555",
-        sev2: "#E59A3A",
-        sev3: "#5B8FE8",
-        sev4: "#5B8FE8",
-        clear: "#37C281",
+        sev1: "#D62839",
+        sev2: "#F06A76",
+        sev3: "#4DA3FF",
+        sev4: "#8ABCF8",
+        clear: "#49C18D",
       },
       fontFamily: {
         display: ["Google Sans Flex", "Google Sans", "Segoe UI", "system-ui", "sans-serif"],
@@ -38,20 +38,20 @@ export default {
         tag: "6px",
       },
       boxShadow: {
-        // Antigravity "lift" — floating cards with violet-tinted depth
+        // Antigravity "lift" — floating cards with blue/red-tinted depth
         "antimetal-card":
-          "0 1px 2px rgba(20,28,72,0.05), 0 10px 28px -10px rgba(48,60,150,0.20), 0 28px 56px -28px rgba(48,60,150,0.22)",
+          "0 1px 2px rgba(23,32,51,0.05), 0 10px 28px -10px rgba(23,59,143,0.22), 0 28px 56px -28px rgba(214,40,57,0.18)",
         "antimetal-soft":
-          "0 1px 2px rgba(20,28,72,0.05), 0 8px 20px -12px rgba(48,60,150,0.18)",
+          "0 1px 2px rgba(23,32,51,0.05), 0 8px 20px -12px rgba(23,59,143,0.18)",
         "antimetal-cta":
-          "0 10px 26px -6px rgba(99,90,255,0.55)",
+          "0 10px 26px -6px rgba(214,40,57,0.42)",
         "dark-glass":
-          "0 1px 2px rgba(0,0,0,0.40), 0 18px 40px -16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.06)",
+          "0 1px 2px rgba(0,0,0,0.40), 0 18px 40px -16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(244,248,255,0.08)",
       },
       backgroundImage: {
         "antimetal-hero":
-          "radial-gradient(125% 145% at 86% -22%, #2a3470 0%, #0e1330 46%, #070b1a 100%)",
-        grad: "linear-gradient(100deg, #3d7bfd 0%, #7b5cff 52%, #d957d5 100%)",
+          "radial-gradient(120% 140% at 86% -22%, #173B8F 0%, #10245A 48%, #08122B 100%)",
+        grad: "linear-gradient(100deg, #173B8F 0%, #4DA3FF 46%, #D62839 100%)",
       },
       keyframes: {
         bar: {

@@ -207,13 +207,13 @@ function MapCard({ r, locationReports = 1 }: { r: PipelineResult; locationReport
           role="img"
           aria-label={`Map: ${loc} — ${magnitude} report${magnitude === 1 ? "" : "s"}`}
         >
-          <rect width="320" height="150" fill="#070b1a" />
+          <rect width="320" height="150" fill="#08122B" />
           {/* faint reference grid */}
           {Array.from({ length: 7 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#1c2447" strokeWidth="1" />
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#284D9D" strokeWidth="1" />
           ))}
           {Array.from({ length: 11 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#1c2447" strokeWidth="1" />
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="150" stroke="#284D9D" strokeWidth="1" />
           ))}
           {/* location-derived streets */}
           {streets.map((d, i) => (
@@ -221,7 +221,7 @@ function MapCard({ r, locationReports = 1 }: { r: PipelineResult; locationReport
               key={`s${i}`}
               d={d}
               fill="none"
-              stroke="#7b5cff"
+              stroke="#4DA3FF"
               strokeWidth={i < 3 ? 2 : 1.4}
               strokeLinecap="round"
               opacity={i < 3 ? 0.4 : 0.28}
@@ -315,12 +315,12 @@ function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] 
           role="img"
           aria-label={`${incidents.length} incident clusters on the ClearBoard map`}
         >
-          <rect width="320" height="170" fill="#070b1a" />
+          <rect width="320" height="170" fill="#08122B" />
           {Array.from({ length: 8 }).map((_, i) => (
-            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#1c2447" strokeWidth="1" />
+            <line key={`h${i}`} x1="0" y1={i * 22 + 8} x2="320" y2={i * 22 + 8} stroke="#284D9D" strokeWidth="1" />
           ))}
           {Array.from({ length: 11 }).map((_, i) => (
-            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="170" stroke="#1c2447" strokeWidth="1" />
+            <line key={`v${i}`} x1={i * 30 + 6} y1="0" x2={i * 30 + 6} y2="170" stroke="#284D9D" strokeWidth="1" />
           ))}
           {incidents.flatMap((incident, incidentIndex) =>
             streetPaths(incident.location).map((d, i) => (
@@ -329,7 +329,7 @@ function CompactClusterMap({ incidents }: { incidents: DemoClearBoardIncident[] 
                 d={d}
                 transform={`translate(0 ${incidentIndex * 8})`}
                 fill="none"
-                stroke="#7b5cff"
+                stroke="#4DA3FF"
                 strokeWidth={i < 3 ? 1.8 : 1.2}
                 strokeLinecap="round"
                 opacity={0.16}
