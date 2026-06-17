@@ -248,7 +248,14 @@ export default function BriefingRoom() {
     setInput("");
     setMessages((m) => [...m, { id: uid(), role: "caller", text: trimmed, channel, ts: Date.now() }]);
     try {
-      const r = await submitSignal(trimmed, sessionId, channel, studentIdHash);
+      // Ensure we always have a hash before submitting — the async effect may not
+      // have resolved yet if the user submits immediately after page load.
+      let hash = studentIdHash;
+      if (!hash) {
+        hash = await getHash();
+        setStudentIdHash(hash);
+      }
+      const r = await submitSignal(trimmed, sessionId, channel, hash);
       setLatest(r);
       updateClearBoard(r);
       setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);

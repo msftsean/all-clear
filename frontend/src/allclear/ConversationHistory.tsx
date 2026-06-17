@@ -105,6 +105,7 @@ export default function ConversationHistory({
   const [sessions, setSessions] = useState<ConversationSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!studentIdHash) return;
@@ -127,7 +128,7 @@ export default function ConversationHistory({
     return () => {
       cancelled = true;
     };
-  }, [studentIdHash]);
+  }, [studentIdHash, refreshKey]);
 
   if (!studentIdHash) {
     return (
@@ -152,25 +153,48 @@ export default function ConversationHistory({
 
   if (error) {
     return (
-      <p className="text-sm text-red-400 p-4">
-        Could not load history: {error}
-      </p>
+      <div className="p-4 text-center space-y-2">
+        <p className="text-sm text-red-400">
+          Could not load history: {error}
+        </p>
+        <button
+          className="text-xs text-zinc-400 hover:text-zinc-200 underline"
+          onClick={() => setRefreshKey((k) => k + 1)}
+        >
+          Retry
+        </button>
+      </div>
     );
   }
 
   if (sessions.length === 0) {
     return (
-      <div className="p-4 text-center">
+      <div className="p-4 text-center space-y-2">
         <p className="text-sm text-zinc-500">No past conversations.</p>
-        <p className="text-xs text-zinc-600 mt-1">
+        <p className="text-xs text-zinc-600">
           Submit a signal to start a conversation.
         </p>
+        <button
+          className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+          onClick={() => setRefreshKey((k) => k + 1)}
+        >
+          Refresh
+        </button>
       </div>
     );
   }
 
   return (
     <div className="space-y-2 p-2">
+      <div className="flex justify-end px-1">
+        <button
+          className="text-xs text-zinc-500 hover:text-zinc-300 underline"
+          onClick={() => setRefreshKey((k) => k + 1)}
+          disabled={loading}
+        >
+          {loading ? "Loading…" : "Refresh"}
+        </button>
+      </div>
       {sessions.map((s) => (
         <div key={s.session_id}>
           <SessionRow session={s} />

@@ -56,11 +56,11 @@ export interface VoiceConfig {
 /** Response from POST /api/realtime/session. */
 export interface RealtimeSessionResponse {
   /** Session identifier. */
-  sessionId: string;
+  session_id: string;
   /** Short-lived ephemeral credential (≤60s TTL). */
   token: string;
   /** Token expiry timestamp. */
-  expiresAt: string;
+  expires_at: string;
   /** Azure OpenAI Realtime API WebRTC endpoint URL. */
   endpoint: string;
   /** Model deployment name. */
