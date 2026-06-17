@@ -69,11 +69,11 @@ def verify_index():
         # Test 2: Keyword search
         print("Test 2: Keyword Search")
         print("-" * 40)
-        results = list(client.search(search_text="downed power line", top=3))
+        results = list(client.search(search_text="password reset", top=3))
 
         if results:
             print("✅ Keyword search working!")
-            print("   Top results for 'downed power line':")
+            print("   Top results for 'password reset':")
             for r in results:
                 print(f"   - {r.get('title', 'Unknown')}")
         else:
@@ -94,14 +94,14 @@ def verify_index():
         print("Test 4: Category Filter")
         print("-" * 40)
         results = list(
-            client.search(search_text="*", filter="queue eq 'field-operations'", top=3)
+            client.search(search_text="*", filter="category eq 'it'", top=3)
         )
 
         if results:
-            print("✅ Filtering by queue working!")
-            print(f"   Found {len(results)} field-operations articles")
+            print("✅ Filtering by category working!")
+            print(f"   Found {len(results)} IT articles")
         else:
-            print("⚠️  No results for queue filter")
+            print("⚠️  No results for category filter")
         print()
 
         # Summary

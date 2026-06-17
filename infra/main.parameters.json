@@ -10,6 +10,7 @@
     "openAiModelVersion": { "value": "2025-11-13" },
     "embeddingModel": { "value": "text-embedding-3-small" },
     "embeddingModelVersion": { "value": "1" },
-    "mockMode": { "value": false }
+    "mockMode": { "value": false },
+    "realtimeLocation": { "value": "eastus2" }
   }
 }

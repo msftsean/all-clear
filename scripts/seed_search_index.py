@@ -96,11 +96,8 @@ def _missing_live_env() -> list[str]:
         missing.append("AZURE_SEARCH_API_KEY")
     if not os.environ.get("AZURE_OPENAI_ENDPOINT"):
         missing.append("AZURE_OPENAI_ENDPOINT")
-    if not os.environ.get("AZURE_OPENAI_API_KEY"):
-        missing.append("AZURE_OPENAI_API_KEY")
+    # AZURE_OPENAI_API_KEY is optional when the resource uses managed identity (disableLocalAuth: true)
     return missing
-
-
 def _create_index(index_client, index_name: str) -> None:
     """Create/update the index. Mirrors setup_index.create_index schema."""
     from azure.search.documents.indexes.models import (
@@ -185,6 +182,7 @@ def _generate_embedding(text: str, openai_client, deployment: str) -> list[float
 def seed_live(articles: list[dict], index_name: str, data_dir: Path) -> int:
     """Create the index and upsert embedded documents. Returns an exit code."""
     from azure.core.credentials import AzureKeyCredential
+    from azure.identity import DefaultAzureCredential, get_bearer_token_provider
     from azure.search.documents import SearchClient
     from azure.search.documents.indexes import SearchIndexClient
     from openai import AzureOpenAI
@@ -192,7 +190,7 @@ def seed_live(articles: list[dict], index_name: str, data_dir: Path) -> int:
     search_endpoint = os.environ["AZURE_SEARCH_ENDPOINT"]
     search_key = os.environ.get("AZURE_SEARCH_API_KEY") or os.environ.get("AZURE_SEARCH_KEY")
     openai_endpoint = os.environ["AZURE_OPENAI_ENDPOINT"]
-    openai_key = os.environ["AZURE_OPENAI_API_KEY"]
+    openai_key = os.environ.get("AZURE_OPENAI_API_KEY") or os.environ.get("AZURE_OPENAI_KEY")
     embedding_deployment = os.environ.get(
         "AZURE_OPENAI_EMBEDDING_DEPLOYMENT", DEFAULT_EMBEDDING_DEPLOYMENT
     )
@@ -202,11 +200,32 @@ def seed_live(articles: list[dict], index_name: str, data_dir: Path) -> int:
     search_client = SearchClient(
         endpoint=search_endpoint, index_name=index_name, credential=credential
     )
-    openai_client = AzureOpenAI(
-        azure_endpoint=openai_endpoint,
-        api_key=openai_key,
-        api_version="2024-02-15-preview",
-    )
+
+    # Use API key if available; fall back to AzureDeveloperCliCredential (azd login) then
+    # DefaultAzureCredential when key-based auth is disabled (disableLocalAuth: true in Bicep).
+    if openai_key:
+        openai_client = AzureOpenAI(
+            azure_endpoint=openai_endpoint,
+            api_key=openai_key,
+            api_version="2024-02-15-preview",
+        )
+    else:
+        try:
+            from azure.identity import AzureDeveloperCliCredential
+            aad_credential = AzureDeveloperCliCredential()
+            # Quick smoke-test to fail fast before building the client
+            aad_credential.get_token("https://cognitiveservices.azure.com/.default")
+        except Exception:
+            from azure.identity import DefaultAzureCredential
+            aad_credential = DefaultAzureCredential()
+        token_provider = get_bearer_token_provider(
+            aad_credential, "https://cognitiveservices.azure.com/.default"
+        )
+        openai_client = AzureOpenAI(
+            azure_endpoint=openai_endpoint,
+            azure_ad_token_provider=token_provider,
+            api_version="2024-02-15-preview",
+        )
 
     _create_index(index_client, index_name)
 

@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import router
+from app.api.admin import router as admin_router
 from app.api.media_ws import router as media_ws_router
 from app.api.phone import router as phone_router
 from app.api.realtime import router as realtime_router
@@ -80,6 +81,7 @@ def create_app() -> FastAPI:
 
     # Include API routes
     app.include_router(router, prefix=settings.api_prefix)
+    app.include_router(admin_router, prefix=settings.api_prefix, tags=["Admin"])
     app.include_router(realtime_router, prefix=f"{settings.api_prefix}/realtime", tags=["Voice Realtime"])
     app.include_router(phone_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Call Automation"])
     app.include_router(transcripts_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Transcripts"])

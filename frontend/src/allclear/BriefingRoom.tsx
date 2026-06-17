@@ -7,6 +7,8 @@ import LiveCalls from "./LiveCalls";
 import { HERO_DEMO_BOARD } from "./demo";
 import ConversationHistory from "./ConversationHistory";
 import { useStudentIdentity } from "./useStudentIdentity";
+import { AdminDashboard } from "../components/AdminDashboard";
+import { useAdminTickets } from "../hooks/useAdminTickets";
 
 type Role = "caller" | "agent" | "system";
 interface Msg {
@@ -85,6 +87,7 @@ export default function BriefingRoom() {
     Record<string, DemoClearBoard["incidents"][number]>
   >({});
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [adminOpen, setAdminOpen] = useState(false);
   const [studentIdHash, setStudentIdHash] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { getHash } = useStudentIdentity();
@@ -319,6 +322,14 @@ export default function BriefingRoom() {
               🕘 history
             </button>
             <button
+              data-testid="admin-toggle"
+              onClick={() => setAdminOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
+              title="Admin: tickets and branding"
+            >
+              ⚙ admin
+            </button>
+            <button
               data-testid="live-calls-toggle"
               onClick={() => setLiveOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
@@ -475,6 +486,63 @@ export default function BriefingRoom() {
       ) : null}
 
       {liveOpen ? <LiveCalls onExit={() => setLiveOpen(false)} /> : null}
+
+      {adminOpen ? <AdminModal onClose={() => setAdminOpen(false)} /> : null}
+    </div>
+  );
+}
+
+function AdminModal({ onClose }: { onClose: () => void }) {
+  const {
+    tickets,
+    selectedTicket,
+    isLoading,
+    error,
+    statusFilter,
+    departmentFilter,
+    refreshTickets,
+    selectTicket,
+    clearSelection,
+    setStatusFilter,
+    setDepartmentFilter,
+    updateTicketStatus,
+    deleteTicket,
+  } = useAdminTickets();
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="relative mt-8 w-full max-w-5xl rounded-2xl bg-white shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <h2 className="text-lg font-semibold text-gray-900">Admin Dashboard</h2>
+          <button
+            onClick={onClose}
+            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Close admin dashboard"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="overflow-y-auto flex-1">
+          <AdminDashboard
+            tickets={tickets}
+            selectedTicket={selectedTicket}
+            isLoading={isLoading}
+            error={error}
+            statusFilter={statusFilter}
+            departmentFilter={departmentFilter}
+            onRefresh={refreshTickets}
+            onSelectTicket={selectTicket}
+            onClearSelection={clearSelection}
+            onSetStatusFilter={setStatusFilter}
+            onSetDepartmentFilter={setDepartmentFilter}
+            onUpdateStatus={updateTicketStatus}
+            onDeleteTicket={deleteTicket}
+          />
+        </div>
+      </div>
     </div>
   );
 }

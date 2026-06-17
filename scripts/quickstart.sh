@@ -183,7 +183,7 @@ validate_live_env() {
     missing+=("AZURE_SEARCH_API_KEY")
   fi
   [ -z "${AZURE_OPENAI_ENDPOINT:-}" ] && missing+=("AZURE_OPENAI_ENDPOINT")
-  [ -z "${AZURE_OPENAI_API_KEY:-}" ] && missing+=("AZURE_OPENAI_API_KEY")
+  # AZURE_OPENAI_API_KEY is optional when the resource uses managed identity (disableLocalAuth: true)
 
   if [ ${#missing[@]} -gt 0 ]; then
     fail "Missing required environment variable(s) for the live lane:"
@@ -216,7 +216,7 @@ run_live_lane() {
   # Step 2: verify index (reuse Lab 04 verifier; do not edit it)
   echo ""
   echo ">>> Verifying index"
-  if python "$PROJECT_ROOT/labs/04-build-rag-pipeline/verify_index.py"; then
+  if AZURE_SEARCH_INDEX_NAME="$index_name" python "$PROJECT_ROOT/labs/04-build-rag-pipeline/verify_index.py"; then
     pass "Verify step completed"
   else
     fail "Verify step failed"; return 1
