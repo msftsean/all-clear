@@ -32,7 +32,7 @@ param realtimeModel string = 'gpt-realtime'
 param realtimeModelVersion string = '2025-08-28'
 
 @description('Region for the realtime OpenAI account (realtime models are not available in eastus)')
-param realtimeLocation string = 'swedencentral'
+param realtimeLocation string = 'eastus2'
 
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
@@ -125,7 +125,7 @@ resource openAiRealtime 'Microsoft.CognitiveServices/accounts@2023-10-01-preview
   }
 }
 
-resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = {
+resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = if (false) {
   parent: openAiRealtime
   name: realtimeModel
   properties: {
@@ -137,7 +137,7 @@ resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployme
   }
   sku: {
     name: 'GlobalStandard'
-    capacity: 10
+    capacity: 0
   }
 }
 
@@ -428,7 +428,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'AZURE_OPENAI_REALTIME_DEPLOYMENT'
-              value: openAiRealtimeDeployment.name
+              value: ''
             }
             {
               name: 'AZURE_COSMOS_ENDPOINT'

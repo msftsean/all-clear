@@ -137,7 +137,7 @@ from app.services.mock.knowledge_service import MockKnowledgeService
 
 async def t():
     svc = MockKnowledgeService()
-    results = await svc.search('password reset')
+    results = await svc.search('power outage')
     assert len(results) > 0
 
 asyncio.run(t())
