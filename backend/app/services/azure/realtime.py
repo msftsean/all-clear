@@ -332,18 +332,16 @@ class AzureRealtimeService(RealtimeServiceInterface):
         arguments: dict,
         session_id: str,
     ) -> ToolCallResponse:
-        """Delegate a Realtime API tool call to real backend services."""
+        """Delegate a Realtime API tool call to the All Clear MAF pipeline."""
         arguments = redact_pii(arguments)
         crisis = voice_crisis_result(arguments)
         if crisis is not None:
             return ToolCallResponse(call_id=call_id, result=json.dumps(crisis), error=None)
         from app.core.dependencies import (
             get_knowledge_service,
-            get_llm_service,
-            get_ticket_service,
+            get_pipeline,
         )
 
-        ticket_svc = get_ticket_service()
         knowledge_svc = get_knowledge_service()
 
         try:
@@ -351,68 +349,54 @@ class AzureRealtimeService(RealtimeServiceInterface):
                 query = arguments.get("query", "")
                 logger.info("execute_tool: analyze_and_route_query query=%s", query[:100])
 
-                # Classify intent via LLM (same as text chat QueryAgent)
-                llm_svc = get_llm_service()
-                query_result = await llm_svc.classify_intent(query)
-                dept_enum = query_result.department_suggestion
-                intent = query_result.intent
-
-                from app.models.enums import Priority
-
-                # Escalation-worthy queries get URGENT, else MEDIUM
-                priority_enum = (
-                    Priority.URGENT if query_result.requires_escalation else Priority.MEDIUM
+                # Route through the same MAF pipeline as text chat so voice and
+                # text stay in lockstep (Constitution Art. I + V). Incidents land
+                # in the IncidentStore and ClearBoard SSE events fire automatically.
+                pipeline = get_pipeline()
+                outcome = await pipeline.process_signal(
+                    text=query, session_id=session_id, channel="voice"
                 )
-
-                # Create a real ticket
-                ticket_id, ticket_url = await ticket_svc.create_ticket(
-                    department=dept_enum,
-                    priority=priority_enum,
-                    summary=f"Phone call: {query[:150]}",
-                    description=f"Submitted via phone call (session {session_id}). Query: {query}",
-                    student_id_hash=f"phone-{session_id}",
+                logger.info(
+                    "execute_tool: incident %s queue=%s severity=%s",
+                    outcome.action.incident_id,
+                    outcome.routing.target_queue.value,
+                    outcome.routing.severity.value,
                 )
-                logger.info("execute_tool: created ticket %s dept=%s", ticket_id, dept_enum.value)
-
                 result = json.dumps({
-                    "intent": intent or "general_question",
-                    "department": dept_enum.value,
-                    "confidence": query_result.confidence,
-                    "requires_escalation": query_result.requires_escalation,
-                    "escalated": query_result.requires_escalation,
-                    "priority": priority_enum.value,
-                    "ticket_id": ticket_id,
-                    "ticket_url": ticket_url,
+                    "intent": outcome.classification.intent,
+                    "intent_category": outcome.classification.intent_category.value,
+                    "queue": outcome.routing.target_queue.value,
+                    "severity": outcome.routing.severity.value,
+                    "outcome": outcome.routing.outcome.value,
+                    "incident_id": outcome.action.incident_id,
+                    "escalated": outcome.action.escalated,
+                    "estimated_response_time": outcome.action.estimated_response_time,
+                    "message": outcome.action.user_message,
                 })
 
             elif tool_name == "check_ticket_status":
-                ticket_id = arguments.get("ticket_id", "")
-                logger.info("execute_tool: check_ticket_status id=%s", ticket_id)
+                # Legacy tool name kept for voice prompt compatibility; maps to
+                # incident status lookup on the live IncidentStore.
+                from app.core.dependencies import get_incident_store
+                incident_id = arguments.get("ticket_id", arguments.get("incident_id", ""))
+                logger.info("execute_tool: check_ticket_status id=%s", incident_id)
 
-                status_resp = await ticket_svc.get_ticket_status(ticket_id)
-                if status_resp:
-                    status = (
-                        status_resp.status.value
-                        if hasattr(status_resp.status, "value")
-                        else str(status_resp.status)
-                    )
-                    department = (
-                        status_resp.department.value
-                        if hasattr(status_resp.department, "value")
-                        else str(status_resp.department)
-                    )
+                store = get_incident_store()
+                incident = await store.get_incident(incident_id) if incident_id else None
+                if incident:
                     result = json.dumps({
-                        "ticket_id": status_resp.ticket_id,
-                        "status": status,
-                        "department": department,
-                        "assigned_to": status_resp.assigned_to or "Unassigned",
-                        "summary": status_resp.summary or "",
+                        "incident_id": incident.incident_id,
+                        "status": incident.status.value,
+                        "queue": incident.queue.value,
+                        "severity": incident.severity.value,
+                        "report_count": incident.magnitude,
+                        "summary": incident.summary or "",
                     })
                 else:
                     result = json.dumps({
-                        "ticket_id": ticket_id,
+                        "incident_id": incident_id,
                         "status": "not_found",
-                        "message": f"No ticket found with ID {ticket_id}",
+                        "message": f"No incident found with ID {incident_id}",
                     })
 
             elif tool_name == "search_knowledge_base":
@@ -437,41 +421,25 @@ class AzureRealtimeService(RealtimeServiceInterface):
 
             elif tool_name == "escalate_to_human":
                 reason = arguments.get("reason", "Caller requested human agent")
-                department = arguments.get("department", "IT")
+                department = arguments.get("department", "ESCALATIONS")
                 logger.info(
                     "execute_tool: escalate_to_human reason=%s dept=%s",
                     reason[:80],
                     department,
                 )
-
-                from app.models.enums import Department, Priority
-
-                try:
-                    dept_enum = Department(department)
-                except ValueError:
-                    dept_enum = Department.ESCALATE_TO_HUMAN
-
-                ticket_id, ticket_url = await ticket_svc.create_ticket(
-                    department=dept_enum,
-                    priority=Priority.URGENT,
-                    summary=f"ESCALATION: {reason[:150]}",
-                    description=(
-                        "Phone caller requested human escalation. "
-                        f"Reason: {reason}. Session: {session_id}"
-                    ),
-                    student_id_hash=f"phone-{session_id}",
+                # Route escalation through the pipeline with an explicit escalation signal
+                pipeline = get_pipeline()
+                escalation_text = f"ESCALATION REQUEST: {reason}"
+                outcome = await pipeline.process_signal(
+                    text=escalation_text, session_id=session_id, channel="voice"
                 )
-                logger.info("execute_tool: escalation ticket created %s", ticket_id)
-
                 result = json.dumps({
                     "escalated": True,
                     "reason": reason,
                     "department": department,
-                    "priority": Priority.URGENT.value,
-                    "ticket_id": ticket_id,
-                    "ticket_url": ticket_url,
+                    "incident_id": outcome.action.incident_id,
                     "message": (
-                        f"Escalation ticket {ticket_id} created. "
+                        f"Escalation recorded as incident {outcome.action.incident_id}. "
                         "A human agent will follow up."
                     ),
                 })
