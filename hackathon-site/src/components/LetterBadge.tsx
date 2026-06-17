@@ -1,18 +1,18 @@
 interface LetterBadgeProps {
   letter: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 }
 
-export default function LetterBadge({ letter, size = 'md' }: LetterBadgeProps) {
+export default function LetterBadge({ letter, size = "md" }: LetterBadgeProps) {
   const sizes = {
-    sm: 'w-10 h-10 text-lg',
-    md: 'w-12 h-12 text-xl',
-    lg: 'w-16 h-16 text-3xl',
+    sm: "w-10 h-10 text-lg",
+    md: "w-12 h-12 text-xl",
+    lg: "w-16 h-16 text-3xl",
   };
 
   return (
     <span
-      className={`${sizes[size]} inline-flex items-center justify-center rounded-full bg-gold text-maroon font-serif font-bold shadow-sm`}
+      className={`${sizes[size]} inline-flex items-center justify-center rounded-full bg-light-gold text-deep-maroon font-serif font-bold shadow-sm ring-2 ring-gold/40`}
     >
       {letter}
     </span>

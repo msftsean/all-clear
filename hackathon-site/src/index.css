@@ -11,9 +11,9 @@
     @apply font-serif text-maroon;
   }
 
-  /* Global visible focus indicator using the gold theme token. */
+  /* Global visible focus indicator using the bold blue accent token. */
   :focus-visible {
-    outline: 2px solid #b8860b; /* gold */
+    outline: 2px solid #173b8f;
     outline-offset: 2px;
     border-radius: 2px;
   }
@@ -33,16 +33,16 @@
   width: auto;
   height: auto;
   padding: 0.5rem 1rem;
-  background-color: #791a3e; /* maroon */
-  color: #f5f0e8; /* cream */
+  background-color: #173b8f;
+  color: #f4f8ff;
   font-weight: 600;
   border-radius: 0.25rem;
-  outline: 2px solid #b8860b; /* gold */
+  outline: 2px solid #d62839;
   outline-offset: 2px;
 }
 
 
-/* Gold rule under page headings */
+/* Bold blue rule under page headings */
 .gold-rule {
   @apply border-b-2 border-gold pb-2 mb-6;
 }

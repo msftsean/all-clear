@@ -4,13 +4,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        maroon: '#791A3E',
-        'deep-maroon': '#501028',
-        gold: '#B8860B',
-        'light-gold': '#D9A92F',
-        cream: '#F5F0E8',
-        'deep-cream': '#E8DFCE',
-        ink: '#1A1A1A',
+        maroon: '#D62839',
+        'deep-maroon': '#173B8F',
+        gold: '#4DA3FF',
+        'light-gold': '#B9D8FF',
+        cream: '#F4F8FF',
+        'deep-cream': '#F7D9DE',
+        ink: '#172033',
       },
       fontFamily: {
         serif: ['Playfair Display', 'Georgia', 'serif'],

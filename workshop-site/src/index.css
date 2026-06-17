@@ -4,32 +4,32 @@
 
 :root,
 [data-theme="sequel"] {
-  --bg: #F7F8FA;
-  --fg: #1B1B1F;
+  --bg: #F4F8FF;
+  --fg: #172033;
   --surface: #FFFFFF;
-  --surface-elevated: #F7F8FA;
-  --border: #E6E8EC;
-  --muted: #5F6673;
-  --muted-fg: #3D4552;
-  --accent: #0F6CBD;
+  --surface-elevated: #F7D9DE;
+  --border: #D8E6FA;
+  --muted: #5D6B82;
+  --muted-fg: #34445E;
+  --accent: #173B8F;
   --accent-contrast: #FFFFFF;
-  --danger: #990000;
-  --success: #8fe6a0;
-  --warning: #ffd166;
+  --danger: #D62839;
+  --success: #A7E4C2;
+  --warning: #B9D8FF;
   --font-display: 'Fraunces', Georgia, serif;
   --font-body: 'Familjen Grotesk', system-ui, sans-serif;
   --radius-btn: 9999px;
   --radius-card: 10px;
-  --gradient-hero: radial-gradient(circle at 75% 20%, rgba(255,255,255,0.1), transparent 28%), #000000;
-  --surface-glass: rgba(32, 32, 32, 0.74);
-  --border-glass: rgba(255,255,255,0.1);
-  --bg-rgb: 247 248 250;
-  --fg-rgb: 27 27 31;
+  --gradient-hero: radial-gradient(circle at 75% 20%, rgba(77,163,255,0.24), transparent 30%), linear-gradient(135deg, #173B8F 0%, #172033 58%, #D62839 125%);
+  --surface-glass: rgba(23, 32, 51, 0.74);
+  --border-glass: rgba(244,248,255,0.18);
+  --bg-rgb: 244 248 255;
+  --fg-rgb: 23 32 51;
   --surface-rgb: 255 255 255;
-  --surface-elevated-rgb: 247 248 250;
-  --border-rgb: 230 232 236;
-  --accent-rgb: 15 108 189;
-  --danger-rgb: 153 0 0;
+  --surface-elevated-rgb: 247 217 222;
+  --border-rgb: 216 230 250;
+  --accent-rgb: 23 59 143;
+  --danger-rgb: 214 40 57;
 }
 
 [data-theme="saigon"] {

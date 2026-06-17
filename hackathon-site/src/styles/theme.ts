@@ -1,9 +1,9 @@
 export const palette = {
-  maroon: '#791A3E',
-  deepMaroon: '#501028',
-  gold: '#B8860B',
-  lightGold: '#D9A92F',
-  cream: '#F5F0E8',
-  deepCream: '#E8DFCE',
-  ink: '#1A1A1A',
+  maroon: "#D62839",
+  deepMaroon: "#173B8F",
+  gold: "#4DA3FF",
+  lightGold: "#B9D8FF",
+  cream: "#F4F8FF",
+  deepCream: "#F7D9DE",
+  ink: "#172033",
 } as const;

@@ -18,7 +18,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #B25B34;
+    outline: 2px solid #173B8F;
     outline-offset: 3px;
     border-radius: 4px;
   }
@@ -27,7 +27,7 @@
 @layer components {
   /* Skip link */
   .skip-link {
-    @apply absolute left-4 z-50 px-4 py-2 bg-brand text-white rounded-lg font-medium text-sm;
+    @apply absolute left-4 z-50 px-4 py-2 bg-cofounder text-white rounded-lg font-medium text-sm;
     top: -4rem;
     transition: top 0.15s ease-in-out;
   }

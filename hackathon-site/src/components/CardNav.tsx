@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import type { Card } from '../data/cards';
+import { Link } from "react-router-dom";
+import type { Card } from "../data/cards";
 
 interface CardNavProps {
   prev: Card | undefined;
@@ -13,7 +13,7 @@ export default function CardNav({ prev, next }: CardNavProps) {
         {prev ? (
           <Link
             to={`/cards/${prev.slug}`}
-            className="text-maroon hover:text-gold transition-colors font-medium"
+            className="text-maroon hover:text-deep-maroon transition-colors font-medium"
           >
             ← Card {prev.letter}: {prev.title}
           </Link>
@@ -24,7 +24,7 @@ export default function CardNav({ prev, next }: CardNavProps) {
 
       <Link
         to="/"
-        className="px-4 py-2 rounded-lg bg-deep-cream text-maroon font-semibold text-sm hover:bg-gold hover:text-white transition-colors"
+        className="px-4 py-2 rounded-lg bg-deep-cream text-maroon font-semibold text-sm hover:bg-deep-maroon hover:text-cream transition-colors"
       >
         All Cards
       </Link>
@@ -33,7 +33,7 @@ export default function CardNav({ prev, next }: CardNavProps) {
         {next ? (
           <Link
             to={`/cards/${next.slug}`}
-            className="text-maroon hover:text-gold transition-colors font-medium"
+            className="text-maroon hover:text-deep-maroon transition-colors font-medium"
           >
             Card {next.letter}: {next.title} →
           </Link>

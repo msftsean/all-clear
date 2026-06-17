@@ -4,23 +4,23 @@ export default {
     extend: {
       colors: {
         // Coach prep tokens
-        night: '#2B2622',
-        canvas: '#FBF8F4',
-        paper: '#FBF8F4',
+        night: '#172033',
+        canvas: '#F4F8FF',
+        paper: '#F4F8FF',
         surface: '#ffffff',
-        'surface-raised': '#FFFDF9',
-        border: '#ECE6DD',
-        ink: '#2B2622',
-        'ink-secondary': '#6D6259',
-        cofounder: '#B25B34',
-        'cofounder-dark': '#8F4425',
-        'cofounder-soft': '#F3E7DE',
+        'surface-raised': '#FFFFFF',
+        border: '#D8E6FA',
+        ink: '#172033',
+        'ink-secondary': '#52627A',
+        cofounder: '#173B8F',
+        'cofounder-dark': '#0E2A70',
+        'cofounder-soft': '#B9D8FF',
         // Keep legacy aliases for content components while retuning the palette.
-        brand: '#B25B34',
-        'accent-soft': '#F3E7DE',
-        sage: '#3F7E6E',
-        'sage-soft': '#E3EFEA',
-        amber: '#A8661B',
+        brand: '#D62839',
+        'accent-soft': '#F7D9DE',
+        sage: '#176B54',
+        'sage-soft': '#DDF4E8',
+        amber: '#B45F06',
       },
       fontFamily: {
         serif: ['"Instrument Serif"', 'Fraunces', 'Georgia', 'serif'],
@@ -30,10 +30,10 @@ export default {
         'pill': '50.5px',
       },
       boxShadow: {
-        'soft': '0 1px 3px rgba(43,38,34,0.06), 0 8px 20px rgba(43,38,34,0.05)',
-        'medium': '0 6px 22px rgba(43,38,34,0.08), 0 1px 4px rgba(43,38,34,0.05)',
-        'elevated': '0 10px 36px rgba(43,38,34,0.14), 0 2px 8px rgba(43,38,34,0.06)',
-        'hero-glow': '0 0 80px rgba(178,91,52,0.24)',
+        'soft': '0 1px 3px rgba(23,32,51,0.06), 0 8px 20px rgba(23,32,51,0.05)',
+        'medium': '0 6px 22px rgba(23,32,51,0.08), 0 1px 4px rgba(23,32,51,0.05)',
+        'elevated': '0 10px 36px rgba(23,32,51,0.14), 0 2px 8px rgba(23,32,51,0.06)',
+        'hero-glow': '0 0 80px rgba(77,163,255,0.28)',
       },
       keyframes: {
         'fade-slide-up': {

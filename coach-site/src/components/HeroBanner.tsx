@@ -36,14 +36,14 @@ export default function HeroBanner({
     return (
       <div
         className="relative overflow-hidden border-b border-white/10"
-        style={{ background: "#2B2622" }}
+        style={{ background: "#172033" }}
       >
         <div
           className="absolute inset-0 pointer-events-none"
           aria-hidden="true"
           style={{
             background:
-              "radial-gradient(ellipse 60% 120% at 50% 0%, rgba(178,91,52,0.18) 0%, transparent 70%)",
+              "radial-gradient(ellipse 60% 120% at 50% 0%, rgba(77,163,255,0.24) 0%, transparent 70%)",
           }}
         />
         <div className="relative max-w-5xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
@@ -76,7 +76,7 @@ export default function HeroBanner({
   return (
     <div
       className="relative overflow-hidden"
-      style={{ background: "#2B2622" }}
+      style={{ background: "#172033" }}
       aria-hidden={false}
     >
       {/* Atmospheric gradients */}
@@ -85,8 +85,8 @@ export default function HeroBanner({
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(178,91,52,0.20) 0%, transparent 70%), " +
-            "radial-gradient(ellipse 60% 40% at 20% 80%, rgba(63,126,110,0.14) 0%, transparent 60%)",
+            "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(77,163,255,0.28) 0%, transparent 70%), " +
+            "radial-gradient(ellipse 60% 40% at 20% 80%, rgba(214,40,57,0.18) 0%, transparent 60%)",
         }}
       />
 
@@ -122,7 +122,7 @@ export default function HeroBanner({
         style={{
           height: "80px",
           background:
-            "linear-gradient(to top, rgba(178,91,52,0.14), transparent)",
+            "linear-gradient(to top, rgba(77,163,255,0.18), transparent)",
         }}
       />
 
@@ -136,7 +136,7 @@ export default function HeroBanner({
       >
         <path
           d="M0,80 L0,60 L40,60 L40,40 L60,40 L60,30 L80,30 L80,40 L120,40 L120,50 L160,50 L160,35 L180,35 L180,25 L200,25 L200,35 L220,35 L220,45 L260,45 L260,30 L280,30 L280,20 L300,20 L300,30 L320,30 L320,50 L360,50 L360,38 L380,38 L380,28 L400,28 L400,38 L440,38 L440,52 L480,52 L480,40 L500,40 L500,32 L520,32 L520,40 L560,40 L560,55 L600,55 L600,42 L620,42 L620,30 L640,30 L640,20 L660,20 L660,30 L680,30 L680,42 L720,42 L720,50 L760,50 L760,38 L780,38 L780,28 L800,28 L800,38 L840,38 L840,55 L880,55 L880,44 L900,44 L900,32 L920,32 L920,44 L960,44 L960,52 L1000,52 L1000,40 L1020,40 L1020,30 L1040,30 L1040,40 L1080,40 L1080,50 L1120,50 L1120,38 L1140,38 L1140,28 L1160,28 L1160,38 L1200,38 L1200,55 L1240,55 L1240,44 L1260,44 L1260,35 L1280,35 L1280,44 L1320,44 L1320,60 L1360,60 L1360,48 L1400,48 L1400,60 L1440,60 L1440,80 Z"
-          fill="rgba(178,91,52,1)"
+          fill="rgba(214,40,57,1)"
         />
       </svg>
 
