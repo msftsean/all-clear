@@ -270,13 +270,13 @@ export default function CloneGuide() {
             <svg width="24" height="24" viewBox="0 0 64 64" fill="none" aria-label="All Clear">
               <defs>
                 <linearGradient id="ac-ring-sm" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-                  <stop offset="0" stopColor="#173B8F"/>
-                  <stop offset="1" stopColor="#4DA3FF"/>
+                  <stop offset="0" stopColor="#E8C470"/>
+                  <stop offset="1" stopColor="#B25C00"/>
                 </linearGradient>
               </defs>
               <path d="M54.22 26.05 A23 23 0 1 1 41.72 11.16" stroke="url(#ac-ring-sm)" strokeWidth="6" strokeLinecap="round" fill="none"/>
-              <circle cx="41.72" cy="11.16" r="4" fill="#D62839"/>
-              <path d="M21 33 L29 41 L44 23" stroke="#D62839" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+              <circle cx="41.72" cy="11.16" r="4" fill="#29D7C6"/>
+              <path d="M21 33 L29 41 L44 23" stroke="#29D7C6" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
             <span className="font-display text-[21px] font-medium tracking-tight text-inkwarm">
               All Clear
@@ -336,13 +336,13 @@ export default function CloneGuide() {
                   <svg width="20" height="20" viewBox="0 0 64 64" fill="none">
                     <defs>
                       <linearGradient id="ac-rec" x1="10" y1="54" x2="54" y2="10" gradientUnits="userSpaceOnUse">
-                        <stop offset="0" stopColor="#173B8F"/>
-                        <stop offset="1" stopColor="#4DA3FF"/>
+                        <stop offset="0" stopColor="#E8C470"/>
+                        <stop offset="1" stopColor="#B25C00"/>
                       </linearGradient>
                     </defs>
                     <path d="M54.22 26.05 A23 23 0 1 1 41.72 11.16" stroke="url(#ac-rec)" strokeWidth="6" strokeLinecap="round" fill="none"/>
-                    <circle cx="41.72" cy="11.16" r="4" fill="#D62839"/>
-                    <path d="M21 33 L29 41 L44 23" stroke="#D62839" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <circle cx="41.72" cy="11.16" r="4" fill="#29D7C6"/>
+                    <path d="M21 33 L29 41 L44 23" stroke="#29D7C6" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
                   </svg>
                 </div>
                 <div>

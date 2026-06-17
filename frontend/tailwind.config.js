@@ -4,27 +4,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Paper world (conversation column) — bold blue/red with pastel support
-        paper: "#F4F8FF",
-        paper2: "#ffffff",
-        paperline: "#D8E6FA",
-        inkwarm: "#172033",
-        midwarm: "#52627A",
-        voice: "#173B8F",
-        // Night world (canvas) — heroic blue with red signal accents
-        night: "#08122B",
-        panel: "#10245A",
-        nline: "#284D9D",
-        nink: "#F4F8FF",
-        ndim: "#B9D8FF",
-        cta: "#D62839",
-        ctaink: "#ffffff",
+        // Paper world (conversation column) — inverted to a dark, high-contrast shell
+        paper: "#0B0700",
+        paper2: "#000000",
+        paperline: "#271905",
+        inkwarm: "#E8DFCC",
+        midwarm: "#AD9D85",
+        voice: "#E8C470",
+        // Night world (canvas) — inverted into a light cream command surface
+        night: "#F7EDD4",
+        panel: "#EFDBA5",
+        nline: "#D7B262",
+        nink: "#0B0700",
+        ndim: "#462700",
+        cta: "#29D7C6",
+        ctaink: "#000000",
         // Status (both worlds)
-        sev1: "#D62839",
-        sev2: "#F06A76",
-        sev3: "#4DA3FF",
-        sev4: "#8ABCF8",
-        clear: "#49C18D",
+        sev1: "#29D7C6",
+        sev2: "#0F9589",
+        sev3: "#B25C00",
+        sev4: "#754307",
+        clear: "#B63E72",
       },
       fontFamily: {
         display: ["Google Sans Flex", "Google Sans", "Segoe UI", "system-ui", "sans-serif"],
@@ -38,20 +38,20 @@ export default {
         tag: "6px",
       },
       boxShadow: {
-        // Antigravity "lift" — floating cards with blue/red-tinted depth
+        // Antigravity "lift" — floating cards with inverted gold/cyan-tinted depth
         "antimetal-card":
-          "0 1px 2px rgba(23,32,51,0.05), 0 10px 28px -10px rgba(23,59,143,0.22), 0 28px 56px -28px rgba(214,40,57,0.18)",
+          "0 1px 2px rgba(232,223,204,0.08), 0 10px 28px -10px rgba(232,196,112,0.36), 0 28px 56px -28px rgba(41,215,198,0.24)",
         "antimetal-soft":
-          "0 1px 2px rgba(23,32,51,0.05), 0 8px 20px -12px rgba(23,59,143,0.18)",
+          "0 1px 2px rgba(232,223,204,0.08), 0 8px 20px -12px rgba(232,196,112,0.28)",
         "antimetal-cta":
-          "0 10px 26px -6px rgba(214,40,57,0.42)",
+          "0 10px 26px -6px rgba(41,215,198,0.44)",
         "dark-glass":
-          "0 1px 2px rgba(0,0,0,0.40), 0 18px 40px -16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(244,248,255,0.08)",
+          "0 1px 2px rgba(70,39,0,0.18), 0 18px 40px -16px rgba(70,39,0,0.30), inset 0 1px 0 rgba(255,255,255,0.42)",
       },
       backgroundImage: {
         "antimetal-hero":
-          "radial-gradient(120% 140% at 86% -22%, #173B8F 0%, #10245A 48%, #08122B 100%)",
-        grad: "linear-gradient(100deg, #173B8F 0%, #4DA3FF 46%, #D62839 100%)",
+          "radial-gradient(120% 140% at 86% -22%, #E8C470 0%, #EFDBA5 48%, #F7EDD4 100%)",
+        grad: "linear-gradient(100deg, #E8C470 0%, #B25C00 46%, #29D7C6 100%)",
       },
       keyframes: {
         bar: {

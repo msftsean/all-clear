@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --paper: #F4F8FF;
-  --paper2: #ffffff;
-  --paperline: #D8E6FA;
-  --inkwarm: #172033;
-  --midwarm: #52627A;
-  --voice: #173B8F;
-  --night: #08122B;
-  --panel: #10245A;
-  --nline: #284D9D;
-  --nink: #F4F8FF;
-  --ndim: #B9D8FF;
-  --cta: #D62839;
-  --ctaink: #ffffff;
-  --grad: linear-gradient(100deg, #173B8F 0%, #4DA3FF 46%, #D62839 100%);
-  --sev1: #D62839;
-  --sev2: #F06A76;
-  --sev3: #4DA3FF;
-  --sev4: #8ABCF8;
-  --clear: #49C18D;
+  --paper: #0B0700;
+  --paper2: #000000;
+  --paperline: #271905;
+  --inkwarm: #E8DFCC;
+  --midwarm: #AD9D85;
+  --voice: #E8C470;
+  --night: #F7EDD4;
+  --panel: #EFDBA5;
+  --nline: #D7B262;
+  --nink: #0B0700;
+  --ndim: #462700;
+  --cta: #29D7C6;
+  --ctaink: #000000;
+  --grad: linear-gradient(100deg, #E8C470 0%, #B25C00 46%, #29D7C6 100%);
+  --sev1: #29D7C6;
+  --sev2: #0F9589;
+  --sev3: #B25C00;
+  --sev4: #754307;
+  --clear: #B63E72;
 }
 
 html, body, #root { height: 100%; }
@@ -42,9 +42,9 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(58% 42% at 84% -6%, rgba(77, 163, 255, 0.16), transparent 60%),
-    radial-gradient(48% 38% at 6% 6%, rgba(23, 59, 143, 0.11), transparent 60%),
-    radial-gradient(46% 52% at 102% 104%, rgba(214, 40, 57, 0.10), transparent 60%);
+    radial-gradient(58% 42% at 84% -6%, rgba(178, 92, 0, 0.22), transparent 60%),
+    radial-gradient(48% 38% at 6% 6%, rgba(232, 196, 112, 0.18), transparent 60%),
+    radial-gradient(46% 52% at 102% 104%, rgba(41, 215, 198, 0.16), transparent 60%);
 }
 body::after {
   content: "";
@@ -53,7 +53,7 @@ body::after {
   z-index: -2;
   pointer-events: none;
   opacity: 0.45;
-  background-image: radial-gradient(rgba(23, 59, 143, 0.07) 1px, transparent 1.4px);
+  background-image: radial-gradient(rgba(232, 196, 112, 0.12) 1px, transparent 1.4px);
   background-size: 30px 30px;
   -webkit-mask: linear-gradient(180deg, #000, transparent 72%);
   mask: linear-gradient(180deg, #000, transparent 72%);
@@ -75,7 +75,7 @@ body::after {
 
 /* Custom scrollbars, restrained */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #B9D8FF; border-radius: 9999px; }
+::-webkit-scrollbar-thumb { background: #462700; border-radius: 9999px; }
 
 /* prefers-reduced-motion: freeze waveform at 50%, stop blink/rise */
 @media (prefers-reduced-motion: reduce) {

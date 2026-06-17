@@ -140,7 +140,7 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
     >
       {/* atmosphere — match the night-world canvas */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8px_8px,rgba(255,255,255,.34)_1px,transparent_1.5px)] bg-[length:24px_24px] opacity-10 [mask-image:linear-gradient(180deg,#000,transparent_72%)]" />
-      <div className="pointer-events-none absolute -right-28 -top-36 h-[620px] w-[620px] rounded-full bg-[radial-gradient(50%_50%,rgba(77,163,255,.30)_0%,rgba(23,59,143,.26)_32%,rgba(214,40,57,.18)_62%,rgba(248,249,252,0)_100%)]" />
+      <div className="pointer-events-none absolute -right-28 -top-36 h-[620px] w-[620px] rounded-full bg-[radial-gradient(50%_50%,rgba(178,92,0,.30)_0%,rgba(232,196,112,.28)_32%,rgba(41,215,198,.22)_62%,rgba(11,7,0,0)_100%)]" />
 
       {/* top bar */}
       <header className="relative z-10 flex flex-shrink-0 items-center justify-between border-b border-nline/70 bg-night/40 px-6 py-4 backdrop-blur">
