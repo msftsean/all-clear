@@ -94,6 +94,63 @@ export default function BriefingRoom() {
     getHash().then(setStudentIdHash).catch(() => {});
   }, [getHash]);
 
+  // Subscribe to phone transcript events to update the ClearBoard with
+  // incidents created by live phone calls (which bypass submitSignal).
+  useEffect(() => {
+    const es = new EventSource("/api/phone/transcripts/stream");
+    es.onmessage = (evt) => {
+      try {
+        const data = JSON.parse(evt.data as string) as {
+          type: string;
+          tool?: string;
+          summary?: string;
+          call_id?: string;
+        };
+        if (data.type === "tool_call" && data.tool === "analyze_and_route_query" && data.summary) {
+          try {
+            const r = JSON.parse(data.summary) as {
+              incident_id?: string;
+              intent_category?: string;
+              queue?: string;
+              severity?: string;
+              outcome?: string;
+              message?: string;
+              escalated?: boolean;
+            };
+            if (r.incident_id) {
+              setSignalCount((n) => n + 1);
+              setClearBoardIncidents((prev) => {
+                const existing = prev[r.incident_id!];
+                const newCount = (existing?.report_count ?? 0) + 1;
+                return {
+                  ...prev,
+                  [r.incident_id!]: {
+                    incident_id: r.incident_id!,
+                    title: existing?.title ?? `${(r.intent_category ?? "INCIDENT").replace(/_/g, " ")} · phone call`,
+                    location: existing?.location ?? "phone call",
+                    queue: r.queue ?? existing?.queue ?? "unknown",
+                    severity: (r.severity as "SEV1"|"SEV2"|"SEV3"|"SEV4") ?? existing?.severity ?? "SEV3",
+                    report_count: newCount,
+                    sla_minutes: existing?.sla_minutes ?? 60,
+                    dedup_similarity: existing?.dedup_similarity ?? 0,
+                    status: existing?.status ?? "opened",
+                    summary: r.message ?? existing?.summary ?? "",
+                    sample_signals: [...(existing?.sample_signals ?? []), "📞 phone"].slice(-3),
+                  },
+                };
+              });
+            }
+          } catch {
+            // ignore unparseable tool summaries
+          }
+        }
+      } catch {
+        // ignore malformed SSE events
+      }
+    };
+    return () => es.close();
+  }, []);
+
   useEffect(() => {
     getHealth()
       .then((h) => setHealth({ ok: h.status === "healthy", live: !h.mock_mode }))
