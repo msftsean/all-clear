@@ -292,6 +292,25 @@ class ConversationTurn(BaseModel):
         description="Ticket created in this turn"
     )
     escalated: bool = Field(default=False, description="Whether this turn resulted in escalation")
+    # Conversation persistence (019): PII-safe message content for history display
+    signal_text: Optional[str] = Field(
+        default=None,
+        max_length=4000,
+        description="PII-redacted student signal text for this turn"
+    )
+    agent_response: Optional[str] = Field(
+        default=None,
+        max_length=4000,
+        description="Agent response message for this turn"
+    )
+    incident_id: Optional[str] = Field(
+        default=None,
+        description="Incident ID opened or attached in this turn"
+    )
+    input_modality: str = Field(
+        default="text",
+        description="Input channel: text, voice, or phone"
+    )
 
 
 class Session(BaseModel):
@@ -319,6 +338,20 @@ class Session(BaseModel):
     ttl: int = Field(
         default=7776000,
         description="Time-to-live in seconds (90 days)"
+    )
+    # Conversation persistence (019): metadata for history list display
+    topic_summary: Optional[str] = Field(
+        default=None,
+        max_length=200,
+        description="Auto-generated summary of the session topic (e.g. 'Financial Aid inquiry')"
+    )
+    incident_ids: list[str] = Field(
+        default_factory=list,
+        description="All incident IDs opened or attached during this session"
+    )
+    status: str = Field(
+        default="active",
+        description="Session status: active or closed"
     )
 
 

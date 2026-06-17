@@ -108,3 +108,28 @@ export interface DemoClearBoard {
   headline: string;
   subhead: string;
 }
+
+// Conversation persistence (019)
+export interface ConversationTurn {
+  turn_number: number;
+  timestamp: string;
+  intent: string;
+  ticket_id?: string | null;
+  escalated: boolean;
+  signal_text?: string | null;
+  agent_response?: string | null;
+  incident_id?: string | null;
+  input_modality: string;
+}
+
+export interface ConversationSession {
+  session_id: string;
+  student_id_hash: string;
+  created_at: string;
+  last_active: string;
+  conversation_history: ConversationTurn[];
+  topic_summary?: string | null;
+  incident_ids: string[];
+  status: string;
+  ttl: number;
+}
