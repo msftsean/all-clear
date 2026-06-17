@@ -8,12 +8,12 @@ Provides:
   DELETE /api/admin/tickets/{id}  – delete a ticket
 """
 
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
-from app.core.dependencies import BrandingServiceDep, TicketServiceDep
+from app.core.dependencies import get_branding_service, get_ticket_service
 from app.models.enums import Department, TicketStatus
 from app.models.schemas import (
     BrandingResponse,
@@ -21,8 +21,23 @@ from app.models.schemas import (
     TicketListResponse,
     TicketStatusResponse,
 )
+from app.services.interfaces import BrandingServiceInterface, TicketServiceInterface
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+
+def _branding_service_dep() -> BrandingServiceInterface:
+    """FastAPI-safe dependency for branding service (no exposed query params)."""
+    return get_branding_service()
+
+
+def _ticket_service_dep() -> TicketServiceInterface:
+    """FastAPI-safe dependency for ticket service (no exposed query params)."""
+    return get_ticket_service()
+
+
+BrandingDep = Annotated[BrandingServiceInterface, Depends(_branding_service_dep)]
+TicketDep = Annotated[TicketServiceInterface, Depends(_ticket_service_dep)]
 
 
 class TicketUpdateRequest(BaseModel):
@@ -38,7 +53,7 @@ class TicketUpdateRequest(BaseModel):
 
 @router.get("/branding", response_model=BrandingResponse, summary="Get branding config")
 async def get_branding(
-    branding_service: BrandingServiceDep,
+    branding_service: BrandingDep,
 ) -> BrandingResponse:
     """Return the current institution branding configuration."""
     config = await branding_service.get_branding()
@@ -47,15 +62,15 @@ async def get_branding(
 
 @router.put("/branding", response_model=BrandingResponse, summary="Update branding config")
 async def update_branding(
-    request: BrandingUpdateRequest,
-    branding_service: BrandingServiceDep,
+    branding_service: BrandingDep,
+    update: BrandingUpdateRequest = Body(...),
 ) -> BrandingResponse:
     """Update the institution branding configuration (partial update — only provided fields change)."""
     config = await branding_service.update_branding(
-        logo_url=request.logo_url,
-        primary_color=request.primary_color,
-        institution_name=request.institution_name,
-        tagline=request.tagline,
+        logo_url=update.logo_url,
+        primary_color=update.primary_color,
+        institution_name=update.institution_name,
+        tagline=update.tagline,
     )
     return BrandingResponse(config=config)
 
@@ -66,7 +81,7 @@ async def update_branding(
 
 @router.get("/tickets", response_model=TicketListResponse, summary="List all tickets")
 async def list_tickets(
-    ticket_service: TicketServiceDep,
+    ticket_service: TicketDep,
     ticket_status: Optional[TicketStatus] = Query(default=None, alias="status"),
     department: Optional[Department] = Query(default=None),
     limit: int = Query(default=50, ge=1, le=200),
@@ -92,8 +107,8 @@ async def list_tickets(
 )
 async def update_ticket(
     ticket_id: str,
-    request: TicketUpdateRequest,
-    ticket_service: TicketServiceDep,
+    ticket_service: TicketDep,
+    request: TicketUpdateRequest = Body(...),
 ) -> TicketStatusResponse:
     """Update the status (and optionally assigned_to / resolution) of a ticket."""
     result = await ticket_service.update_ticket_status(
@@ -116,7 +131,7 @@ async def update_ticket(
 )
 async def delete_ticket(
     ticket_id: str,
-    ticket_service: TicketServiceDep,
+    ticket_service: TicketDep,
 ) -> dict:
     """Permanently delete a ticket."""
     success = await ticket_service.delete_ticket(ticket_id)
