@@ -1,16 +1,13 @@
-"""Entry point for the All Clear MCP server."""
+"""
+Entry point for running All Clear as an MCP server.
+"""
+import asyncio
+import os
+import sys
 
-from __future__ import annotations
+sys.path.insert(0, os.path.dirname(__file__))
 
-from backend.app import mcp_server
-
-
-def run() -> int:
-    # In a production implementation this would start stdio_server / MCP runtime.
-    # Keeping it lightweight for lab validation.
-    _ = mcp_server.search_knowledge("downed line on Main St")
-    return 0
-
+from app.mcp_server import main
 
 if __name__ == "__main__":
-    raise SystemExit(run())
+    asyncio.run(main())
