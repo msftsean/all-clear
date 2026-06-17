@@ -1,0 +1,14 @@
+Name                              ResourceGroup            Location    Type                                           Status
+--------------------------------  -----------------------  ----------  ---------------------------------------------  --------
+allclear-mcdxfhk6mgpyi-cosmos     rg-azureday-user-8-use2  eastus      Microsoft.DocumentDB/databaseAccounts
+allclearmcdxfhk6mgpyikv           rg-azureday-user-8-use2  eastus      Microsoft.KeyVault/vaults
+allclear-mcdxfhk6mgpyi-search     rg-azureday-user-8-use2  eastus      Microsoft.Search/searchServices
+allclear-mcdxfhk6mgpyi-openai     rg-azureday-user-8-use2  eastus      Microsoft.CognitiveServices/accounts
+allclearmcdxfhk6mgpyiacr          rg-azureday-user-8-use2  eastus      Microsoft.ContainerRegistry/registries
+allclear-mcdxfhk6mgpyi-logs       rg-azureday-user-8-use2  eastus      Microsoft.OperationalInsights/workspaces
+allclear-mcdxfhk6mgpyi-openai-rt  rg-azureday-user-8-use2  eastus2     Microsoft.CognitiveServices/accounts
+allclear-mcdxfhk6mgpyi-acs        rg-azureday-user-8-use2  global      Microsoft.Communication/CommunicationServices
+allclear-mcdxfhk6mgpyi-env        rg-azureday-user-8-use2  eastus      Microsoft.App/managedEnvironments
+allclear-mcdxfhk6mgpyi-backend    rg-azureday-user-8-use2  eastus      Microsoft.App/containerApps
+allclear-mcdxfhk6mgpyi-frontend   rg-azureday-user-8-use2  eastus      Microsoft.App/containerApps
+acl-apim-rd8                      rg-azureday-user-8-use2  eastus      Microsoft.ApiManagement/service
