@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "allclear": {
+      "command": "python",
+      "args": ["backend/mcp_main.py"],
+      "env": {
+        "MOCK_MODE": "true"
+      }
+    }
+  }
+}
