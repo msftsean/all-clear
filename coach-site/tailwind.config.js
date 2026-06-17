@@ -3,37 +3,37 @@ export default {
   theme: {
     extend: {
       colors: {
-        // GI Company tokens
-        night: '#1f1f29',
-        canvas: '#ffffff',
-        paper: '#f2f5f9',
+        // Coach prep tokens
+        night: '#2B2622',
+        canvas: '#FBF8F4',
+        paper: '#FBF8F4',
         surface: '#ffffff',
-        'surface-raised': '#f8fafc',
-        border: '#dde3ea',
-        ink: '#111827',
-        'ink-secondary': '#4b5563',
-        cofounder: '#0081c0',
-        'cofounder-dark': '#005f8f',
-        'cofounder-soft': '#ddf0fa',
-        // Keep legacy aliases for content components
-        brand: '#0081c0',
-        'accent-soft': '#ddf0fa',
-        sage: '#059669',
-        'sage-soft': '#d1fae5',
-        amber: '#d97706',
+        'surface-raised': '#FFFDF9',
+        border: '#ECE6DD',
+        ink: '#2B2622',
+        'ink-secondary': '#6D6259',
+        cofounder: '#B25B34',
+        'cofounder-dark': '#8F4425',
+        'cofounder-soft': '#F3E7DE',
+        // Keep legacy aliases for content components while retuning the palette.
+        brand: '#B25B34',
+        'accent-soft': '#F3E7DE',
+        sage: '#3F7E6E',
+        'sage-soft': '#E3EFEA',
+        amber: '#A8661B',
       },
       fontFamily: {
         serif: ['"Instrument Serif"', 'Fraunces', 'Georgia', 'serif'],
-        sans: ['"Inter Tight"', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Figtree', '"Nunito Sans"', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         'pill': '50.5px',
       },
       boxShadow: {
-        'soft': '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
-        'medium': '0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-        'elevated': '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
-        'hero-glow': '0 0 80px rgba(0,129,192,0.25)',
+        'soft': '0 1px 3px rgba(43,38,34,0.06), 0 8px 20px rgba(43,38,34,0.05)',
+        'medium': '0 6px 22px rgba(43,38,34,0.08), 0 1px 4px rgba(43,38,34,0.05)',
+        'elevated': '0 10px 36px rgba(43,38,34,0.14), 0 2px 8px rgba(43,38,34,0.06)',
+        'hero-glow': '0 0 80px rgba(178,91,52,0.24)',
       },
       keyframes: {
         'fade-slide-up': {

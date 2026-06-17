@@ -1,22 +1,24 @@
-import { defineConfig, devices } from '@playwright/test';
+/// <reference types="node" />
 
-const PORT = process.env.PORT ?? '4290';
+import { defineConfig, devices } from "@playwright/test";
+
+const PORT = process.env.PORT ?? "4290";
 const externalURL = process.env.BASE_URL?.trim() || undefined;
 const baseURL = externalURL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  reporter: process.env.CI ? "github" : "list",
   use: {
     baseURL,
-    trace: 'on-first-retry',
+    trace: "on-first-retry",
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile', use: { ...devices['Pixel 5'] } },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    { name: "mobile", use: { ...devices["Pixel 5"] } },
   ],
   // When BASE_URL is provided, test the already-deployed site directly.
   // Otherwise build the production bundle and serve it locally (emulates
@@ -24,7 +26,7 @@ export default defineConfig({
   webServer: externalURL
     ? undefined
     : {
-        command: 'npm run build && npx serve -s dist -l ' + PORT,
+        command: "npm run build && npx serve -s dist -l " + PORT,
         url: baseURL,
         reuseExistingServer: true,
         timeout: 120_000,

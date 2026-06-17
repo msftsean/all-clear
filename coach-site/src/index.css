@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -16,7 +18,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid #0081c0;
+    outline: 2px solid #B25B34;
     outline-offset: 3px;
     border-radius: 4px;
   }
@@ -25,7 +27,7 @@
 @layer components {
   /* Skip link */
   .skip-link {
-    @apply absolute left-4 z-50 px-4 py-2 bg-cofounder text-white rounded-lg font-medium text-sm;
+    @apply absolute left-4 z-50 px-4 py-2 bg-brand text-white rounded-lg font-medium text-sm;
     top: -4rem;
     transition: top 0.15s ease-in-out;
   }
@@ -60,7 +62,7 @@
 
   /* Callout */
   .callout {
-    @apply bg-surface-raised rounded-xl border border-border p-4 shadow-soft;
+    @apply bg-accent-soft rounded-2xl border border-border p-4 shadow-soft;
   }
 
   /* Reveal animation (JS-toggled) */
