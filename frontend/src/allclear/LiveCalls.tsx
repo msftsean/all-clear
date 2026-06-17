@@ -3,7 +3,7 @@ import { useTranscriptStream } from "../hooks/useTranscriptStream";
 import type { TranscriptEvent } from "../types/demo";
 import { Waveform } from "./components";
 
-const PHONE_DISPLAY = "+1 (855) 636-2834";
+const PHONE_DISPLAY = "+1 (844) 207-0169";
 
 function clock(iso: string): string {
   try {

@@ -467,6 +467,10 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               name: 'PHONE_CALLBACK_BASE_URL'
               value: mockMode ? '' : 'https://${prefix}-backend.${containerAppEnv.properties.defaultDomain}'
             }
+            {
+              name: 'ACS_PHONE_NUMBER'
+              value: '+18442070169'
+            }
           ]
           resources: {
             cpu: json('0.5')
