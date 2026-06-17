@@ -94,7 +94,7 @@ function Callout({
 }) {
   const s = CALLOUT_STYLES[tone];
   return (
-    <div className={`mt-4 rounded-lg border-l-4 ${s.wrap} p-4 shadow-sm`}>
+    <div className={`mt-4 rounded-lg border ${s.wrap} p-4 shadow-sm`}>
       <div className="flex items-start gap-3">
         <span className={`mt-0.5 inline-flex shrink-0 items-center justify-center rounded-full p-1 ${s.badge}`}>
           {s.icon}

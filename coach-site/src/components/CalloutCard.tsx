@@ -8,10 +8,10 @@ interface CalloutCardProps {
   tone?: Tone
 }
 
-const toneStyles: Record<Tone, { border: string; bg: string; icon: string; title: string }> = {
-  info: { border: 'border-l-cofounder', bg: 'bg-cofounder-soft', icon: 'text-cofounder', title: 'text-cofounder' },
-  warn: { border: 'border-l-amber/60', bg: 'bg-amber/8', icon: 'text-amber', title: 'text-amber' },
-  success: { border: 'border-l-sage', bg: 'bg-sage-soft', icon: 'text-sage', title: 'text-sage' },
+const toneStyles: Record<Tone, { bg: string; icon: string; title: string }> = {
+  info: { bg: 'bg-cofounder-soft', icon: 'text-cofounder', title: 'text-cofounder' },
+  warn: { bg: 'bg-amber/10', icon: 'text-amber', title: 'text-amber' },
+  success: { bg: 'bg-sage-soft', icon: 'text-sage', title: 'text-sage' },
 }
 
 const iconPaths: Record<Tone, string> = {
@@ -24,7 +24,7 @@ export default function CalloutCard({ title, children, tone = 'info' }: CalloutC
   const styles = toneStyles[tone]
 
   return (
-    <div className={`callout border-l-4 ${styles.border} ${styles.bg}`}>
+    <div className={`callout ${styles.bg}`}>
       <div className="flex gap-3">
         <svg className={`mt-0.5 flex-shrink-0 ${styles.icon}`} style={{ width: 20, height: 20 }} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path d={iconPaths[tone]} />

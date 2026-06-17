@@ -138,7 +138,7 @@ const slide21IfAsked = [
 
 function Verbatim({ children }: { children: ReactNode }) {
   return (
-    <blockquote className="border-l-4 border-iu-crimson/60 bg-iu-crimson/5 pl-4 pr-3 py-2 my-2 text-dark-text italic leading-relaxed rounded-r">
+    <blockquote className="bg-iu-crimson/8 px-4 py-2 my-2 text-dark-text italic leading-relaxed rounded-lg">
       {children}
     </blockquote>
   )
@@ -200,7 +200,7 @@ export default function RunOfShow() {
           <p className="text-dark-text leading-relaxed mb-3">
             Open the live app and type this <strong>exact</strong> message into the chat:
           </p>
-          <blockquote className="border-l-4 border-iu-crimson/60 bg-white/70 pl-4 pr-3 py-3 my-2 text-dark-text rounded-r font-mono text-sm">
+          <blockquote className="bg-white/70 px-4 py-3 my-2 text-dark-text rounded-lg font-mono text-sm border border-iu-crimson/20">
             My password isn&apos;t working and I just got an email saying my account is
             locked. I clicked the link.
           </blockquote>

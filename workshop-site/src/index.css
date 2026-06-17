@@ -258,12 +258,11 @@
   }
   .callout {
     border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
     background: linear-gradient(135deg, color-mix(in srgb, var(--surface) 82%, transparent), color-mix(in srgb, var(--surface-elevated) 70%, transparent));
     border-radius: var(--radius-card);
     padding: 1.35rem;
   }
-  .callout-accent { border-left-color: var(--danger); }
+  .callout-accent { border-top: 2px solid var(--danger); }
   .icon-chip {
     width: 2.15rem;
     height: 2.15rem;

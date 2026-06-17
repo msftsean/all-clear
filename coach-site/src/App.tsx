@@ -134,7 +134,7 @@ function App() {
         {/* Intro section — "About this site" */}
         <section aria-labelledby="intro-heading" className="mb-12" data-reveal>
           <h2 id="intro-heading" className="sr-only">About this site</h2>
-          <div className="card-raised border-l-4 border-l-cofounder">
+          <div className="card-raised bg-cofounder-soft rounded-2xl">
             <div className="flex gap-4">
               <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-cofounder-soft flex items-center justify-center">
                 <span aria-hidden="true" className="text-cofounder text-lg">◆</span>

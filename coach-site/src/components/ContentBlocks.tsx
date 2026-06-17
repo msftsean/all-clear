@@ -42,7 +42,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
 
     case 'troubleshoot':
       return (
-        <div className="card border-l-4 border-l-amber/50">
+        <div className="card bg-amber/10 rounded-xl">
           <p className="font-semibold text-amber/80">
             <span className="text-ink/50 font-normal text-sm">Symptom: </span>
             {block.symptom}
