@@ -1,16 +1,16 @@
 <!--
 SYNC IMPACT REPORT
 ==================
-Version change: 1.0.0 → 1.1.0
-Bump rationale: MINOR — materially expanded 3 existing principles
-  with voice/audio channel guidance; added voice-specific security
-  constraints. No principles removed or fundamentally redefined.
+Version change: 1.1.0 → 1.2.0
+Bump rationale: MINOR — added explicit evolution-loop guardrails
+  (RouterExecutor immutability, escalation-as-security, citation-grounded
+  sitreps, green-suite contract). No principles removed.
 Modified principles:
-  - III. Privacy-First Data Handling → expanded with audio/voice PII rules
-  - VI. Accessibility as Requirement → expanded with voice UI accessibility
-  - VII. Graceful Degradation → expanded with WebRTC/Realtime API fallbacks
+  - I. Bounded Agent Authority → explicit deterministic zero-LLM router rule
+  - II. Human Escalation for Policy Decisions → escalation weakening = release blocker
+  - V. Test-First Development → explicit mock-suite + smoke-test green contract
 Added sections:
-  - Voice Channel Security (under Security & Compliance Constraints)
+  - None
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md: ✅ Compatible (Constitution Check
@@ -36,8 +36,12 @@ architecturally:
   decisions, no ticket creation
 - RouterAgent: Routing decisions ONLY — no intent detection, no ticket
   creation, no user communication
+- RouterExecutor (`app/agents/router_agent.py`) MUST remain deterministic,
+  make zero LLM calls, and keep severity/SLA rule-based (configuration-driven)
 - ActionAgent: Ticket creation and knowledge retrieval ONLY — no approval
   methods, no record modification
+- `generate_sitrep` outputs MUST remain citation-grounded; unsupported claims
+  are forbidden
 - Voice tool calls MUST route through the same bounded pipeline — the
   Realtime API MUST NOT bypass agent boundaries via direct function access
 - The absence of unauthorized capabilities MUST be enforced at the code
@@ -61,6 +65,8 @@ judgment, policy interpretation, or exception handling:
 - Ambiguity unresolved after 3 clarification attempts
 - Voice-originated escalations MUST include the PII-filtered transcript
   as context for the human reviewer
+- Any change that weakens escalation triggers (safety/PII/sentiment/policy)
+  is a release blocker and MUST be rejected at review
 
 **Rationale**: Automated systems MUST NOT make decisions that affect student
 rights, finances, or academic standing. Human judgment is required for
@@ -132,6 +138,8 @@ implementation:
 - Voice-specific tests MUST cover: PII filtering of spoken input,
   tool call relay accuracy, degradation to text mode, and session
   sharing between modalities
+- Existing mock-mode pytest suite and `smoke-test.yml` MUST remain green;
+  new features MUST add tests rather than delete or weaken safety assertions
 
 **Rationale**: Agent systems have high stakes for incorrect behavior.
 Test-first ensures behaviors are verified, not assumed. Voice adds
@@ -248,6 +256,8 @@ MUST NOT degrade the existing text experience.
 - Agent boundaries MUST be documented in code comments
 - Escalation rules MUST be documented and version-controlled
 - Voice endpoints and WebSocket protocol MUST be documented
+- Material architecture decisions MUST be logged in `.squad/decisions.md`
+  (or the squad decision inbox before promotion)
 
 ## Governance
 
@@ -275,4 +285,4 @@ Support Agent. All development decisions MUST comply with these principles.
   Privacy > Security > Human Escalation > User Experience
 - Document conflicts and resolutions in decision log
 
-**Version**: 1.1.0 | **Ratified**: 2026-01-20 | **Last Amended**: 2026-03-13
+**Version**: 1.2.0 | **Ratified**: 2026-01-20 | **Last Amended**: 2026-06-20

@@ -111,6 +111,11 @@ Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_c
 | 🧪 Azure AI Foundry | Red team · AI-quality evals · content-filter guardrails *(East US 2)* |
 | 📊 Azure Monitor + Log Analytics | Observability / telemetry |
 
+### 🧭 Responsible AI + Production Path
+
+- [Responsible AI control map (SB 818 + DoIT concepts)](./docs/responsible-ai.md)
+- [Lab to Production leave-behind](./docs/lab-to-production.md)
+
 ---
 
 ## 🚀 Quickstart

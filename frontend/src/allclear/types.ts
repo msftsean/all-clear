@@ -87,6 +87,39 @@ export interface ModelStatus {
   mock_mode?: boolean;
 }
 
+export interface AzureFootprintService {
+  service_key: string;
+  service_name: string;
+  estimated_monthly_cost: number;
+  estimate_only: boolean;
+}
+
+export interface AzureFootprintEstimate {
+  currency: string;
+  monthly_total: number;
+  volume_multiplier: number;
+  estimate_only: boolean;
+  disclaimer: string;
+}
+
+export interface AzureFootprint {
+  services: AzureFootprintService[];
+  estimate: AzureFootprintEstimate;
+}
+
+export interface CapstoneLeadPayload {
+  name: string;
+  agency: string;
+  surge: string;
+  signal_flood: string;
+  incident_underneath: string;
+}
+
+export interface CapstoneLeadEntry extends CapstoneLeadPayload {
+  entry_id: string;
+  created_at: string;
+}
+
 export interface DemoClearBoardIncident {
   incident_id: string;
   title: string;

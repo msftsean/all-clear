@@ -24,6 +24,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Optional
 
+from app.core.config import get_settings
+from app.services.scenario_packs import get_scenario_pack, scenario_signals
+
 # Lock document coordinates: its own logical partition so it is never returned
 # by category-scoped dedup queries against real SignalCategory partitions.
 _LOCK_PARTITION = "__loadtest__"
@@ -37,23 +40,6 @@ _STALE_AFTER_S = 300
 _MIN_COUNT = 1
 _MAX_COUNT = 150
 _DEFAULT_COUNT = 40
-
-# All mention "Oak Street" so the classifier extracts a consistent location and
-# dedup funnels them toward the same incident(s) — mirrors scripts/load_test_map.py.
-_VARIANTS = [
-    "A downed power line is sparking on Oak Street.",
-    "The transformer on Oak Street is sparking again.",
-    "I smell smoke near the Oak Street power line.",
-    "Oak Street still has no power and it's getting dark.",
-    "There's a small fire by the pole on Oak Street.",
-    "Sparks are flying off the line on Oak Street.",
-    "The power line on Oak Street is down across the road.",
-    "Neighbors on Oak Street report the outage is spreading.",
-    "Loud bang and now the Oak Street line is arcing.",
-    "Smoke is coming from a transformer on Oak Street.",
-]
-_SAME = "A downed power line is sparking on Oak Street."
-
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -105,6 +91,7 @@ def _public_view(doc: Optional[dict[str, Any]]) -> dict[str, Any]:
         "incidents": int(doc.get("incidents", 0)),
         "max_magnitude": int(doc.get("max_magnitude", 0)),
         "mode": doc.get("mode"),
+        "pack": doc.get("pack"),
         "started_by": doc.get("started_by"),
         "started_at": doc.get("started_at"),
         "finished_at": doc.get("finished_at"),
@@ -130,7 +117,11 @@ class LoadTestCoordinator:
         return _public_view(await self._read())
 
     async def start(
-        self, count: int = _DEFAULT_COUNT, mode: str = "varied", started_by: str = "coach"
+        self,
+        count: int = _DEFAULT_COUNT,
+        mode: str = "varied",
+        started_by: str = "coach",
+        pack: str | None = None,
     ) -> dict[str, Any]:
         """Acquire the lock and launch a run, or return the in-flight job.
 
@@ -139,6 +130,8 @@ class LoadTestCoordinator:
         """
         count = clamp_count(count)
         mode = "same" if str(mode).lower() == "same" else "varied"
+        settings = get_settings()
+        resolved_pack = get_scenario_pack(settings, pack).pack_id
         run_id = uuid.uuid4().hex
         new_doc = {
             "id": _LOCK_ID,
@@ -146,6 +139,7 @@ class LoadTestCoordinator:
             "status": "running",
             "run_id": run_id,
             "mode": mode,
+            "pack": resolved_pack,
             "total": count,
             "sent": 0,
             "ok": 0,
@@ -155,7 +149,7 @@ class LoadTestCoordinator:
             "started_by": started_by or "coach",
             "started_at": _now_iso(),
             "finished_at": None,
-            "message": f"Starting {count} {mode} signals…",
+            "message": f"Starting {count} {mode} signals for {resolved_pack}…",
         }
 
         acquired = await self._try_acquire(new_doc)
@@ -163,7 +157,7 @@ class LoadTestCoordinator:
             # Someone else holds an active run — return their status, do not start.
             return _public_view(await self._read())
 
-        self._task = asyncio.create_task(self._run(run_id, count, mode))
+        self._task = asyncio.create_task(self._run(run_id, count, mode, resolved_pack))
         return _public_view(acquired)
 
     # ------------------------------------------------------------------ #
@@ -281,17 +275,18 @@ class LoadTestCoordinator:
     # ------------------------------------------------------------------ #
     # Background runner
     # ------------------------------------------------------------------ #
-    async def _run(self, run_id: str, count: int, mode: str) -> None:
+    async def _run(self, run_id: str, count: int, mode: str, pack: str) -> None:
         from app.core.dependencies import get_pipeline
 
+        settings = get_settings()
+        signals = scenario_signals(settings, pack_id=pack, count=count, mode=mode)
         pipeline = get_pipeline()
         ok = 0
         failed = 0
         incidents: set[str] = set()
         max_mag = 0
 
-        for i in range(count):
-            message = _SAME if mode == "same" else _VARIANTS[i % len(_VARIANTS)]
+        for i, message in enumerate(signals):
             try:
                 result = await pipeline.process_signal(
                     text=message, session_id="coach-loadtest", channel="chat"
@@ -317,7 +312,10 @@ class LoadTestCoordinator:
                 failed=failed,
                 incidents=len(incidents),
                 max_magnitude=max_mag,
-                message=f"Fired {i + 1}/{count} signals → {len(incidents)} incidents (max magnitude {max_mag}).",
+                message=(
+                    f"Fired {i + 1}/{count} signals ({pack}) → "
+                    f"{len(incidents)} incidents (max magnitude {max_mag})."
+                ),
             )
             if not still_ours:
                 return  # ownership lost (takeover); stop quietly

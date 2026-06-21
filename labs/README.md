@@ -57,6 +57,7 @@ was built and how to extend it.
 | [05](05-agent-orchestration/) | **Orchestration** | Assemble the QueryAgent → RouterExecutor → ActionAgent workflow; run a **surge** and watch dedup attach reports | 90 min |
 | [06](06-deploy-with-azd/) | **Deploy** | `azd up` All Clear to Azure Container Apps with Bicep infra | 60 min |
 | [07](07-mcp-server/) | **MCP server** | Expose All Clear's tools (`create_incident`, `search_knowledge`, `generate_sitrep`) as an MCP server | 60 min |
+| [09](09-github-in-the-lab/) | **GitHub-in-the-lab path** | Fork + run `smoke-test.yml` + complete one bounded Copilot extension behind a red-to-green starter test | 45 min |
 
 **Recommended order:** 00 → 01 → 05 are the spine (signal in, classify,
 orchestrate). 02/03/04 deepen the platform. 06/07 ship and integrate. In the

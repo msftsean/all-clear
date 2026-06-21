@@ -1,4 +1,13 @@
-import type { ConversationSession, DemoClearBoard, HealthStatus, ModelStatus, PipelineResult } from "./types";
+import type {
+  AzureFootprint,
+  CapstoneLeadEntry,
+  CapstoneLeadPayload,
+  DemoClearBoard,
+  HealthStatus,
+  ModelStatus,
+  PipelineResult,
+  ConversationSession,
+} from "./types";
 
 // In production the nginx sidecar proxies /api -> BACKEND_URL, so a relative
 // base works everywhere. VITE_API_BASE_URL can override for local dev.
@@ -62,6 +71,10 @@ export function getModelStatus(): Promise<ModelStatus> {
   return req<ModelStatus>("/health/models");
 }
 
+export function getAzureFootprint(): Promise<AzureFootprint> {
+  return req<AzureFootprint>("/health/azure-footprint");
+}
+
 export function getDemoClearBoard(): Promise<DemoClearBoard> {
   return req<DemoClearBoard>("/demo/clearboard?mode=loaded");
 }
@@ -78,4 +91,11 @@ export function listSessions(
   return req<ConversationSession[]>(
     `/sessions?student_id_hash=${encodeURIComponent(studentIdHash)}&limit=${limit}`,
   );
+}
+
+export function submitCapstoneLead(payload: CapstoneLeadPayload): Promise<{ entry: CapstoneLeadEntry; count: number }> {
+  return req<{ entry: CapstoneLeadEntry; count: number }>("/demo/capstone/entries", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }

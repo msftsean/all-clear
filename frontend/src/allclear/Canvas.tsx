@@ -619,6 +619,15 @@ export function ApprovalGate({
           <div className="mt-1 text-center eyebrow text-ndim/70">15-minute undo window</div>
         </>
       )}
+      <a
+        data-testid="capstone-destination-link"
+        href="/docs/lab-to-production.md"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 inline-flex text-[11px] text-clear underline underline-offset-2"
+      >
+        Next step: lab to production leave-behind
+      </a>
     </div>
   );
 }

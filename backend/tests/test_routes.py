@@ -30,6 +30,18 @@ def test_health(client: TestClient) -> None:
     assert body["mock_mode"] is True
 
 
+def test_health_azure_footprint(client: TestClient) -> None:
+    resp = client.get("/api/health/azure-footprint")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body["services"]) == 11
+    assert body["estimate"]["estimate_only"] is True
+    assert body["estimate"]["monthly_total"] > 0
+    service_names = [s["service_name"] for s in body["services"]]
+    assert "Azure OpenAI" in service_names
+    assert "AI Search" in service_names
+
+
 def test_health_models(client: TestClient) -> None:
     resp = client.get("/api/health/models")
     assert resp.status_code == 200
@@ -56,6 +68,39 @@ def test_demo_clearboard_blank_fixture(client: TestClient) -> None:
     body = resp.json()
     assert body["total_signals"] == 0
     assert body["incidents"] == []
+
+
+def test_capstone_lead_capture_persists_and_exports(client: TestClient) -> None:
+    payload = {
+        "name": "Alex Rivera",
+        "agency": "Maryland DoIT",
+        "surge": "Storm outage spikes service calls",
+        "signal_flood": "Phone calls and social reports flood in together",
+        "incident_underneath": "One feeder outage caused most of the duplicate signals",
+    }
+
+    created = client.post("/api/demo/capstone/entries", json=payload)
+    assert created.status_code == 200, created.text
+    created_body = created.json()
+    assert created_body["count"] == 1
+    assert created_body["entry"]["name"] == "Alex Rivera"
+    assert created_body["entry"]["entry_id"].startswith("lead-")
+
+    listed = client.get("/api/demo/capstone/entries")
+    assert listed.status_code == 200
+    listed_body = listed.json()
+    assert listed_body["count"] == 1
+    assert listed_body["entries"][0]["agency"] == "Maryland DoIT"
+
+    exported_json = client.get("/api/demo/capstone/export", params={"format": "json"})
+    assert exported_json.status_code == 200
+    assert exported_json.json()["count"] == 1
+
+    exported_csv = client.get("/api/demo/capstone/export", params={"format": "csv"})
+    assert exported_csv.status_code == 200
+    assert exported_csv.headers["content-type"].startswith("text/csv")
+    assert "Alex Rivera" in exported_csv.text
+    assert "Maryland DoIT" in exported_csv.text
 
 
 def test_submit_signal_returns_pipeline_result(client: TestClient) -> None:

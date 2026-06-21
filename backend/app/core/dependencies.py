@@ -176,6 +176,14 @@ RealtimeServiceDep = Annotated[RealtimeServiceInterface, Depends(get_realtime_se
 PhoneServiceDep = Annotated[PhoneServiceInterface, Depends(get_phone_service)]
 
 
+@lru_cache
+def get_capstone_lead_store():  # type: ignore[no-untyped-def]
+    """Return singleton in-memory capstone lead store for SPEC-1 demo capture."""
+    from app.services.capstone_leads import CapstoneLeadStore
+
+    return CapstoneLeadStore()
+
+
 def clear_service_caches() -> None:
     """Clear all cached service instances (for testing)."""
     get_llm_service.cache_clear()
@@ -186,6 +194,7 @@ def clear_service_caches() -> None:
     get_branding_service.cache_clear()
     get_realtime_service.cache_clear()
     get_phone_service.cache_clear()
+    get_capstone_lead_store.cache_clear()
     get_chat_client.cache_clear()
     get_embedding_fn.cache_clear()
     get_incident_store.cache_clear()

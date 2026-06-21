@@ -161,6 +161,24 @@
         "validate-jwt rejects unauthenticated calls with 401",
         "APIM telemetry visible in Application Insights"
       ]
+    },
+    {
+      "lab_number": "09",
+      "title": "GitHub-in-the-Lab Path",
+      "duration_minutes": 45,
+      "learning_objectives": [
+        "Fork All Clear and run smoke-test.yml in GitHub Actions",
+        "Use Copilot to complete one bounded extension exercise",
+        "Turn a starter failing test green without weakening existing tests"
+      ],
+      "prerequisites": ["05"],
+      "has_start_code": false,
+      "has_solution_code": false,
+      "deliverables": [
+        "Successful smoke-test.yml run in participant fork",
+        "One bounded extension completed behind tests",
+        "Starter test demonstrates red-to-green workflow"
+      ]
     }
   ]
 }

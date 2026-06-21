@@ -4,7 +4,7 @@ Supports both environment variables and .env files.
 """
 
 from functools import lru_cache
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -295,6 +295,55 @@ class Settings(BaseSettings):
     max_call_duration: int = Field(
         default=600,
         description="Maximum phone call duration in seconds (default 10 minutes)"
+    )
+
+    # ==========================================================================
+    # Demo Scenario Packs (019-evolution-loop SPEC-4)
+    # ==========================================================================
+    scenario_pack_default: str = Field(
+        default="md-soc-sentinel",
+        description="Default demo scenario pack slug when no pack is specified"
+    )
+    scenario_pack_soc_sentinel_enabled: bool = Field(
+        default=True,
+        description="Enable Maryland SOC/Sentinel alert-storm demo pack"
+    )
+    scenario_pack_311_911_enabled: bool = Field(
+        default=True,
+        description="Enable Maryland 311/911 city-ops demo pack"
+    )
+    scenario_pack_water_utility_enabled: bool = Field(
+        default=True,
+        description="Enable Maryland water utility leak demo pack"
+    )
+    scenario_pack_traffic_transport_enabled: bool = Field(
+        default=True,
+        description="Enable Maryland traffic/transportation demo pack"
+    )
+    azure_footprint_estimate_multiplier: float = Field(
+        default=1.0,
+        ge=0.1,
+        description="Multiplier for rough monthly Azure footprint estimates"
+    )
+    azure_footprint_estimate_currency: str = Field(
+        default="USD",
+        description="Currency code for rough monthly Azure footprint estimates"
+    )
+    azure_footprint_estimate_table: dict[str, float] = Field(
+        default_factory=lambda: {
+            "azure_openai": 520.0,
+            "embeddings": 110.0,
+            "ai_search": 180.0,
+            "container_apps": 140.0,
+            "cosmos_db": 160.0,
+            "acs": 90.0,
+            "key_vault": 25.0,
+            "acr": 30.0,
+            "foundry": 95.0,
+            "apim": 120.0,
+            "monitor": 85.0,
+        },
+        description="Config table of rough monthly baseline estimates by Azure service"
     )
 
     @model_validator(mode="after")

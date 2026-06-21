@@ -15,20 +15,50 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Response, status
+from pydantic import BaseModel, Field
 
 from app.agents.pipeline import AllClearPipeline
 from app.agents.schemas import KnowledgeArticle, PipelineResult
 from app.core.config import Settings, get_settings
 from app.core.dependencies import (
+    get_capstone_lead_store,
     get_knowledge_service,
     get_loadtest_coordinator,
     get_model_status,
     get_pipeline,
 )
+from app.services.scenario_packs import (
+    clearboard_for_pack,
+    dedup_probe_signals,
+    list_available_packs,
+)
 from app.services.interfaces import KnowledgeServiceInterface
 
 router = APIRouter()
+
+
+class CapstoneLeadCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    agency: str = Field(..., min_length=1, max_length=160)
+    surge: str = Field(..., min_length=1, max_length=500)
+    signal_flood: str = Field(..., min_length=1, max_length=500)
+    incident_underneath: str = Field(..., min_length=1, max_length=500)
+
+
+AZURE_FOOTPRINT_SERVICES = [
+    ("azure_openai", "Azure OpenAI"),
+    ("embeddings", "Embeddings"),
+    ("ai_search", "AI Search"),
+    ("container_apps", "Container Apps"),
+    ("cosmos_db", "Cosmos DB"),
+    ("acs", "Communication Services"),
+    ("key_vault", "Key Vault"),
+    ("acr", "Container Registry"),
+    ("foundry", "AI Foundry"),
+    ("apim", "API Management"),
+    ("monitor", "Azure Monitor"),
+]
 
 DEMO_CLEARBOARD = {
     "mode": "loaded",
@@ -203,6 +233,41 @@ async def health_check(settings: Settings = Depends(get_settings)) -> dict:
     }
 
 
+@router.get("/health/azure-footprint", tags=["Health"], summary="Azure footprint and rough estimate")
+async def azure_footprint(settings: Settings = Depends(get_settings)) -> dict:
+    """Read-only service inventory and rough monthly estimate (no billing API calls)."""
+    multiplier = settings.azure_footprint_estimate_multiplier
+    estimate_table = settings.azure_footprint_estimate_table
+    services = []
+    total = 0.0
+    for key, label in AZURE_FOOTPRINT_SERVICES:
+        baseline = float(estimate_table.get(key, 0.0))
+        estimated = round(baseline * multiplier, 2)
+        services.append(
+            {
+                "service_key": key,
+                "service_name": label,
+                "estimated_monthly_cost": estimated,
+                "estimate_only": True,
+            }
+        )
+        total += estimated
+
+    return {
+        "services": services,
+        "estimate": {
+            "currency": settings.azure_footprint_estimate_currency,
+            "monthly_total": round(total, 2),
+            "volume_multiplier": multiplier,
+            "estimate_only": True,
+            "disclaimer": (
+                "Rough estimate from static configuration values. "
+                "Not live billing data."
+            ),
+        },
+    }
+
+
 @router.get("/health/models", tags=["Health"], summary="Active model + failover chain")
 async def model_status() -> dict:
     """Report the active chat model, the configured fallback chain, and the model
@@ -215,7 +280,11 @@ async def model_status() -> dict:
 
 
 @router.get("/demo/clearboard", tags=["Demo"], summary="Idempotent ClearBoard demo fixture")
-async def demo_clearboard(mode: Literal["blank", "loaded"] = "loaded") -> dict:
+async def demo_clearboard(
+    mode: Literal["blank", "loaded"] = "loaded",
+    pack: Optional[str] = None,
+    settings: Settings = Depends(get_settings),
+) -> dict:
     """Return the safe, idempotent live-demo board fixture.
 
     ``mode=blank`` intentionally returns zero signals/incidents for before/after
@@ -229,7 +298,107 @@ async def demo_clearboard(mode: Literal["blank", "loaded"] = "loaded") -> dict:
             "subhead": "Clean slate before the signal surge.",
             "incidents": [],
         }
-    return DEMO_CLEARBOARD
+    if pack is None:
+        return DEMO_CLEARBOARD
+    try:
+        return clearboard_for_pack(settings, pack)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown scenario pack: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403, detail=f"Scenario pack is disabled by config: {exc.args[0]}"
+        ) from exc
+
+
+@router.get("/demo/scenario-packs", tags=["Demo"], summary="Available scenario packs")
+async def demo_scenario_packs(settings: Settings = Depends(get_settings)) -> dict:
+    packs = list_available_packs(settings)
+    return {
+        "default_pack": settings.scenario_pack_default,
+        "packs": packs,
+    }
+
+
+@router.post(
+    "/demo/scenario-packs/{pack_id}/dedup-probe",
+    tags=["Demo"],
+    summary="Run deterministic dedup attach probe for a scenario pack",
+)
+async def demo_dedup_probe(
+    pack_id: str,
+    pipeline: AllClearPipeline = Depends(get_pipeline),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    try:
+        first_signal, second_signal = dedup_probe_signals(settings, pack_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown scenario pack: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403, detail=f"Scenario pack is disabled by config: {exc.args[0]}"
+        ) from exc
+    first = await pipeline.process_signal(
+        text=first_signal,
+        session_id=f"pack-probe-{pack_id}-1",
+        channel="chat",
+    )
+    second = await pipeline.process_signal(
+        text=second_signal,
+        session_id=f"pack-probe-{pack_id}-2",
+        channel="chat",
+    )
+    return {
+        "pack_id": pack_id,
+        "first_outcome": first.routing.outcome.value,
+        "second_outcome": second.routing.outcome.value,
+        "first_incident_id": first.action.incident_id,
+        "second_incident_id": second.action.incident_id,
+        "attached": second.routing.outcome.value == "ATTACH_TO_INCIDENT"
+        and second.action.incident_id == first.action.incident_id,
+    }
+
+
+@router.post("/demo/capstone/entries", tags=["Demo"], summary="Create capstone lead entry")
+async def create_capstone_entry(
+    payload: CapstoneLeadCreate,
+    store=Depends(get_capstone_lead_store),
+) -> dict:
+    entry = store.create(
+        name=payload.name.strip(),
+        agency=payload.agency.strip(),
+        surge=payload.surge.strip(),
+        signal_flood=payload.signal_flood.strip(),
+        incident_underneath=payload.incident_underneath.strip(),
+    )
+    return {"entry": entry, "count": len(store.list_entries())}
+
+
+@router.get("/demo/capstone/entries", tags=["Demo"], summary="List capstone lead entries")
+async def list_capstone_entries(store=Depends(get_capstone_lead_store)) -> dict:
+    entries = store.list_entries()
+    return {"count": len(entries), "entries": entries}
+
+
+@router.get("/demo/capstone/export", tags=["Demo"], summary="Export capstone lead entries")
+async def export_capstone_entries(
+    format: Literal["json", "csv"] = "json",
+    store=Depends(get_capstone_lead_store),
+) -> dict:
+    entries = store.list_entries()
+    if format == "csv":
+        csv_text = store.export_csv()
+        return Response(
+            content=csv_text,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": "attachment; filename=all-clear-capstone-leads.csv"
+            },
+        )
+    return {
+        "count": len(entries),
+        "entries": entries,
+        "exported_at": "mock-mode-safe",
+    }
 
 
 @router.get("/demo/loadtest", tags=["Demo"], summary="Coach load-test job status")
@@ -248,6 +417,7 @@ async def demo_loadtest_start(
     count: int = Body(default=40, embed=True, ge=1, le=150),
     mode: str = Body(default="varied", embed=True),
     started_by: str = Body(default="coach", embed=True),
+    pack: Optional[str] = Body(default=None, embed=True),
     coordinator=Depends(get_loadtest_coordinator),
 ) -> dict:
     """Fire a burst of realistic signals through the live pipeline (demo surge).
@@ -256,4 +426,13 @@ async def demo_loadtest_start(
     second click, or another coach), no new run starts and the in-flight job's
     status is returned unchanged.
     """
-    return await coordinator.start(count=count, mode=mode, started_by=started_by)
+    try:
+        return await coordinator.start(
+            count=count, mode=mode, started_by=started_by, pack=pack
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=f"Unknown scenario pack: {exc.args[0]}") from exc
+    except PermissionError as exc:
+        raise HTTPException(
+            status_code=403, detail=f"Scenario pack is disabled by config: {exc.args[0]}"
+        ) from exc
