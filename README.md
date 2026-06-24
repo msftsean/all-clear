@@ -115,6 +115,7 @@ Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_c
 
 - [Responsible AI control map (SB 818 + DoIT concepts)](./docs/responsible-ai.md)
 - [Lab to Production leave-behind](./docs/lab-to-production.md)
+- [What does it cost? — token economics & UBB explainer](./docs/all-clear-cost-explainer.html)
 
 ---
 

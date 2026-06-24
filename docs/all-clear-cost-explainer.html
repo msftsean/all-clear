@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>All Clear — What Does It Cost? (Token Economics for UBB)</title>
+<meta name="description" content="A plain-language deck explaining All Clear's token usage and cost: the two meters, what a 'seat' means, and exactly what to ask management for." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Code:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@8..144,400..600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#070b1a; --bg2:#0b1126; --panel:#0e1530; --panel2:#121a3a;
+  --ink:#eef1fc; --body:#c4cae6; --muted:#8a93b8; --faint:#5e668a;
+  --line:rgba(255,255,255,.085); --line2:rgba(255,255,255,.14);
+  --blue:#4f8bff; --blue2:#3d7bfd; --violet:#7b5cff; --magenta:#d957d5;
+  --grad:linear-gradient(100deg,#3d7bfd 0%,#7b5cff 52%,#d957d5 100%);
+  --money:#3ad29a; --money-dim:rgba(58,210,154,.13);
+  --amber:#f0a83c; --amber-dim:rgba(240,168,60,.12);
+  --red:#ef5d5d; --red-dim:rgba(239,93,93,.12);
+  --font-display:'Google Sans Flex','Segoe UI',system-ui,sans-serif;
+  --font-mono:'Google Sans Code',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --maxw:1180px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--font-display); background:var(--bg); color:var(--body);
+  -webkit-font-smoothing:antialiased; overflow:hidden; letter-spacing:-.011em;
+}
+/* atmospheric backdrop */
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:
+  radial-gradient(60% 46% at 82% -8%,rgba(124,92,255,.20),transparent 60%),
+  radial-gradient(54% 40% at 6% 8%,rgba(61,123,253,.16),transparent 58%),
+  radial-gradient(70% 60% at 50% 116%,rgba(217,87,213,.10),transparent 60%);}
+body::after{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:64px 64px;mask:radial-gradient(120% 90% at 50% 40%,#000 30%,transparent 80%)}
+
+/* ---- deck mechanics ---- */
+.deck{position:relative;z-index:1;height:100vh;width:100vw}
+.slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+  padding:clamp(34px,5.5vh,72px) clamp(34px,6vw,104px);opacity:0;
+  transition:opacity .5s ease}
+.slide.active{display:flex;opacity:1;animation:slideIn .55s cubic-bezier(.22,.9,.27,1) both}
+@keyframes slideIn{from{opacity:0;transform:translateY(14px) scale(.994)}to{opacity:1;transform:none}}
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto}
+
+/* staggered child reveals */
+.slide.active .r{animation:rise .6s cubic-bezier(.22,.9,.27,1) both}
+.slide.active .r:nth-child(1){animation-delay:.05s}
+.slide.active .r:nth-child(2){animation-delay:.12s}
+.slide.active .r:nth-child(3){animation-delay:.19s}
+.slide.active .r:nth-child(4){animation-delay:.26s}
+.slide.active .r:nth-child(5){animation-delay:.33s}
+.slide.active .r:nth-child(6){animation-delay:.40s}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ---- type ---- */
+.kicker{font-family:var(--font-mono);font-size:12px;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--blue);display:inline-flex;align-items:center;gap:11px}
+.kicker::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--blue),transparent)}
+h1{font-family:var(--font-display);font-weight:600;color:var(--ink);letter-spacing:-.025em;line-height:1.02;
+  font-size:clamp(38px,6.4vw,82px)}
+h2{font-family:var(--font-display);font-weight:600;color:var(--ink);letter-spacing:-.022em;line-height:1.06;
+  font-size:clamp(28px,3.8vw,50px)}
+.lead{color:var(--body);font-size:clamp(16px,1.5vw,20px);line-height:1.55;max-width:62ch}
+.mono{font-family:var(--font-mono)}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.money{color:var(--money)} .amber{color:var(--amber)} .red{color:var(--red)} .blue{color:var(--blue)}
+b,strong{color:var(--ink);font-weight:600}
+.dim{color:var(--muted)}
+
+/* ---- shared bits ---- */
+.ey{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.pill{display:inline-flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--body);border:1px solid var(--line2);border-radius:999px;padding:7px 14px;background:rgba(255,255,255,.03)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--money);box-shadow:0 0 10px var(--money)}
+.card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:18px;padding:24px 26px;box-shadow:0 26px 60px -34px rgba(0,0,0,.8)}
+.tag{font-family:var(--font-mono);font-size:11px;letter-spacing:.05em;color:var(--faint)}
+
+/* ---- progress / chrome ---- */
+.chrome{position:fixed;z-index:30;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;
+  padding:16px clamp(24px,4vw,48px);pointer-events:none;font-family:var(--font-mono)}
+.brand{display:flex;align-items:center;gap:11px;font-size:12.5px;letter-spacing:.04em;color:var(--muted)}
+.brand .mk{width:22px;height:22px;border-radius:6px;background:var(--grad);box-shadow:0 0 22px rgba(124,92,255,.5);
+  display:grid;place-items:center;color:#fff;font-weight:600;font-size:12px}
+.dots{display:flex;gap:9px;pointer-events:auto}
+.dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.16);cursor:pointer;transition:.3s}
+.dots i.on{background:var(--blue);box-shadow:0 0 12px var(--blue);transform:scale(1.18)}
+.count{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.count b{color:var(--ink)}
+.topbar{position:fixed;top:0;left:0;height:3px;z-index:30;background:var(--grad);transition:width .45s ease;box-shadow:0 0 16px rgba(124,92,255,.6)}
+.hint{position:fixed;z-index:30;top:18px;right:clamp(24px,4vw,48px);font-family:var(--font-mono);font-size:10.5px;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:flex;gap:7px;align-items:center}
+.kbd{border:1px solid var(--line2);border-radius:5px;padding:2px 7px;color:var(--muted)}
+.nav{position:fixed;inset:0;z-index:10;display:flex;pointer-events:none}
+.nav .z{flex:1;pointer-events:auto;cursor:default}
+.nav .z.prev{cursor:w-resize} .nav .z.next{cursor:e-resize}
+
+/* ---- grids ---- */
+.cols{display:grid;gap:22px}
+.c2{grid-template-columns:1fr 1fr}
+.c3{grid-template-columns:repeat(3,1fr)}
+.c4{grid-template-columns:repeat(4,1fr)}
+
+/* legend definition rows */
+.def{display:grid;grid-template-columns:200px 1fr;gap:18px 26px;align-items:baseline}
+.def dt{font-family:var(--font-mono);font-size:15px;color:var(--ink);font-weight:500;
+  display:flex;align-items:center;gap:10px}
+.def dt .ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:15px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.03);flex:0 0 auto}
+.def dd{color:var(--body);font-size:15.5px;line-height:1.5;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.def dd b{color:var(--ink)}
+.def>div:last-child dd{border-bottom:none}
+
+/* big stat */
+.stat{display:flex;flex-direction:column;gap:4px}
+.stat .v{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:500;
+  font-size:clamp(30px,3.6vw,46px);color:var(--ink);line-height:1}
+.stat .l{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+/* meter cards */
+.meter{position:relative;overflow:hidden}
+.meter .bar{position:absolute;left:0;top:0;bottom:0;width:4px}
+.meter.run .bar{background:var(--money)} .meter.build .bar{background:var(--violet)}
+.meter h3{font-size:23px;color:var(--ink);font-weight:600;letter-spacing:-.01em;display:flex;align-items:center;gap:11px}
+.meter .sub{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+.meter.run .sub{color:var(--money)} .meter.build .sub{color:var(--violet)}
+.meter ul{list-style:none;margin:16px 0 0;display:grid;gap:11px}
+.meter li{position:relative;padding-left:22px;font-size:14.5px;line-height:1.5;color:var(--body)}
+.meter li::before{content:"";position:absolute;left:0;top:8px;width:9px;height:9px;border-radius:3px}
+.meter.run li::before{background:var(--money);box-shadow:0 0 8px var(--money-dim)}
+.meter.build li::before{background:var(--violet)}
+.meter .foot{margin-top:18px;padding-top:15px;border-top:1px dashed var(--line2);font-size:13px;color:var(--muted)}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:15px}
+.tbl th{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);
+  text-align:left;padding:0 16px 12px;border-bottom:1px solid var(--line2)}
+.tbl td{padding:13px 16px;border-bottom:1px solid var(--line);color:var(--body)}
+.tbl td.n{font-family:var(--font-mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr.hi td{background:var(--money-dim)}
+.tbl tr.hi td.n{color:var(--money);font-weight:500}
+
+/* flow (architecture) */
+.flow{display:flex;align-items:stretch;gap:14px;flex-wrap:wrap}
+.node{flex:1;min-width:150px;background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);
+  border-radius:14px;padding:18px 18px 16px;position:relative}
+.node .n{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.node h4{font-size:16.5px;color:var(--ink);margin:7px 0 8px;font-weight:600}
+.node p{font-size:13px;color:var(--muted);line-height:1.45}
+.node .cost{margin-top:11px;font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.node.llm{border-color:rgba(79,139,255,.4);box-shadow:0 0 0 1px rgba(79,139,255,.12),0 20px 50px -30px rgba(61,123,253,.6)}
+.node.llm .cost{color:var(--blue)}
+.node.zero .cost{color:var(--money)}
+.node .arrow{position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--faint);font-size:18px;z-index:2}
+.node:last-child .arrow{display:none}
+@media(max-width:880px){.node .arrow{display:none}}
+
+/* ask cards */
+.ask{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.ask .card{display:flex;flex-direction:column;gap:14px}
+.ask .hd{display:flex;align-items:center;gap:13px}
+.ask .badge{width:42px;height:42px;border-radius:11px;display:grid;place-items:center;font-family:var(--font-mono);
+  font-weight:600;font-size:17px;flex:0 0 auto}
+.ask .a1 .badge{background:var(--money-dim);color:var(--money);border:1px solid rgba(58,210,154,.4)}
+.ask .a2 .badge{background:rgba(123,92,255,.14);color:var(--violet);border:1px solid rgba(123,92,255,.4)}
+.ask h3{font-size:20px;color:var(--ink);font-weight:600;line-height:1.15}
+.ask .asknum{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:clamp(24px,2.6vw,34px);color:var(--ink)}
+.ask ul{list-style:none;display:grid;gap:9px;margin-top:2px}
+.ask li{position:relative;padding-left:20px;font-size:14px;color:var(--body);line-height:1.45}
+.ask li::before{content:"→";position:absolute;left:0;color:var(--faint)}
+
+/* callout */
+.callout{display:flex;gap:16px;align-items:flex-start;border-radius:14px;padding:18px 22px;border:1px solid}
+.callout.no{background:var(--red-dim);border-color:rgba(239,93,93,.32)}
+.callout.yes{background:var(--money-dim);border-color:rgba(58,210,154,.32)}
+.callout.warn{background:var(--amber-dim);border-color:rgba(240,168,60,.3)}
+.callout .ix{font-size:22px;line-height:1;flex:0 0 auto;margin-top:1px}
+.callout p{font-size:15px;line-height:1.5;color:var(--body)}
+.callout.no .ix{color:var(--red)} .callout.yes .ix{color:var(--money)} .callout.warn .ix{color:var(--amber)}
+
+.footn{display:grid;gap:13px}
+.footn .row{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;
+  padding-bottom:13px;border-bottom:1px solid var(--line)}
+.footn .row:last-child{border-bottom:none}
+.footn .ic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-size:16px;
+  border:1px solid var(--line2);background:rgba(255,255,255,.03)}
+.footn .row b{color:var(--ink)} .footn .row p{font-size:14px;color:var(--muted);line-height:1.5}
+
+.maths{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:clamp(16px,1.7vw,22px);
+  color:var(--ink);line-height:1.7;letter-spacing:-.01em}
+.maths .op{color:var(--faint)} .maths .res{color:var(--money)}
+
+.big2{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:500;letter-spacing:-.02em;
+  font-size:clamp(54px,10vw,128px);line-height:.9;color:var(--ink)}
+
+@media print{
+  body{overflow:visible;background:#fff}
+  .chrome,.hint,.nav,.topbar{display:none!important}
+  .slide{display:flex!important;position:relative;opacity:1!important;height:100vh;page-break-after:always;animation:none}
+}
+@media(max-width:760px){
+  .c2,.c3,.c4,.ask,.def{grid-template-columns:1fr}
+  .def dt{margin-top:8px}
+  .flow{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar"></div>
+<div class="hint"><span>Use</span><span class="kbd">←</span><span class="kbd">→</span><span>to move</span></div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 · TITLE -->
+  <section class="slide" data-title="Cover">
+    <div class="wrap">
+      <p class="kicker r">All Clear · FinOps brief for Will</p>
+      <h1 class="r" style="margin:22px 0 0">What does it<br><span class="grad">actually cost?</span></h1>
+      <p class="lead r" style="margin:26px 0 0">A plain-language read on All Clear's token usage — built for <b>usage-based billing (UBB)</b>. It separates the two things people keep mixing up, defines every unit, and ends with the exact numbers to take to management.</p>
+      <div class="r" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:30px">
+        <span class="pill"><span class="dot"></span>Measured from the live app</span>
+        <span class="pill">Azure OpenAI · gpt-5.1</span>
+        <span class="pill">24 June 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 · LEGEND -->
+  <section class="slide" data-title="Legend">
+    <div class="wrap">
+      <p class="kicker r">Read this first · the legend</p>
+      <h2 class="r" style="margin:14px 0 8px">The five words everything below uses</h2>
+      <p class="lead r dim" style="margin-bottom:26px">If we agree on these, the dollars stop being confusing.</p>
+      <dl class="def r">
+        <div style="display:contents">
+          <dt><span class="ic">🎫</span>Seat</dt>
+          <dd><b>One person, running the lab one time.</b> A "seat" = a developer (a participant) for a single lab day. 30 developers doing the lab once = 30 seats. The same person doing it twice = 2 seats of usage.</dd>
+        </div>
+        <div style="display:contents">
+          <dt><span class="ic">📡</span>Signal</dt>
+          <dd>One thing the app triages — a report, a call, an alert (<i>"downed line at 5th &amp; Main"</i>). <b>This is the unit that burns tokens.</b> A seat sends many signals during a lab.</dd>
+        </div>
+        <div style="display:contents">
+          <dt><span class="ic">🪙</span>Token</dt>
+          <dd>The billing atom for the AI model (~¾ of a word). <b>UBB charges per token.</b> All our runtime numbers roll up from tokens-per-signal.</dd>
+        </div>
+        <div style="display:contents">
+          <dt><span class="ic">📅</span>Lab day</dt>
+          <dd>One full run of the 6.5-hour build lab by one seat. Most of it runs <b>offline (mock mode = $0 tokens)</b>; cost only accrues when a seat fires live signals.</dd>
+        </div>
+        <div style="display:contents">
+          <dt><span class="ic">⛽</span>The two meters</dt>
+          <dd><b class="money">Run it</b> (Azure tokens, UBB) and <b class="violet" style="color:var(--violet)">Build it</b> (GitHub Copilot seats). Different bills, different teams, never the same line item. The next slide is entirely about this.</dd>
+        </div>
+        <div style="display:contents">
+          <dt><span class="ic">🎟️</span>Credit</dt>
+          <dd>A prepaid unit — in <b>two flavors that aren't interchangeable.</b> An <b class="money">Azure credit</b> = $1 of token usage (buys <i>Run&nbsp;it</i>). A <b style="color:var(--violet)">GitHub Copilot credit</b> = one premium request — a single AI interaction × the model multiplier (buys <i>Build&nbsp;it</i>).</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- 3 · TWO METERS -->
+  <section class="slide" data-title="Two meters">
+    <div class="wrap">
+      <p class="kicker r">The #1 thing to get right</p>
+      <h2 class="r" style="margin:14px 0 22px">There are <span class="grad">two separate meters.</span> Don't conflate them.</h2>
+      <div class="cols c2 r">
+        <div class="card meter run">
+          <div class="bar"></div>
+          <h3>⛽ Run it</h3>
+          <div class="sub">Azure OpenAI · pay-per-token · UBB</div>
+          <ul>
+            <li>The tokens the <b>app</b> burns when it triages a signal.</li>
+            <li>Metered <b>per token</b> on Azure — this is the UBB line item.</li>
+            <li><b class="money">Tiny:</b> ~2,500 tokens per signal (~$0.004).</li>
+            <li>Who owns it: <b>your Azure subscription</b>.</li>
+          </ul>
+          <div class="foot">Scales with <b>usage</b> (how many signals get triaged).</div>
+        </div>
+        <div class="card meter build">
+          <div class="bar"></div>
+          <h3>🛠️ Build it</h3>
+          <div class="sub">GitHub Copilot · per-seat license</div>
+          <ul>
+            <li>The tokens the <b>coding agent</b> burned to build &amp; evolve the app.</li>
+            <li>Billed as <b>Copilot seats + premium requests</b> — <b>not</b> Azure UBB.</li>
+            <li>Big number (~108M tokens) but it's a <b>seat</b>, not a token bill.</li>
+            <li>Who owns it: <b>your dev team's Copilot license</b>.</li>
+          </ul>
+          <div class="foot">Scales with <b>developers</b> (how many people build/extend).</div>
+        </div>
+      </div>
+      <div class="callout warn r" style="margin-top:22px">
+        <span class="ix">◆</span>
+        <p>When management asks <b>"what's the AI bill?"</b> the honest answer is two numbers: a <b class="money">per-usage</b> Azure budget to run it, and a <b class="violet" style="color:var(--violet)">per-developer</b> Copilot seat count to build it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · DISAMBIGUATION: is it $17/seat? -->
+  <section class="slide" data-title="$17?">
+    <div class="wrap">
+      <p class="kicker r">The question you actually asked</p>
+      <h2 class="r" style="margin:14px 0 24px">"Is it <span class="num">$17</span> per seat?" &nbsp;<span class="red">No.</span></h2>
+      <div class="cols c2 r" style="align-items:start;gap:28px">
+        <div style="display:grid;gap:16px">
+          <div class="callout no"><span class="ix">✕</span><p><b class="num">$17</b> is <b>not</b> per seat, not per developer, not per use case. It's the <b>whole bill for a team of 10, for one lab day</b>.</p></div>
+          <div class="callout yes"><span class="ix">✓</span><p>Per seat, per lab day, the typical cost is <b class="money num">$0.61</b>. Budgeted with buffer: <b class="money num">~$2</b>.</p></div>
+        </div>
+        <div class="card">
+          <div class="ey" style="margin-bottom:14px">How $17 is built</div>
+          <div class="maths">
+            10 seats<br>
+            <span class="op">×</span> ~150 signals each<br>
+            <span class="op">×</span> ~2,500 tokens / signal<br>
+            <span class="op">=</span> ~3.8M tokens<br>
+            <span class="op">→</span> at budget (1M/seat): 10M tokens<br>
+            <span class="op">=</span> <span class="res">~$17 for the cohort-run</span>
+          </div>
+          <div class="tag" style="margin-top:16px">"Per use case" isn't the unit — a use case (incident triage) costs <b style="color:var(--ink)">per signal</b>, and a seat runs many signals.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · WHY RUNTIME IS CHEAP (architecture) -->
+  <section class="slide" data-title="Why cheap">
+    <div class="wrap">
+      <p class="kicker r">Why "run it" is so small</p>
+      <h2 class="r" style="margin:14px 0 8px">Built token-lean on purpose</h2>
+      <p class="lead r dim" style="margin-bottom:24px">Per signal, only <b style="color:var(--ink)">one</b> AI call happens. The expensive parts are deterministic code, not the model.</p>
+      <div class="flow r">
+        <div class="node llm">
+          <div class="n">Stage 1</div><h4>Classify</h4>
+          <p>QueryAgent reads the signal. The only model call.</p>
+          <div class="cost">≈ 2,300 in · 120 out</div>
+          <span class="arrow">→</span>
+        </div>
+        <div class="node zero">
+          <div class="n">Stage 2</div><h4>Route</h4>
+          <p>Severity, SLA, dedup, escalation — fixed rules.</p>
+          <div class="cost">0 tokens · no LLM</div>
+          <span class="arrow">→</span>
+        </div>
+        <div class="node zero">
+          <div class="n">Stage 3</div><h4>Act + Sitrep</h4>
+          <p>Incident + report drafted from a <b>template</b>.</p>
+          <div class="cost">0 tokens · no LLM</div>
+        </div>
+      </div>
+      <div class="cols c3 r" style="margin-top:24px">
+        <div class="card"><div class="stat"><span class="v num money">~2,500</span><span class="l">tokens / signal (all-in)</span></div></div>
+        <div class="card"><div class="stat"><span class="v num">1</span><span class="l">model call / signal</span></div></div>
+        <div class="card"><div class="stat"><span class="v num money">$0</span><span class="l">extra for duplicates in a surge</span></div></div>
+      </div>
+      <p class="tag r" style="margin-top:16px">Duplicates during a surge <b style="color:var(--ink)">attach</b> with no extra knowledge search — so a flood of 40 reports doesn't cost 40 full pipelines. <b style="color:var(--ink)">That's the cost-control story.</b></p>
+    </div>
+  </section>
+
+  <!-- 6 · SCALE TABLE -->
+  <section class="slide" data-title="Scale">
+    <div class="wrap">
+      <p class="kicker r">From one signal to a whole team</p>
+      <h2 class="r" style="margin:14px 0 22px">What it costs to <span class="money">run</span>, at every scale</h2>
+      <div class="cols c2 r" style="gap:30px;align-items:start">
+        <div class="card">
+          <div class="ey" style="margin-bottom:14px">Per seat · one lab day</div>
+          <table class="tbl">
+            <tr><th>Profile</th><th>Live signals</th><th>Tokens</th><th>Cost</th></tr>
+            <tr><td>Light</td><td class="n">50</td><td class="n">0.13M</td><td class="n">$0.20</td></tr>
+            <tr class="hi"><td>Typical</td><td class="n">150</td><td class="n">0.38M</td><td class="n">$0.61</td></tr>
+            <tr><td>Heavy</td><td class="n">300</td><td class="n">0.75M</td><td class="n">$1.22</td></tr>
+          </table>
+          <div class="tag" style="margin-top:14px">Budget line: <b style="color:var(--money)">1,000,000 tokens / seat ≈ $2</b> (covers heavy + buffer).</div>
+        </div>
+        <div class="card">
+          <div class="ey" style="margin-bottom:14px">Per team · one lab day · at the $2 budget</div>
+          <table class="tbl">
+            <tr><th>Team</th><th>Budgeted tokens</th><th>Cost</th></tr>
+            <tr><td class="n">10 devs</td><td class="n">10M</td><td class="n">~$17</td></tr>
+            <tr><td class="n">25 devs</td><td class="n">25M</td><td class="n">~$42</td></tr>
+            <tr><td class="n">50 devs</td><td class="n">50M</td><td class="n">~$84</td></tr>
+            <tr class="hi"><td class="n">100 devs</td><td class="n">100M</td><td class="n">~$168</td></tr>
+          </table>
+          <div class="tag" style="margin-top:14px">A <b style="color:var(--ink)">100-person</b> cohort, run live, is <b style="color:var(--money)">~$170</b>. A rounding error against a pilot.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · THE ASK -->
+  <section class="slide" data-title="The ask">
+    <div class="wrap">
+      <p class="kicker r">What Will asks management for</p>
+      <h2 class="r" style="margin:14px 0 22px">Two asks. Two owners. <span class="grad">Two numbers.</span></h2>
+      <div class="ask r">
+        <div class="card a1">
+          <div class="hd"><span class="badge">⛽</span><div><div class="sub" style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--money)">Ask 1 · to RUN it</div><h3>Azure OpenAI token budget</h3></div></div>
+          <div class="asknum">1,000,000 tokens <span class="dim" style="font-size:16px">/ seat / lab day</span></div>
+          <ul>
+            <li>Decide <b>seats × runs</b>. Pilot example: 25 devs × 4 runs = 100M tokens.</li>
+            <li>Dollar ask: <b class="money">~$170</b> measured → round to <b class="money">$250–500</b> for comfort.</li>
+            <li>Owner: <b>Azure subscription</b> (UBB / pay-as-you-go).</li>
+          </ul>
+          <div class="tag" style="margin-top:auto">Lever: switch the classifier to a <b style="color:var(--ink)">mini/nano</b> model → another <b style="color:var(--ink)">5–20× cheaper</b>.</div>
+        </div>
+        <div class="card a2">
+          <div class="hd"><span class="badge">🛠️</span><div><div class="sub" style="font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet)">Ask 2 · to BUILD / extend it</div><h3>GitHub Copilot seats</h3></div></div>
+          <div class="asknum">N seats <span class="dim" style="font-size:16px">/ developer</span></div>
+          <ul>
+            <li>One Copilot Business/Enterprise seat per dev who writes code.</li>
+            <li>List price: <b>~$19–39 / user / month</b> — a seat, not a token bill.</li>
+            <li>Covers the ~108M tokens of build assistance we already measured.</li>
+          </ul>
+          <div class="tag" style="margin-top:auto">Owner: <b style="color:var(--ink)">dev team license</b>. Do <b style="color:var(--ink)">not</b> file this as Azure UBB.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7b · WHAT DO CREDITS MEAN -->
+  <section class="slide" data-title="Credits">
+    <div class="wrap">
+      <p class="kicker r">Lily's question · what do the credits mean?</p>
+      <h2 class="r" style="margin:14px 0 8px">Two kinds of credit. <span class="grad">Only one buys tokens.</span></h2>
+      <p class="lead r dim" style="margin-bottom:22px">"Credit" is overloaded. Which meter it pays comes down to what it's denominated in — <b style="color:var(--ink)">dollars</b> or <b style="color:var(--ink)">requests</b>.</p>
+      <div class="cols c2 r">
+        <div class="card meter run">
+          <div class="bar"></div>
+          <h3>💵 Azure credit</h3>
+          <div class="sub">Sponsorship · MACC · free trial — denominated in $</div>
+          <ul>
+            <li>It's <b>dollars</b>, and Azure OpenAI bills dollars per token.</li>
+            <li>So it maps <b class="money">1 : 1</b> onto the "Run it" token bill.</li>
+            <li><b class="money">$1 ≈ 250 signals ≈ 0.25M tokens.</b></li>
+            <li>The <b>only</b> credit that pays the app's runtime.</li>
+          </ul>
+          <div class="foot">Pays for: <b>running</b> the app (Azure tokens).</div>
+        </div>
+        <div class="card meter build">
+          <div class="bar"></div>
+          <h3>🎟️ GitHub Copilot credit</h3>
+          <div class="sub">Premium request — denominated in interactions</div>
+          <ul>
+            <li>It's a <b>request</b>, not a token. 1 credit = 1 AI interaction.</li>
+            <li>Each interaction × a <b>model multiplier</b> (0.33× → 57×).</li>
+            <li>Included per seat: <b>300</b> Business / <b>1,000</b> Enterprise; overage <b>$0.04</b>/req.</li>
+            <li>Pays to <b>build</b> the app — and to run Copilot <b>inside the lab</b>.</li>
+          </ul>
+          <div class="foot">Pays for: <b>building</b> &amp; in-lab Copilot — never Azure runtime.</div>
+        </div>
+      </div>
+      <div class="callout no r" style="margin-top:20px">
+        <span class="ix">✕</span>
+        <p>There is <b>no clean "1 credit = N tokens."</b> A premium request can be any size. A <b style="color:var(--violet)">GitHub credit buys an interaction</b>; an <b class="money">Azure credit buys tokens</b>. Don't pay runtime out of Copilot, or building out of Azure.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7c · HOW FAR DO CREDITS GO -->
+  <section class="slide" data-title="Credit reach">
+    <div class="wrap">
+      <p class="kicker r">Credits · how far do they go?</p>
+      <h2 class="r" style="margin:14px 0 22px">Same work, <span class="grad">two currencies</span></h2>
+      <div class="cols c2 r" style="gap:30px;align-items:start">
+        <div class="card">
+          <div class="ey" style="margin-bottom:14px">💵 Azure credit → run it · clean conversion</div>
+          <table class="tbl">
+            <tr><th>Credit</th><th>Signals</th><th>Seats @ $2</th></tr>
+            <tr><td class="n">$10</td><td class="n">2,500</td><td class="n">5</td></tr>
+            <tr><td class="n">$100</td><td class="n">25,000</td><td class="n">50</td></tr>
+            <tr class="hi"><td class="n">$200</td><td class="n">50,000</td><td class="n">100</td></tr>
+          </table>
+          <div class="tag" style="margin-top:14px">A <b style="color:var(--ink)">100-dev</b> live cohort (~$170) fits inside a <b style="color:var(--money)">$200</b> Azure credit.</div>
+        </div>
+        <div class="card">
+          <div class="ey" style="margin-bottom:14px">🎟️ Copilot credit → build it · model is the lever</div>
+          <table class="tbl">
+            <tr><th>Model</th><th>Mult</th><th>Uses / 300-seat</th><th>$/over</th></tr>
+            <tr><td>Haiku · 4o-mini</td><td class="n">0.33×</td><td class="n">~900</td><td class="n">$0.01</td></tr>
+            <tr class="hi"><td>GPT-4.1 · Codex</td><td class="n">6×</td><td class="n">50</td><td class="n">$0.24</td></tr>
+            <tr><td>Claude Sonnet</td><td class="n">9×</td><td class="n">33</td><td class="n">$0.36</td></tr>
+            <tr><td>Claude Opus</td><td class="n">27×</td><td class="n">11</td><td class="n">$1.08</td></tr>
+          </table>
+          <div class="tag" style="margin-top:14px">Premium-model choice swings a seat's reach <b style="color:var(--ink)">~80×</b>. Match the model to the task.</div>
+        </div>
+      </div>
+      <div class="callout warn r" style="margin-top:20px">
+        <span class="ix">◆</span>
+        <p>Our measured build = <b>~108M tokens</b> <span class="dim">(Azure view)</span> ≈ <b style="color:var(--violet)">~21,600 Copilot credits</b> <span class="dim">(GitHub view)</span> ≈ <b>72 Business-seat-months</b> or <b>~$865</b> overage. Same work — just metered two different ways.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 · CAVEATS / FOOTNOTES -->
+  <section class="slide" data-title="Fine print">
+    <div class="wrap">
+      <p class="kicker r">Honest fine print</p>
+      <h2 class="r" style="margin:14px 0 22px">Four things to say out loud</h2>
+      <div class="footn r">
+        <div class="row"><span class="ic">🎙️</span><div><b>Voice is optional and OFF by default.</b><p>Realtime audio (gpt-realtime) is pricier than text. If you turn it on, budget <b style="color:var(--ink)">~$2–5 per spoken demo</b> — a separate line, not part of the per-seat number.</p></div></div>
+        <div class="row"><span class="ic">🏢</span><div><b>Fixed infrastructure ≠ tokens.</b><p>The app's standby footprint (11 Azure services) is the app's own estimate of <b style="color:var(--ink)">~$1,555 / month</b>, independent of how many signals run. That's hosting, not UBB usage.</p></div></div>
+        <div class="row"><span class="ic">💵</span><div><b>Pricing basis.</b><p>gpt-5.1 at <span class="num">$1.25</span>/<span class="num">$10</span> per 1M in/out; embeddings <span class="num">$0.02</span>/1M. Public PAYG rates; your EA/MACC discount only makes it cheaper.</p></div></div>
+        <div class="row"><span class="ic">📏</span><div><b>The build number is a floor.</b><p>~108M tokens = measured Copilot CLI work over 45 days. It <b style="color:var(--ink)">undercounts</b> (excludes other tools, other devs, older history) — but it's billed by seat regardless.</p></div></div>
+        <div class="row"><span class="ic">⚖️</span><div><b>Credits are mid-migration.</b><p>GitHub is moving from request-based "credits" toward usage-based (token) billing; Azure is already per-token. Multipliers shown are the request-based model. Either way the rule holds: <b style="color:var(--ink)">GitHub pays to build, Azure pays to run.</b></p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 · CLOSE -->
+  <section class="slide" data-title="Bottom line">
+    <div class="wrap" style="text-align:center">
+      <p class="kicker r" style="justify-content:center">The one slide to remember</p>
+      <p class="big2 r money" style="margin:18px 0 6px">~$2</p>
+      <h2 class="r" style="margin:0 0 8px">per seat, per lab day — to run it</h2>
+      <p class="lead r dim" style="margin:0 auto 26px">Reality is ~$0.61. The $2 is padded so no one gets surprised. To build/extend it, that's a <b style="color:var(--violet)">Copilot seat</b> conversation — not a token bill.</p>
+      <div class="cols c3 r" style="max-width:880px;margin:0 auto">
+        <div class="card"><div class="stat"><span class="v num money">~$170</span><span class="l">100 devs · 1 live run</span></div></div>
+        <div class="card"><div class="stat"><span class="v num">2,500</span><span class="l">tokens / signal</span></div></div>
+        <div class="card"><div class="stat"><span class="v num" style="color:var(--violet)">108M</span><span class="l">build tokens (Copilot seats)</span></div></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- click zones -->
+<div class="nav"><div class="z prev" id="zprev"></div><div class="z next" id="znext"></div></div>
+
+<!-- chrome -->
+<div class="chrome">
+  <div class="brand"><span class="mk">AC</span><span>All&nbsp;Clear · Cost Explainer</span></div>
+  <div class="dots" id="dots"></div>
+  <div class="count"><b id="cur">1</b> / <span id="tot">9</span></div>
+</div>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var dotsWrap=document.getElementById('dots');
+  var topbar=document.getElementById('topbar');
+  var cur=document.getElementById('cur');
+  document.getElementById('tot').textContent=slides.length;
+  var i=0;
+  slides.forEach(function(s,idx){
+    var d=document.createElement('i');
+    d.title=s.dataset.title||('Slide '+(idx+1));
+    d.addEventListener('click',function(){go(idx)});
+    dotsWrap.appendChild(d);
+  });
+  var dots=[].slice.call(dotsWrap.children);
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach(function(s,idx){s.classList.toggle('active',idx===i)});
+    dots.forEach(function(d,idx){d.classList.toggle('on',idx===i)});
+    cur.textContent=i+1;
+    topbar.style.width=((i+1)/slides.length*100)+'%';
+  }
+  function next(){go(i+1)} function prev(){go(i-1)}
+  document.getElementById('znext').addEventListener('click',next);
+  document.getElementById('zprev').addEventListener('click',prev);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();next()}
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();prev()}
+    else if(e.key==='Home'){go(0)} else if(e.key==='End'){go(slides.length-1)}
+    else if(/^[1-9]$/.test(e.key)){go(parseInt(e.key,10)-1)}
+  });
+  // swipe
+  var x0=null;
+  document.addEventListener('touchstart',function(e){x0=e.touches[0].clientX},{passive:true});
+  document.addEventListener('touchend',function(e){
+    if(x0===null)return;var dx=e.changedTouches[0].clientX-x0;
+    if(Math.abs(dx)>50){dx<0?next():prev()}x0=null;
+  },{passive:true});
+  go(0);
+})();
+</script>
+</body>
+</html>
