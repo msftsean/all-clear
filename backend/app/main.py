@@ -27,6 +27,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     print(f"Environment: {settings.environment}")
     print(f"Mock mode: {settings.use_mock_services}")
 
+    missing = settings.missing_live_settings()
+    if missing:
+        bar = "=" * 72
+        print(bar)
+        print("WARNING: LIVE mode (MOCK_MODE=false) but required Azure settings are missing:")
+        for name in missing:
+            print(f"  - {name}")
+        print("The app will fail when it first calls these services (DB / search / LLM).")
+        print("Fix: set them in backend/.env, or set MOCK_MODE=true to run fully offline.")
+        print(bar)
+
     yield
 
     # Shutdown

@@ -370,6 +370,24 @@ class Settings(BaseSettings):
         """Determine if mock services should be used."""
         return self.mock_mode or self.is_test
 
+    def missing_live_settings(self) -> list[str]:
+        """Required Azure settings that are empty when running live (not mock mode).
+
+        Lets the app fail loudly with a clear, actionable message instead of a
+        cryptic SDK crash (e.g. "Invalid URL scheme or hostname") on the first
+        request — the exact "I thought the database worked" trap for first-timers.
+        """
+        if self.use_mock_services:
+            return []
+        missing: list[str] = []
+        if not self.azure_openai_endpoint:
+            missing.append("AZURE_OPENAI_ENDPOINT")
+        if not self.cosmos_db_endpoint:
+            missing.append("AZURE_COSMOS_ENDPOINT")
+        if not self.azure_search_endpoint:
+            missing.append("AZURE_SEARCH_ENDPOINT")
+        return missing
+
     @property
     def realtime_endpoint(self) -> str:
         """Endpoint hosting the Realtime deployment.

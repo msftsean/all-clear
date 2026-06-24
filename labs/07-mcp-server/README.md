@@ -249,25 +249,18 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-### 🔹 Step 3: Create MCP Server Entry Point (5 minutes)
+### 🔹 Step 3: Use the MCP Server Entry Point (5 minutes)
 
-Create `backend/mcp_main.py` to run the MCP server:
+The repository already includes the backend entry point at `backend\mcp_main.py`.
+Because the project package is named `backend`, launch it from the repository
+root with `PYTHONPATH` set to the repository root so Python can resolve
+`backend.app`:
 
-```python
-"""
-🚀 Entry point for running All Clear as an MCP server.
-"""
-import asyncio
-import os
-import sys
-
-# Add the app directory to the path
-sys.path.insert(0, os.path.dirname(__file__))
-
-from app.mcp_server import main
-
-if __name__ == "__main__":
-    asyncio.run(main())
+```powershell
+cd C:\Users\segayle\repos\cloudforce\all-clear
+$env:PYTHONPATH = "C:\Users\segayle\repos\cloudforce\all-clear"
+$env:MOCK_MODE = "true"
+.\backend\.venv\Scripts\python.exe backend\mcp_main.py
 ```
 
 ### 🔹 Step 4: Configure VS Code for MCP (10 minutes)
@@ -278,9 +271,11 @@ Create or update `.vscode/mcp.json` in your project root:
 {
   "mcpServers": {
     "allclear": {
-      "command": "python",
-      "args": ["backend/mcp_main.py"],
+      "command": "C:\\Users\\segayle\\repos\\cloudforce\\all-clear\\backend\\.venv\\Scripts\\python.exe",
+      "args": ["backend\\mcp_main.py"],
+      "cwd": "C:\\Users\\segayle\\repos\\cloudforce\\all-clear",
       "env": {
+        "PYTHONPATH": "C:\\Users\\segayle\\repos\\cloudforce\\all-clear",
         "AZURE_OPENAI_ENDPOINT": "${env:AZURE_OPENAI_ENDPOINT}",
         "AZURE_OPENAI_API_KEY": "${env:AZURE_OPENAI_API_KEY}",
         "AZURE_SEARCH_ENDPOINT": "${env:AZURE_SEARCH_ENDPOINT}",
@@ -348,7 +343,10 @@ Keep the rules intact: QueryAgent classifies only; RouterExecutor is determinist
    - Check VS Code Output panel (select "MCP" from dropdown)
    - Run MCP server manually to see logs:
      ```bash
-     python backend/mcp_main.py
+     cd C:\Users\segayle\repos\cloudforce\all-clear
+     $env:PYTHONPATH = "C:\Users\segayle\repos\cloudforce\all-clear"
+     $env:MOCK_MODE = "true"
+     .\backend\.venv\Scripts\python.exe backend\mcp_main.py
      ```
 
 ---

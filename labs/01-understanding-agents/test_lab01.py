@@ -24,36 +24,63 @@ if sys.platform == "win32":
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
 
 # Test constants
-REQUIRED_INTENTS = ["greeting", "help", "ticket", "knowledge", "farewell", "unknown"]
+REQUIRED_INTENTS = [
+    "INFRASTRUCTURE_OUTAGE",
+    "FIELD_HAZARD",
+    "PUBLIC_SAFETY",
+    "CUSTOMER_INQUIRY",
+    "SERVICE_REQUEST",
+    "COMPLIANCE_REPORT",
+    "STATUS_CHECK",
+    "HUMAN_REQUEST",
+    "GENERAL_INQUIRY",
+    "unknown",
+]
 MIN_ACCURACY_THRESHOLD = 0.90
 MIN_EXPLANATION_WORDS = 200
 
 # Test cases: (query, expected_intent_keywords)
 INTENT_TEST_CASES = [
-    # Greetings
-    ("Hello!", ["greeting"]),
-    ("Hi there, how are you?", ["greeting"]),
-    ("Good morning!", ["greeting"]),
+    # Field hazards
+    ("Power line down across Main St, sparking near a school", ["field_hazard"]),
+    ("Water main break flooding the 200 block", ["field_hazard"]),
+    ("Tree down and blocked road at Pine and 4th", ["field_hazard"]),
 
-    # Help requests
-    ("I need help with my account", ["help"]),
-    ("Can you assist me?", ["help"]),
-    ("I'm having trouble", ["help"]),
+    # Public safety
+    ("Smell of gas near the community center", ["public_safety"]),
+    ("Transformer fire on Oak Ave and people are trapped", ["public_safety"]),
+    ("Explosion reported downtown with injured pedestrians", ["public_safety"]),
 
-    # Ticket-related
-    ("What's the status of my ticket?", ["ticket"]),
-    ("I want to submit a support ticket", ["ticket"]),
-    ("Check ticket TKT-12345", ["ticket"]),
+    # Infrastructure outages
+    ("Whole neighborhood has no power after the transformer blew", ["infrastructure_outage"]),
+    ("Substation outage affecting the north grid", ["infrastructure_outage"]),
+    ("Systems offline after the outage surge started", ["infrastructure_outage"]),
 
-    # Knowledge queries
-    ("How do I reset my password?", ["knowledge"]),
-    ("What are the library hours?", ["knowledge"]),
-    ("Where is the registrar office?", ["knowledge"]),
+    # Customer inquiries
+    ("When will power be restored on Elm St?", ["customer_inquiry"]),
+    ("How long until crews restore service near Maple Ave?", ["customer_inquiry"]),
+    ("Can you tell me the ETA for power restored in my area?", ["customer_inquiry"]),
 
-    # Farewells
-    ("Goodbye!", ["farewell"]),
-    ("Thanks, bye!", ["farewell"]),
-    ("That's all, thank you", ["farewell"]),
+    # Service requests
+    ("I need to schedule a routine meter inspection", ["service_request"]),
+    ("Please create a service request for a non-urgent appointment", ["service_request"]),
+
+    # Compliance reports
+    ("Need to file the NFIRS report for last night's fire", ["compliance_report"]),
+    ("Product recall notification must be filed within the statutory window", ["compliance_report"]),
+    ("We have a breach notification reporting deadline today", ["compliance_report"]),
+
+    # Status checks
+    ("I already reported AC-0042. Any update on the crew ETA?", ["status_check"]),
+    ("What is the incident status for AC-1007?", ["status_check"]),
+
+    # Human handoff
+    ("This is urgent and I want to talk to a supervisor", ["human_request"]),
+    ("Please escalate me to a real person", ["human_request"]),
+
+    # General inquiries
+    ("Hello, thanks for your help", ["general_inquiry"]),
+    ("I am not sure what I need yet", ["general_inquiry"]),
 
     # Unknown/ambiguous
     ("asdfghjkl", ["unknown"]),
@@ -219,7 +246,7 @@ class TestRunner:
             from intent_classifier import IntentClassifier
 
             classifier = IntentClassifier()
-            result = classifier.classify("Hello, I need help")
+            result = classifier.classify("Power line down across Main St")
 
             if not hasattr(result, 'confidence'):
                 return TestResult(
@@ -365,7 +392,7 @@ class TestRunner:
             )
 
         # Check for key concepts
-        key_concepts = ["router", "specialist", "orchestrator"]
+        key_concepts = ["QueryAgent", "RouterExecutor", "ActionAgent"]
         found_concepts = [c for c in key_concepts if c.lower() in content.lower()]
 
         if len(found_concepts) < 2:

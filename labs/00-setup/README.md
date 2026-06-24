@@ -74,6 +74,43 @@ GitHub Codespaces provides:
 
 ## 📝 Step-by-Step Instructions
 
+### 🔐 Sign in with CloudForce credentials
+
+> **Use the CloudForce accounts your instructor provides — not a personal account.**
+
+First-time participants should keep the lab identity isolated from personal accounts:
+
+1. Open an **InPrivate/Incognito** browser window.
+2. Go to <https://github.com> and sign in with the **CloudForce GitHub account** your instructor provided.
+3. Open <https://github.com/EstablishedCorp/all-clear>.
+4. Select **Code → Codespaces → Create codespace on main**.
+5. When the Codespace opens, verify GitHub CLI authentication in the terminal:
+
+   ```bash
+   gh auth status
+   ```
+
+6. In VS Code, sign in to **GitHub Copilot Chat** with the same CloudForce GitHub account. Ask a quick question such as `What repository am I in?` and confirm Copilot Chat responds.
+
+Then sign in to Azure from the Codespace terminal with the **CloudForce Azure account**:
+
+```bash
+# Browser-based Azure login scoped to the CloudForce tenant.
+az login --tenant <CLOUDFORCE_TENANT_ID>
+
+# If browser login is blocked, use device-code login instead:
+az login --tenant <CLOUDFORCE_TENANT_ID> --use-device-code
+
+# Confirm you can see the lab subscriptions, then select the assigned one.
+az account list -o table
+az account set --subscription <CLOUDFORCE_SUBSCRIPTION_ID>
+az account show -o table
+
+# Authenticate Azure Developer CLI and bind this repo's azd environment.
+azd auth login --tenant-id <CLOUDFORCE_TENANT_ID>
+azd env set AZURE_SUBSCRIPTION_ID <CLOUDFORCE_SUBSCRIPTION_ID>
+```
+
 ### 🔹 Step 1: Launch GitHub Codespaces
 
 1. 🔗 Navigate to the [all-clear repository](https://github.com/EstablishedCorp/all-clear) on GitHub
@@ -209,9 +246,6 @@ Start the FastAPI backend server:
 
 ```bash
 cd backend
-
-# 🔌 Activate virtual environment (already created in Codespaces)
-source .venv/bin/activate
 
 # 🚀 Start the server (bind to 0.0.0.0 for Codespaces)
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -385,11 +419,8 @@ Before moving to the next lab, confirm the following:
 # 📂 Make sure you're in the backend directory
 cd backend
 
-# 🔌 Activate virtual environment
-source .venv/bin/activate
-
-# 🔍 Check if virtual environment is active (should show .venv path)
-which python
+# 🔍 Confirm backend dependencies are installed
+python -c "import fastapi, uvicorn; print('deps OK')"
 
 # 🐛 Try starting with verbose logging
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 --log-level debug
@@ -514,7 +545,6 @@ Your Codespace will automatically stop after inactivity. To resume:
 ```bash
 # Terminal 1: 🔧 Start backend
 cd backend
-source .venv/bin/activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Terminal 2: 🎨 Start frontend

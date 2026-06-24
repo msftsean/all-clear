@@ -20,14 +20,15 @@
 Lab Progress: [░░░░░░░░░░] 0% - Not Started
 
 Checkpoints:
-□ Step 1: Verify Docker Setup
-□ Step 2: Test Locally with Docker Compose
+□ Step 1: Understand remote ACR builds
+□ Step 2: Test Locally with Docker Compose (optional)
 □ Step 3: Install and Configure azd
 □ Step 4: Initialize azd Environment
 □ Step 5: Deploy with azd up
-□ Step 6: Verify Deployment
-□ Step 7: View Logs and Monitoring
-□ Step 8: Clean Up (Optional)
+□ Step 6: Seed the knowledge base
+□ Step 7: Verify Deployment and Cosmos persistence
+□ Step 8: View Logs and Monitoring
+□ Step 9: Clean Up (Optional)
 ```
 
 ---
@@ -36,7 +37,7 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. 🐳 **Containerize the All Clear pipeline with Docker** - Package All Clear into Docker containers for consistent deployment
+1. 🐳 **Deploy containerized All Clear without local Docker** - Use `remoteBuild: true` so Azure Container Registry builds images in Azure
 2. ☁️ **Deploy with azd up** - Use Azure Developer CLI to provision infrastructure and deploy All Clear in a single command
 3. 📊 **Configure monitoring and health checks** - Set up All Clear health monitoring and view logs in Azure
 
@@ -108,6 +109,7 @@ This tells azd:
 - 🐍 What language/runtime each service uses
 - 🏠 How to host each service (backend and frontend on Azure Container Apps)
 - 🏗️ Where to find infrastructure definitions
+- 🏭 To use **ACR remote build** (`remoteBuild: true`), so participants do **not** need local Docker for the `azd up` path
 
 ---
 
@@ -117,8 +119,8 @@ In this lab, you will deploy the All Clear incident-triage system to Azure:
 
 ```
 +------------------+     +------------------+     +------------------+
-|   Local Docker   |     |   azd up         |     |   Azure          |
-|   Compose Test   | --> |   (Provision +   | --> |   Container Apps |
+|   Source Code    |     |   azd up         |     |   Azure          |
+|   in repo        | --> |   (Provision +   | --> |   Container Apps |
 |                  |     |    Deploy)       |     |   + AI Services  |
 +------------------+     +------------------+     +------------------+
          |                                                 |
@@ -148,9 +150,11 @@ In this lab, you will deploy the All Clear incident-triage system to Azure:
 
 ## 📝 Step-by-Step Instructions
 
-### 🔹 Step 1: Verify Docker Setup
+### 🔹 Step 1: Understand remote ACR builds
 
-Before deploying to Azure, ensure All Clear runs correctly in Docker locally.
+The workshop deployment lane does **not** require local Docker. The repo's `azure.yaml` sets `remoteBuild: true` for both backend and frontend services, so `azd up` uploads source to Azure Container Registry and ACR builds the images in Azure.
+
+If you already have Docker Desktop and want a local container sanity check, use Step 2. If you are in Codespaces or on a Windows machine without Docker Desktop, skip Step 2 and continue with Step 3.
 
 #### 1a: 🔍 Check Docker Installation
 
@@ -209,9 +213,9 @@ Key elements:
 
 **Task:** Review your docker-compose.yml and ensure all services are defined correctly. 📝
 
-### 🔹 Step 2: Test Locally with Docker Compose
+### 🔹 Step 2: Test Locally with Docker Compose (Optional)
 
-Build and run your containers locally before deploying to Azure.
+Build and run your containers locally only if Docker is already installed. This is optional because `azd up` uses ACR remote build.
 
 #### 2a: 🔨 Build the Containers
 
@@ -343,7 +347,7 @@ azd up --no-prompt
 This single command:
 
 1. ☁️ Creates all Azure resources defined in your Bicep templates
-2. 🐳 Builds your Docker containers
+2. 🏭 Builds your Docker containers remotely in Azure Container Registry (`remoteBuild: true`)
 3. ⬆️ Pushes images to Azure Container Registry
 4. 🚀 Deploys containers to Azure Container Apps
 5. ⚙️ Configures networking and environment variables
@@ -379,30 +383,72 @@ azd show
 # frontend          https://<prefix>-frontend.<region>.azurecontainerapps.io
 ```
 
-### 🔹 Step 6: Verify Deployment
+### 🔹 Step 6: Seed the knowledge base
 
-#### 6a: 💚 Test the Health Endpoint
+After `azd up` succeeds, seed Azure AI Search. The app expects the index name `knowledge-base`.
+
+**PowerShell (Windows or Codespaces PowerShell):**
+
+```powershell
+python backend\scripts\seed_knowledge_base.py
+```
+
+**Bash (Codespaces/Linux/macOS):**
 
 ```bash
-# 🔗 Get the backend URL
-BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL)
+python backend/scripts/seed_knowledge_base.py
+```
+
+✅ **Checkpoint:** the script completes and reports documents loaded into the `knowledge-base` index.
+
+### 🔹 Step 7: Verify Deployment and Cosmos persistence
+
+#### 7a: 💚 Test the Health Endpoint
+
+`/api/health` proves the container is running, but it does **not** prove Cosmos DB writes are working.
+
+**PowerShell:**
+
+```powershell
+$BACKEND_URL = azd env get-value AZURE_CONTAINERAPP_URL
 
 # 💚 Test health endpoint
-curl $BACKEND_URL/api/health
+curl.exe "$BACKEND_URL/api/health"
 ```
 
-#### 6b: 🛰️ Submit an Incident Signal
+**Bash:**
 
 ```bash
-# 🛰️ Test the signals endpoint
-curl -X POST $BACKEND_URL/api/signals \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}'
+BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL)
+curl -s "$BACKEND_URL/api/health"
 ```
 
-### 🔹 Step 7: View Logs and Monitoring
+#### 7b: 🛰️ Submit an Incident Signal and confirm persistence
 
-#### 7a: 📋 View Container Logs
+Submit one signal through the same chat endpoint the frontend uses and confirm an incident is returned and persisted in Cosmos DB.
+
+**PowerShell:**
+
+```powershell
+$body = '{"message":"Water main break flooding Frederick Road"}'
+curl.exe -X POST "$BACKEND_URL/api/chat" `
+  -H "Content-Type: application/json" `
+  -d $body
+```
+
+**Bash:**
+
+```bash
+curl -s -X POST "$BACKEND_URL/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"Water main break flooding Frederick Road"}'
+```
+
+✅ **Checkpoint:** the response includes an All Clear incident (for example an `AC-####` id), severity/SLA routing, and queue assignment. In live mode this verifies Cosmos writes; the health endpoint alone does not.
+
+### 🔹 Step 8: View Logs and Monitoring
+
+#### 8a: 📋 View Container Logs
 
 ```bash
 # 📋 Stream logs from the backend Container App created by azd
@@ -414,13 +460,13 @@ az containerapp logs show \
   --follow
 ```
 
-#### 7b: 📊 Access Log Analytics
+#### 8b: 📊 Access Log Analytics
 
 1. 🌐 Navigate to Azure Portal
 2. 🔍 Find your Log Analytics workspace
 3. 📝 Run queries to analyze All Clear
 
-### 🔹 Step 8: Clean Up (When Done)
+### 🔹 Step 9: Clean Up (When Done)
 
 When you're finished with the lab, clean up Azure resources to avoid charges:
 
@@ -440,10 +486,11 @@ By the end of this lab, you should have:
 
 | 📋 Deliverable       | ✅ Success Criteria                                    |
 | -------------------- | ------------------------------------------------------ |
-| 🐳 Local Docker Test | All Clear runs successfully with `docker compose up` |
+| 🐳 Local Docker Test | Optional: All Clear runs successfully with `docker compose up` |
 | 📄 azd Configuration | `azure.yaml` properly configured for your services     |
 | ☁️ Azure Deployment  | Application deployed with `azd up`                     |
-| 💚 Health Check      | `/api/health` endpoint returns healthy status          |
+| 📚 Knowledge Seed    | `knowledge-base` index seeded with `python backend/scripts/seed_knowledge_base.py` |
+| 💾 Cosmos Check      | `POST /api/chat` returns and persists an incident      |
 | 📊 Monitoring Access | Able to view container logs in Azure                   |
 
 ---
@@ -454,7 +501,7 @@ By the end of this lab, you should have:
 
 | ❌ Error                    | ✅ Quick Fix                                 |
 | --------------------------- | -------------------------------------------- |
-| `docker: command not found` | Start Docker Desktop application             |
+| `docker: command not found` | OK for `azd up`; install/start Docker Desktop only for optional local compose |
 | `azd: command not found`    | Restart terminal after installation          |
 | `UNAUTHORIZED` during push  | Run `azd auth login` again                   |
 | Container exits immediately | Check logs: `docker compose logs backend`    |
@@ -496,14 +543,15 @@ By the end of this lab, you should have:
 
 ### 📋 Debugging Checklist
 
-1. [ ] 🐳 Docker Desktop is running
-2. [ ] 🔨 `docker compose build` completes without errors
-3. [ ] 🚀 `docker compose up` shows healthy containers
-4. [ ] 💚 Health endpoint returns 200 locally
+1. [ ] 🏭 `azure.yaml` uses `remoteBuild: true`; local Docker is optional
+2. [ ] 🔨 Optional: `docker compose build` completes without errors
+3. [ ] 🚀 Optional: `docker compose up` shows healthy containers
+4. [ ] 💚 Health endpoint returns 200 locally if you ran the optional local lane
 5. [ ] 🔐 `azd auth login` successful
 6. [ ] ☁️ `azd up` completes without errors
-7. [ ] 💚 Azure health endpoint returns 200
-8. [ ] 📋 Container logs show no errors
+7. [ ] 📚 `knowledge-base` seed script completes
+8. [ ] 💾 `POST /api/chat` returns and persists an incident
+9. [ ] 📋 Container logs show no errors
 
 ---
 
@@ -521,10 +569,10 @@ By the end of this lab, you should have:
 
 In this lab, you learned how to:
 
-1. 🐳 **Test locally with Docker Compose** - Verify All Clear works in containers
+1. 🏭 **Use ACR remote build** - Deploy containers without local Docker
 2. 📄 **Configure azure.yaml** - Define All Clear service structure for azd
 3. 🚀 **Deploy with azd up** - Provision infrastructure and deploy in one command
-4. ✅ **Verify deployment** - Test health checks and endpoints in Azure
+4. ✅ **Verify deployment** - Seed `knowledge-base`, then test `/api/chat` incident persistence in Azure
 5. 📊 **Monitor All Clear** - View logs and set up alerts
 
 Your All Clear incident-triage system is now running in production on Azure Container Apps, ready to handle incident signals at surge scale. 🎉

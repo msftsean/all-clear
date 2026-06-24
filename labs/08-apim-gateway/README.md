@@ -124,7 +124,7 @@ curl -s "$GATEWAY_URL/allclear/api/health"
 # Then route a real signal through the gateway:
 curl -s -X POST "$GATEWAY_URL/allclear/api/signals" \
   -H "Content-Type: application/json" \
-  -d '{"text":"Downed power line sparking on Oak Street near the school."}'
+  -d '{"message":"Downed power line sparking at 5th and Main"}'
 ```
 
 ✅ **Checkpoint:** You get the same triage result as calling the backend

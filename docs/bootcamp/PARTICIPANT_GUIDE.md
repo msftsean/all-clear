@@ -1,15 +1,15 @@
-# 47 Doors Boot Camp - Participant Guide
+# All Clear Boot Camp - Participant Guide
 
-Welcome to the 47 Doors Boot Camp! This guide will help you get started and navigate through the labs.
+Welcome to the All Clear Boot Camp! This guide will help you get started and navigate through the labs.
 
 ---
 
 ## What You're Building
 
-You will build a **three-agent AI system** that eliminates the "47 Front Doors" problem in university student support. Instead of students navigating multiple disconnected support channels, they interact with one intelligent interface that detects intent, routes requests to the correct department, retrieves knowledge base articles, and creates support tickets automatically. By the end of this boot camp, you will have a working agent pipeline deployed to Azure that can classify student queries, search a knowledge base with RAG, and orchestrate multi-turn conversations.
+You will build **All Clear**, an incident-triage system that turns noisy inbound **signals** into deduplicated **incidents** with severity, SLA clocks, queues, and citation-grounded situation reports. Instead of operators manually reconciling duplicate reports during a surge, All Clear classifies each signal, uses a deterministic zero-LLM `RouterExecutor` for dedup/severity/SLA routing, and lets the bounded `ActionAgent` create incidents, search the knowledge base, and generate sitreps. By the end of this boot camp, you will have the pipeline running locally and deployed to Azure.
 
 - 🎤 **Voice interaction** — speak to the same AI pipeline via browser microphone
-- 📱 **Phone support** — the same agents answer real phone calls at +1 (913) 217-1946 (now live!)
+- 📱 **Phone support** — optional instructor-led demonstration of the same pipeline over a phone channel
 
 ---
 
@@ -21,7 +21,7 @@ Before starting Lab 00, verify you have:
 - [ ] **Node.js 18+** - `node --version`
 - [ ] **VS Code** with GitHub Copilot extension installed
 - [ ] **Azure CLI** - `az --version`
-- [ ] **Docker Desktop** installed and running
+- [ ] **Docker Desktop** optional; only needed for local compose exercises, not `azd up`
 - [ ] **Git** - `git --version`
 - [ ] **Azure subscription** with access credentials (provided by instructor)
 - Microphone (for optional voice exercises in Lab 05)
@@ -38,8 +38,8 @@ Before starting Lab 00, verify you have:
 | **03** | Spec-Driven Development | 45 min | Write SPEC.md, create constitution, generate code from spec |
 | **04** | Build RAG Pipeline | 120 min | Set up Azure AI Search, create embeddings, build RetrieveAgent |
 | **05** | Agent Orchestration | 120 min | Wire up three-agent pipeline, implement handoffs, add multi-turn; optional voice/phone extension |
-| **06** | Deploy with azd | 90 min | Containerize with Docker, deploy to Azure, configure monitoring |
-| **07** | MCP Server (Stretch) | 60 min | Expose 47 Doors as MCP server for Copilot Agent Mode |
+| **06** | Deploy with azd | 90 min | Deploy with ACR remote build, seed knowledge, verify Cosmos persistence |
+| **07** | MCP Server (Stretch) | 60 min | Expose All Clear as an MCP server for Copilot Agent Mode |
 
 **Total Estimated Time:** 9+ hours (full day boot camp)
 
@@ -62,13 +62,13 @@ Your progress will be evaluated on these deliverables:
 | Lab | Key Deliverable | Success Criteria |
 |-----|-----------------|------------------|
 | 00 | Environment verification | `verify_environment.py` passes all checks |
-| 01 | Intent classifier | >90% accuracy on sample queries |
+| 01 | Signal classifier | >90% accuracy on sample incident-triage signals |
 | 02 | MCP configuration | `@azure` queries work in Copilot |
 | 03 | Specification document | Complete SPEC.md with acceptance criteria |
 | 04 | RAG pipeline | Hybrid search returns relevant KB articles with citations |
 | 05 | Agent orchestration | Full pipeline handles multi-turn conversations |
-| 06 | Azure deployment | Agent deployed and health check responds |
-| **Bonus** | **Voice & Phone Extensions (Bonus):** 10 points | Browser voice works; phone bridge demonstrates end-to-end (live at +1 (913) 217-1946) |
+| 06 | Azure deployment | Pipeline deployed; `/api/chat` returns and persists an incident |
+| **Bonus** | **Voice & Phone Extensions (Bonus):** 10 points | Browser voice works; instructor phone bridge demonstrates end-to-end |
 
 ---
 
@@ -76,7 +76,7 @@ Your progress will be evaluated on these deliverables:
 
 | Resource | URL |
 |----------|-----|
-| Repository | `https://github.com/your-org/47doors` |
+| Repository | `https://github.com/EstablishedCorp/all-clear` |
 | API Documentation | `http://localhost:8000/docs` (after starting backend) |
 | Azure Portal | `https://portal.azure.com` |
 | Azure OpenAI Studio | `https://oai.azure.com` |
@@ -96,4 +96,4 @@ Your progress will be evaluated on these deliverables:
 
 ---
 
-Good luck, and have fun building the future of university support!
+Good luck, and have fun building surge-scale incident triage!

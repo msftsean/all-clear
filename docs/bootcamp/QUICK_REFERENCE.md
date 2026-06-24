@@ -1,4 +1,4 @@
-# 47 Doors Boot Camp - Quick Reference
+# All Clear Boot Camp - Quick Reference
 
 A cheat sheet of commonly used commands, file locations, and reference tables.
 
@@ -10,7 +10,7 @@ A cheat sheet of commonly used commands, file locations, and reference tables.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/47doors.git
+git clone https://github.com/EstablishedCorp/all-clear.git
 
 # Check status
 git status
@@ -33,22 +33,22 @@ git checkout -b feature/my-feature
 
 ```bash
 # Build and start all services
-docker-compose up --build
+docker compose up --build
 
 # Start in background
-docker-compose up -d
+docker compose up -d
 
 # Stop all services
-docker-compose down
+docker compose down
 
 # View running containers
 docker ps
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Rebuild a specific service
-docker-compose build backend
+docker compose build backend
 ```
 
 ### Azure CLI (az)
@@ -162,7 +162,7 @@ curl http://localhost:8000/api/realtime/health
 curl http://localhost:8000/api/phone/health
 ```
 
-**Live Phone Number:** +1 (913) 217-1946 — Real ACS integration, production-verified on 2026-04-21
+**Phone demos:** instructor-led only; use the number or ACS endpoint your instructor provides.
 
 ### Voice Environment Variables
 | Variable | Description | Default |
@@ -177,7 +177,7 @@ curl http://localhost:8000/api/phone/health
 |----------|-------------|----------|
 | `PHONE_ENABLED` | Enable phone integration | `true` |
 | `AZURE_ACS_ENDPOINT` | ACS resource endpoint | Yes (production) |
-| `ACS_PHONE_NUMBER` | E.164 phone number (+1-913-217-1946) | Yes (production) |
+| `ACS_PHONE_NUMBER` | E.164 phone number from your instructor | Yes (production) |
 | `PHONE_CALLBACK_BASE_URL` | Public HTTPS callback URL | Yes (production) |
 
 ### Key Voice/Phone URLs
@@ -221,10 +221,10 @@ Caller → PSTN → ACS → Event Grid → Backend → WS bridge → Azure OpenA
 ### Project Structure
 
 ```
-47doors/
+all-clear/
 ├── backend/                 # FastAPI Python backend
 │   ├── app/
-│   │   ├── agents/         # QueryAgent, RouterAgent, ActionAgent
+│   │   ├── agents/         # QueryAgent, RouterExecutor, ActionAgent
 │   │   ├── api/            # REST endpoints
 │   │   ├── models/         # Pydantic schemas
 │   │   └── services/       # Azure integrations
@@ -290,50 +290,47 @@ az keyvault secret show --vault-name <name> --name <secret-name>
 
 ---
 
-## Intent Categories
+## Incident Intent Categories
 
-These are the 7 intent categories used in the 47 Doors agent:
+These are representative incident-triage categories used in All Clear signals:
 
 | Intent | Description | Example Triggers |
 |--------|-------------|------------------|
-| `financial_aid` | FAFSA, scholarships, grants, tuition assistance | "FAFSA", "scholarship", "grant", "financial aid" |
-| `registration` | Course enrollment, transcripts, graduation | "register", "enroll", "transcript", "graduation" |
-| `housing` | Dormitories, roommates, move-in/move-out | "dorm", "roommate", "housing", "residence hall" |
-| `it_support` | Password resets, email, Canvas/LMS problems | "password", "email", "Canvas", "login", "WiFi" |
-| `academic_advising` | Degree requirements, major/minor, course planning | "major", "minor", "degree", "advisor", "prerequisite" |
-| `student_accounts` | Bills, refunds, payment plans, account holds | "bill", "payment", "refund", "balance", "hold" |
-| `general` | Catch-all for ambiguous or escalation queries | Complaints, multiple intents, human escalation |
+| `life_safety` | Immediate risk to people | "downed power line", "sparking", "injury", "fire" |
+| `utility_outage` | Water, power, or service interruption | "water main break", "power outage", "flooding" |
+| `infrastructure_damage` | Roads, buildings, or field assets impaired | "blocked road", "sinkhole", "tree on line" |
+| `compliance` | Statutory or regulated reporting clock | "breach notification", "recall", "NFIRS", "NIBRS" |
+| `customer_comms` | Public updates and status questions | "when restored", "what should residents do" |
+| `general` | Ambiguous signal requiring triage | Mixed, incomplete, or unclear reports |
 
 ---
 
-## Department Routing Table
+## Queue Routing Table
 
-| Intent | Primary Department | Fallback | Ticket Prefix |
+| Intent | Primary Queue | Fallback | Incident ID |
 |--------|-------------------|----------|---------------|
-| `financial_aid` | Financial Aid Office | Student Services | `TKT-FA-` |
-| `registration` | Registrar | Academic Affairs | `TKT-REG-` |
-| `housing` | Housing & Residence Life | Student Affairs | `TKT-HOU-` |
-| `it_support` | IT Help Desk | General Support | `TKT-IT-` |
-| `academic_advising` | Academic Advising Center | Department Advisor | `TKT-ADV-` |
-| `student_accounts` | Bursar / Student Accounts | Financial Aid | `TKT-ACC-` |
-| `general` | General Support / Escalation | Human Agent | `TKT-GEN-` |
+| `life_safety` | `field-operations` | `escalations` | `AC-####` |
+| `utility_outage` | `field-operations` | `customer-comms` | `AC-####` |
+| `infrastructure_damage` | `field-operations` | `engineering` | `AC-####` |
+| `compliance` | `compliance-desk` | `escalations` | `AC-####` |
+| `customer_comms` | `customer-comms` | `escalations` | `AC-####` |
+| `general` | `escalations` | `customer-comms` | `AC-####` |
 
 ---
 
 ## Agent Pipeline Flow
 
 ```
-UserQuery --> QueryAgent --> RouterAgent --> ActionAgent --> Response
-    ^                                                            |
-    |                                                            |
-    +------------------- Session Context ------------------------+
+Signal --> QueryAgent --> RouterExecutor --> ActionAgent --> Response/Sitrep
+   |                            |
+   +-------- preserved as report/dedup evidence ----------------+
 ```
 
 | Agent | Input | Output | Responsibility |
 |-------|-------|--------|----------------|
-| **QueryAgent** | Raw user message + session | StructuredQuery (intent, entities) | Parse, extract, classify |
-| **RouterAgent** | StructuredQuery | RoutingDecision (target agent, params) | Route to correct ActionAgent |
-| **ActionAgent** | RoutingDecision + session | AgentResponse (content, sources) | Execute task, generate response |
+| **QueryAgent** | Raw signal text | `SignalClassification` | Classify only; no routing or record writes |
+| **RouterExecutor** | Classification + open incidents | `RoutingDecision` | Deterministic zero-LLM dedup, severity/SLA, escalation |
+| **ActionAgent** | Routing decision | Incident, knowledge answer, or sitrep | Act only through approved tools |
 
 ---
 
@@ -353,7 +350,7 @@ AZURE_SEARCH_INDEX_NAME=knowledge-base
 # Cosmos DB (optional)
 COSMOS_ENDPOINT=https://your-cosmos.documents.azure.com:443/
 COSMOS_KEY=your-cosmos-key
-COSMOS_DATABASE=support-agent
+COSMOS_DATABASE=allclear
 
 # Application
 ENVIRONMENT=development

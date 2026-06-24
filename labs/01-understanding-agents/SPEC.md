@@ -32,21 +32,14 @@ A successfully completed Lab 01 means you understand the foundational concepts o
 **How to Test:**
 ```bash
 cd labs/01-understanding-agents
-python -m pytest test_intent_classifier.py -v
+python test_lab01.py
 ```
 
 **Expected Output:**
 ```
-test_intent_classifier.py::test_greeting_intent PASSED
-test_intent_classifier.py::test_help_intent PASSED
-test_intent_classifier.py::test_ticket_intent PASSED
-test_intent_classifier.py::test_knowledge_intent PASSED
-test_intent_classifier.py::test_farewell_intent PASSED
-test_intent_classifier.py::test_ambiguous_intent PASSED
-test_intent_classifier.py::test_unknown_intent PASSED
-test_intent_classifier.py::test_accuracy_threshold PASSED
+✅ Classifier accuracy >= 90%
 
-========================= 8 passed in X.XXs =========================
+Tests passed: 7/7
 ```
 
 **Accuracy Calculation:**
@@ -63,30 +56,30 @@ assert accuracy >= 0.90, f"Accuracy {accuracy:.1%} is below 90% threshold"
 ### 2. Can Explain the Three-Agent Pattern
 
 **What it verifies:**
-- Understanding of the Router-Specialist-Orchestrator pattern
+- Understanding of the QueryAgent → RouterExecutor → ActionAgent pattern
 - Knowledge of when and why to use multi-agent architectures
 - Ability to identify agent responsibilities and boundaries
 
 **Acceptance Criteria:**
-- [ ] Can name and describe the three agent types (Router, Specialist, Orchestrator)
+- [ ] Can name and describe the three agent types (QueryAgent, RouterExecutor, ActionAgent)
 - [ ] Can explain the responsibility of each agent type:
-  - **Router Agent:** Classifies intent, routes to appropriate specialist
-  - **Specialist Agent:** Deep domain expertise, handles specific task types
-  - **Orchestrator Agent:** Coordinates multi-step workflows, manages state
+  - **QueryAgent:** Classifies one inbound signal into the SignalCategory taxonomy; classify only
+  - **RouterExecutor:** Deterministically deduplicates, maps severity/SLA, and decides escalation with zero LLM calls
+  - **ActionAgent:** Opens incidents, searches knowledge, and generates citation-grounded sitreps only after routing
 - [ ] Can describe at least 2 benefits of multi-agent over single-agent design
 - [ ] Can identify a scenario where single-agent design is preferable
 - [ ] Written explanation is included in `exercises/three_agent_explanation.md`
 
 **Assessment Questions (answer in explanation file):**
 
-1. **What is the primary responsibility of a Router Agent?**
-   - Expected: Analyze incoming requests, classify intent, direct to appropriate specialist
+1. **What is the primary responsibility of QueryAgent?**
+   - Expected: Classify inbound signals into All Clear SignalCategory values without routing or acting
 
-2. **When would you choose a Specialist Agent over a general-purpose agent?**
-   - Expected: When domain expertise matters, when task requires specific tools/knowledge, when response quality must be high in a specific area
+2. **Why must RouterExecutor make zero LLM calls?**
+   - Expected: Severity, SLA, dedup, and escalation must be deterministic, auditable, and protected from prompt drift
 
-3. **What state does an Orchestrator Agent typically manage?**
-   - Expected: Conversation context, multi-step workflow progress, agent coordination, error recovery
+3. **What can ActionAgent do after RouterExecutor returns OPEN_INCIDENT?**
+   - Expected: Create the incident, retrieve citation-ready source records, and generate a grounded sitrep within tool boundaries
 
 4. **Name two benefits of the three-agent pattern:**
    - Expected: Separation of concerns, easier testing, scalability, maintainability, specialization
@@ -114,8 +107,8 @@ wc -w exercises/three_agent_explanation.md
 
 **Acceptance Criteria:**
 - [ ] `intent_classifier.py` contains a working `IntentClassifier` class
-- [ ] Classifier implements the required interface: `classify(query: str) -> Intent`
-- [ ] At least 5 intent categories are supported (e.g., GREETING, HELP, TICKET, KNOWLEDGE, FAREWELL)
+- [ ] Classifier implements the required interface: `classify(signal: str) -> ClassificationResult`
+- [ ] All Clear SignalCategory values are supported (e.g., FIELD_HAZARD, PUBLIC_SAFETY, INFRASTRUCTURE_OUTAGE, CUSTOMER_INQUIRY, COMPLIANCE_REPORT)
 - [ ] Includes confidence scoring for each classification
 - [ ] Handles edge cases (empty input, very long input, special characters)
 - [ ] All unit tests pass
@@ -125,7 +118,7 @@ wc -w exercises/three_agent_explanation.md
 labs/01-understanding-agents/
   exercises/
     intent_classifier.py      # Your implementation
-    test_intent_classifier.py # Test suite (provided)
+    test_classifier.py        # Exercise verifier (provided)
 ```
 
 **Interface Contract:**
@@ -133,17 +126,21 @@ labs/01-understanding-agents/
 from enum import Enum
 from dataclasses import dataclass
 
-class Intent(Enum):
-    GREETING = "greeting"
-    HELP = "help"
-    TICKET = "ticket"
-    KNOWLEDGE = "knowledge"
-    FAREWELL = "farewell"
+class SignalCategory(Enum):
+    INFRASTRUCTURE_OUTAGE = "INFRASTRUCTURE_OUTAGE"
+    FIELD_HAZARD = "FIELD_HAZARD"
+    PUBLIC_SAFETY = "PUBLIC_SAFETY"
+    CUSTOMER_INQUIRY = "CUSTOMER_INQUIRY"
+    SERVICE_REQUEST = "SERVICE_REQUEST"
+    COMPLIANCE_REPORT = "COMPLIANCE_REPORT"
+    STATUS_CHECK = "STATUS_CHECK"
+    HUMAN_REQUEST = "HUMAN_REQUEST"
+    GENERAL_INQUIRY = "GENERAL_INQUIRY"
     UNKNOWN = "unknown"
 
 @dataclass
 class ClassificationResult:
-    intent: Intent
+    intent: SignalCategory
     confidence: float  # 0.0 to 1.0
     raw_query: str
 
@@ -342,7 +339,7 @@ cd labs/01-understanding-agents
 ls -la exercises/
 
 # Run tests with correct path
-python -m pytest exercises/test_intent_classifier.py -v
+python exercises/test_classifier.py
 ```
 
 ---
@@ -355,7 +352,7 @@ Before proceeding to Lab 02, ensure all items are checked:
 - [ ] All unit tests pass with >90% accuracy
 - [ ] `three_agent_explanation.md` is complete (200+ words)
 - [ ] `multi_agent_design.md` contains system design with diagram
-- [ ] Can verbally explain the Router-Specialist-Orchestrator pattern
+- [ ] Can verbally explain the QueryAgent → RouterExecutor → ActionAgent pattern
 - [ ] Code is clean, documented, and handles edge cases
 
 **Estimated Time:** 2-3 hours

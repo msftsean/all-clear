@@ -23,7 +23,8 @@ A successfully completed Lab 07 demonstrates:
 | Dependencies | `mcp` in requirements.txt |
 
 **Acceptance Criteria**:
-- [ ] Server starts without errors when run via `python backend/mcp_main.py`
+- [ ] Server starts without errors from repo root when run with the backend venv Python and `PYTHONPATH` set to the repo root:
+  `.\backend\.venv\Scripts\python.exe backend\mcp_main.py`
 - [ ] Server exports `list_tools()` handler returning the ActionAgent tools
 - [ ] Server exports `call_tool()` handler that invokes tool logic
 - [ ] Server preserves the QueryAgent → RouterExecutor → ActionAgent authority boundary
@@ -105,17 +106,20 @@ Optional helper tools may include:
 
 Before submitting, verify:
 
-```bash
-# 1. MCP server starts
-python backend/mcp_main.py
-# Should start without errors (Ctrl+C to stop)
+```powershell
+# 1. MCP server starts from the repository root
+cd C:\Users\segayle\repos\cloudforce\all-clear
+$env:PYTHONPATH = "C:\Users\segayle\repos\cloudforce\all-clear"
+$env:MOCK_MODE = "true"
+.\backend\.venv\Scripts\python.exe backend\mcp_main.py
+# Should start/import without ModuleNotFoundError
 
 # 2. Dependencies installed
-pip show mcp
+.\backend\.venv\Scripts\python.exe -m pip show mcp
 # Should show package info
 
 # 3. VS Code config exists
-cat .vscode/mcp.json
+Get-Content .vscode\mcp.json
 # Should show allclear server configuration
 ```
 

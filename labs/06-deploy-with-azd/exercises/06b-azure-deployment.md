@@ -7,13 +7,13 @@
 
 ## Overview
 
-In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy All Clear with a single command. By the end, your All Clear incident-triage pipeline will be running in Azure Container Apps.
+In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy All Clear with a single command. The repo's `azure.yaml` uses `remoteBuild: true`, so Azure Container Registry builds the container images remotely and you do not need local Docker for this deployment. By the end, your All Clear incident-triage pipeline will be running in Azure Container Apps.
 
 ---
 
 ## Prerequisites
 
-- [ ] Exercise 06a completed (local Docker test successful)
+- [ ] Exercise 06a completed if you chose the optional local Docker lane
 - [ ] Azure subscription with Contributor access
 - [ ] Azure CLI installed (`az --version`)
 - [ ] Azure Developer CLI installed (`azd version`)
@@ -127,8 +127,16 @@ az account set --subscription "<subscription-name-or-id>"
 
 Verify the `azure.yaml` file exists in your project root:
 
+**Bash:**
+
 ```bash
 cat azure.yaml
+```
+
+**Windows PowerShell:**
+
+```powershell
+Get-Content azure.yaml
 ```
 
 **Expected contents:**
@@ -160,6 +168,8 @@ infra:
   path: ./infra
   module: main
 ```
+
+`remoteBuild: true` is important for the lab: `azd up` sends the build to Azure Container Registry instead of requiring Docker Desktop on your laptop or Codespace.
 
 ### 3.2 Initialize azd (if needed)
 
@@ -213,7 +223,7 @@ AZURE_OPENAI_REALTIME_DEPLOYMENT=gpt-realtime
 # Phone (requires ACS resource — coach will demo this)
 PHONE_ENABLED=true
 AZURE_ACS_ENDPOINT=https://your-acs.communication.azure.com
-ACS_PHONE_NUMBER=+15551234567
+ACS_PHONE_NUMBER=<instructor-provided-e164-number>
 PHONE_CALLBACK_BASE_URL=https://your-app.azurecontainerapps.io
 ```
 
@@ -237,7 +247,7 @@ This shows the Bicep deployment plan without executing it.
 
 ### 4.2 Run azd up
 
-The `azd up` command provisions infrastructure AND deploys All Clear:
+The `azd up` command provisions infrastructure AND deploys All Clear. Container images are built remotely in ACR because `azure.yaml` sets `remoteBuild: true`:
 
 ```bash
 azd up
@@ -303,9 +313,29 @@ If Cosmos fails due regional capacity, use a dedicated Cosmos region (for exampl
 
 ---
 
-## Task 5: Verify Deployment (10 minutes)
+## Task 5: Seed the Knowledge Base (5 minutes)
 
-### 5.1 Get Service Endpoints
+After `azd up` succeeds, seed Azure AI Search. The app expects the index name `knowledge-base`.
+
+**Windows PowerShell:**
+
+```powershell
+python backend\scripts\seed_knowledge_base.py
+```
+
+**Bash (Codespaces/Linux/macOS):**
+
+```bash
+python backend/scripts/seed_knowledge_base.py
+```
+
+**Checkpoint:** The script completes and reports documents loaded into the `knowledge-base` index.
+
+---
+
+## Task 6: Verify Deployment (10 minutes)
+
+### 6.1 Get Service Endpoints
 
 ```bash
 azd show
@@ -320,19 +350,36 @@ Service           Endpoint
 backend           https://<prefix>-backend.<region>.azurecontainerapps.io
 ```
 
-### 5.2 Store Backend URL
+### 6.2 Store Backend URL
+
+**Bash:**
 
 ```bash
-# Get the backend URL
 BACKEND_URL=$(azd env get-value AZURE_CONTAINERAPP_URL)
 echo "Backend URL: $BACKEND_URL"
 ```
 
-### 5.3 Test Health Endpoint
+**Windows PowerShell:**
+
+```powershell
+$BACKEND_URL = azd env get-value AZURE_CONTAINERAPP_URL
+Write-Host "Backend URL: $BACKEND_URL"
+```
+
+### 6.3 Test Health Endpoint
+
+`/api/health` proves the Container App is reachable, but it does **not** prove Cosmos DB writes are working.
+
+**Bash:**
 
 ```bash
-# Test the health endpoint
 curl -s "$BACKEND_URL/api/health" | jq .
+```
+
+**Windows PowerShell:**
+
+```powershell
+curl.exe "$BACKEND_URL/api/health"
 ```
 
 **Expected response:**
@@ -345,16 +392,28 @@ curl -s "$BACKEND_URL/api/health" | jq .
 }
 ```
 
-### 5.4 Test Signals Endpoint
+### 6.4 Test Chat Endpoint and Cosmos Persistence
+
+Submit one signal through the frontend chat endpoint and confirm an incident is returned and persisted.
+
+**Bash:**
 
 ```bash
-# Test the signals API
-curl -s -X POST "$BACKEND_URL/api/signals" \
+curl -s -X POST "$BACKEND_URL/api/chat" \
   -H "Content-Type: application/json" \
-  -d '{"message": "Power line down across Main St", "channel": "submitted-report"}' | jq .
+  -d '{"message":"Water main break flooding Frederick Road"}' | jq .
 ```
 
-**Expected:** JSON `PipelineResult` with classification, routing, action, an `AC-####` incident id, SEV1 severity, and queue `field-operations` for this example signal.
+**Windows PowerShell:**
+
+```powershell
+$body = '{"message":"Water main break flooding Frederick Road"}'
+curl.exe -X POST "$BACKEND_URL/api/chat" `
+  -H "Content-Type: application/json" `
+  -d $body
+```
+
+**Expected:** JSON response with an All Clear incident, such as an `AC-####` incident id, severity/SLA routing, and a queue assignment. In live mode, this is the check that Cosmos DB writes are working; the health endpoint alone is not enough.
 
 ### Verify Voice & Phone (Optional)
 
@@ -368,11 +427,11 @@ curl https://your-app.azurecontainerapps.io/api/phone/health
 
 Both should return `{"available": true}` when properly configured, or `{"available": true, "mock_mode": true}` if running in mock mode.
 
-### 5.5 Access Frontend (Optional)
+### 6.5 Access Frontend (Optional)
 
 Open the frontend URL from `azd show` or `azd env get-value AZURE_FRONTEND_URL`. The frontend is also deployed as an Azure Container App in the real All Clear `azure.yaml`.
 
-### 5.6 Verify in Azure Portal
+### 6.6 Verify in Azure Portal
 
 1. Navigate to [Azure Portal](https://portal.azure.com)
 2. Find your resource group from `azd env get-value AZURE_RESOURCE_GROUP`
@@ -394,9 +453,11 @@ Open the frontend URL from `azd show` or `azd env get-value AZURE_FRONTEND_URL`.
 
 ---
 
-## Task 6: View Logs and Monitoring (10 minutes)
+## Task 7: View Logs and Monitoring (10 minutes)
 
-### 6.1 Stream Container Logs
+### 7.1 Stream Container Logs
+
+**Bash:**
 
 ```bash
 # Get resource group and backend Container App name
@@ -410,9 +471,22 @@ az containerapp logs show \
   --follow
 ```
 
+**Windows PowerShell:**
+
+```powershell
+$RG = azd env get-value AZURE_RESOURCE_GROUP
+$BACKEND_APP = az containerapp list --resource-group $RG --query '[?tags."azd-service-name"==`backend`].name | [0]' -o tsv
+az containerapp logs show `
+  --name $BACKEND_APP `
+  --resource-group $RG `
+  --follow
+```
+
 Press `Ctrl+C` to stop streaming.
 
-### 6.2 View System Logs
+### 7.2 View System Logs
+
+**Bash:**
 
 ```bash
 az containerapp logs show \
@@ -421,7 +495,18 @@ az containerapp logs show \
   --type system
 ```
 
-### 6.3 Check Container Status
+**Windows PowerShell:**
+
+```powershell
+az containerapp logs show `
+  --name $BACKEND_APP `
+  --resource-group $RG `
+  --type system
+```
+
+### 7.3 Check Container Status
+
+**Bash:**
 
 ```bash
 az containerapp show \
@@ -430,9 +515,18 @@ az containerapp show \
   --query "properties.runningStatus"
 ```
 
+**Windows PowerShell:**
+
+```powershell
+az containerapp show `
+  --name $BACKEND_APP `
+  --resource-group $RG `
+  --query "properties.runningStatus"
+```
+
 **Expected:** `"Running"`
 
-### 6.4 View Metrics in Portal
+### 7.4 View Metrics in Portal
 
 1. Go to Azure Portal
 2. Navigate to your Container App
@@ -442,7 +536,7 @@ az containerapp show \
    - Response time
    - CPU/Memory usage
 
-### 6.5 Search Logs in Log Analytics
+### 7.5 Search Logs in Log Analytics
 
 1. Go to Azure Portal
 2. Find your Log Analytics workspace
@@ -461,9 +555,9 @@ ContainerAppConsoleLogs_CL
 
 ---
 
-## Task 7: Make a Code Change and Redeploy (Optional)
+## Task 8: Make a Code Change and Redeploy (Optional)
 
-### 7.1 Make a Small Change
+### 8.1 Make a Small Change
 
 Edit `backend/app/api/routes.py` to temporarily add a build marker to the health response:
 
@@ -478,7 +572,7 @@ async def health():
     }
 ```
 
-### 7.2 Redeploy
+### 8.2 Redeploy
 
 ```bash
 # Deploy only (no infrastructure changes)
@@ -487,7 +581,7 @@ azd deploy
 
 This is faster than `azd up` because it only rebuilds and deploys the container.
 
-### 7.3 Verify the Change
+### 8.3 Verify the Change
 
 ```bash
 curl -s "$BACKEND_URL/api/health" | jq .build
@@ -497,9 +591,9 @@ curl -s "$BACKEND_URL/api/health" | jq .build
 
 ---
 
-## Task 8: Clean Up (When Done with Lab)
+## Task 9: Clean Up (When Done with Lab)
 
-### 8.1 Delete All Resources
+### 9.1 Delete All Resources
 
 **Warning:** This permanently deletes all Azure resources!
 
