@@ -151,7 +151,7 @@ python-ulid==3.1.0
 pythonnet==3.0.5
 pytokens==0.4.1
 pytz==2026.2
-pywin32==312
+pywin32==312; sys_platform == "win32"
 PyYAML==6.0.3
 qdrant-client==1.18.0
 redis==7.1.1

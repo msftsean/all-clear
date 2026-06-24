@@ -34,6 +34,9 @@ param realtimeModelVersion string = '2025-08-28'
 @description('Region for the realtime OpenAI account (realtime models are not available in eastus)')
 param realtimeLocation string = 'swedencentral'
 
+@description('Deploy the realtime (voice) OpenAI account and model. Disable when gpt-realtime quota is unavailable.')
+param deployRealtime bool = true
+
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
 
@@ -68,7 +71,7 @@ resource openAi 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
   properties: {
     customSubDomainName: '${prefix}-openai'
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: true  // Managed identity only - no API key auth
+    disableLocalAuth: true // Managed identity only - no API key auth
   }
 }
 
@@ -110,7 +113,7 @@ resource openAiEmbeddingDeployment 'Microsoft.CognitiveServices/accounts/deploym
 // (default swedencentral). The backend uses AZURE_OPENAI_REALTIME_ENDPOINT to
 // reach it for voice (A1) and phone (A2) while chat/embeddings stay on the
 // primary eastus account.
-resource openAiRealtime 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
+resource openAiRealtime 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = if (deployRealtime) {
   name: '${prefix}-openai-rt'
   location: realtimeLocation
   tags: tags
@@ -125,7 +128,7 @@ resource openAiRealtime 'Microsoft.CognitiveServices/accounts@2023-10-01-preview
   }
 }
 
-resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = {
+resource openAiRealtimeDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-10-01-preview' = if (deployRealtime) {
   parent: openAiRealtime
   name: realtimeModel
   properties: {
@@ -252,10 +255,10 @@ resource searchService 'Microsoft.Search/searchServices@2023-11-01' = {
 // ============================================================================
 resource acs 'Microsoft.Communication/communicationServices@2023-04-01' = {
   name: '${prefix}-acs'
-  location: 'global'  // ACS is a global resource
+  location: 'global' // ACS is a global resource
   tags: tags
   properties: {
-    dataLocation: 'unitedstates'  // Data residency
+    dataLocation: 'unitedstates' // Data residency
   }
 }
 
@@ -424,11 +427,11 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'AZURE_OPENAI_REALTIME_ENDPOINT'
-              value: openAiRealtime.properties.endpoint
+              value: deployRealtime ? openAiRealtime.properties.endpoint : ''
             }
             {
               name: 'AZURE_OPENAI_REALTIME_DEPLOYMENT'
-              value: openAiRealtimeDeployment.name
+              value: deployRealtime ? openAiRealtimeDeployment.name : ''
             }
             {
               name: 'AZURE_COSMOS_ENDPOINT'
@@ -499,18 +502,24 @@ resource backendOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@20
   name: guid(openAi.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
   scope: openAi
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesOpenAIUserRoleId)
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      cognitiveServicesOpenAIUserRoleId
+    )
     principalId: backendContainerApp.identity.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
 // Grant backend container app access to the realtime OpenAI account via managed identity
-resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployRealtime) {
   name: guid(openAiRealtime.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
   scope: openAiRealtime
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', cognitiveServicesOpenAIUserRoleId)
+    roleDefinitionId: subscriptionResourceId(
+      'Microsoft.Authorization/roleDefinitions',
+      cognitiveServicesOpenAIUserRoleId
+    )
     principalId: backendContainerApp.identity.principalId
     principalType: 'ServicePrincipal'
   }
@@ -566,7 +575,6 @@ resource acsIncomingCallSubscription 'Microsoft.EventGrid/systemTopics/eventSubs
   }
   dependsOn: [backendContainerApp]
 }
-
 
 resource frontendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = {
   name: '${prefix}-frontend'

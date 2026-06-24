@@ -3,14 +3,17 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "resourcePrefix": { "value": "allclear" },
-    "location": { "value": "eastus" },
-    "cosmosLocation": { "value": "eastus" },
+    "location": { "value": "eastus2" },
+    "cosmosLocation": { "value": "eastus2" },
     "searchLocation": { "value": "eastus" },
     "openAiModel": { "value": "gpt-5.1" },
     "openAiModelVersion": { "value": "2025-11-13" },
     "embeddingModel": { "value": "text-embedding-3-small" },
     "embeddingModelVersion": { "value": "1" },
     "mockMode": { "value": false },
-    "realtimeLocation": { "value": "eastus2" }
+    "realtimeLocation": { "value": "eastus2" },
+    "realtimeModel": { "value": "gpt-realtime-mini" },
+    "realtimeModelVersion": { "value": "2025-12-15" },
+    "deployRealtime": { "value": true }
   }
 }
