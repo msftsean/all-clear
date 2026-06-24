@@ -69,6 +69,13 @@ export default defineConfig({
         url: 'http://localhost:8000/api/health',
         reuseExistingServer: !process.env.CI,
         timeout: 120 * 1000,
+        /* Default the e2e backend to deterministic offline mock mode so the suite
+         * is green with no Azure credentials. Override for a live run by exporting
+         * MOCK_MODE=false (plus ENVIRONMENT and the Azure endpoints/credentials). */
+        env: {
+          MOCK_MODE: process.env.MOCK_MODE ?? 'true',
+          ENVIRONMENT: process.env.ENVIRONMENT ?? 'development',
+        },
       },
       {
         command: 'npm run dev',

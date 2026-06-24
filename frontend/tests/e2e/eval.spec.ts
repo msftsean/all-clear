@@ -1,6 +1,13 @@
 import { test, expect, type Page } from '@playwright/test';
 import { randomUUID } from 'crypto';
 
+// QUARANTINED 2026-06-24 (all-clear): legacy deployment-eval suite for the 47 Doors
+// student-support product (KB domain: meal plans, library hours, financial aid).
+// TODO(all-clear-e2e): retarget to the All Clear incident-triage domain, then remove this skip.
+test.beforeEach(() => {
+  test.skip(true, "Legacy 47 Doors eval suite — retarget to All Clear incident-triage domain before re-enabling.");
+});
+
 /**
  * Deployment Evaluation Suite for 47 Doors Front Door Support Agent
  *

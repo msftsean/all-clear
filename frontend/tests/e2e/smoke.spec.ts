@@ -13,6 +13,14 @@
 
 import { test, expect } from '@playwright/test';
 
+// QUARANTINED 2026-06-24 (all-clear): legacy e2e from the 47 Doors student-support
+// product (pre-BriefingRoom UI). Assertions target a removed chat/KB domain
+// (e.g. "password reset -> IT department"). TODO(all-clear-e2e): retarget to the
+// All Clear BriefingRoom UI, then remove this skip.
+test.beforeEach(() => {
+  test.skip(true, "Legacy 47 Doors e2e — retarget to All Clear BriefingRoom UI before re-enabling.");
+});
+
 test.describe('Smoke Tests - Critical Path', () => {
   test.beforeEach(async ({ page }) => {
     // Wait for the page to be ready
