@@ -291,6 +291,10 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#stage3"><span class="n">S3</span>MCP server + red-team<span class="tick">✓</span></a>
       <a href="#stage4"><span class="n">S4</span>APIM AI gateway<span class="tick">✓</span></a>
       <a href="#stage5"><span class="n">S5</span>Deploy + eval CI<span class="tick">✓</span></a>
+      <a class="sec">Extend &amp; make it yours</a>
+      <a href="#github"><span class="n">GH</span>GitHub-in-the-lab</a>
+      <a href="#alsoships"><span class="n">+</span>What else ships</a>
+      <a href="#capstone"><span class="n">★</span>Make It Yours</a>
       <a class="sec">Reference</a>
       <a href="#voice"><span class="n">A1</span>Voice (optional)</a>
       <a href="#phone"><span class="n">A2</span>Phone call-in</a>
@@ -344,7 +348,7 @@ html.js main section.in{opacity:1;transform:none}
         <tr><td><strong>S4</strong></td><td>APIM as the AI gateway (rate limits, token budgets, JWT, observability)</td><td>60 min</td><td>3:30 &ndash; 4:30</td></tr>
         <tr><td><strong>S5</strong></td><td>Deploy on Azure Container Apps, eval suite gating CI</td><td>60 min</td><td>4:30 &ndash; 5:30</td></tr>
       </table>
-      <div class="tip"><span class="eyebrow">How to use this workbook</span><p style="margin:.4em 0 0">Work top to bottom. Each stage tells you the goal, what to build, and how to check yourself, then links to the full lab in the repo. Hit <span class="pill">Mark done</span> as you clear each stage &mdash; the sidebar counts your six.</p></div>
+      <div class="tip"><span class="eyebrow">How to use this workbook</span><p style="margin:.4em 0 0">Work top to bottom. Each stage tells you the goal, what to build, and how to check yourself, then links to the full lab in the repo. Hit <span class="pill">Mark done</span> as you clear each stage &mdash; the sidebar counts your six. Past the timed six there's a <a href="#github"><strong>GitHub-in-the-lab</strong></a> extension and a <a href="#capstone"><strong>Make It Yours</strong></a> capstone to close on.</p></div>
     </section>
 
     <section id="stage0">
@@ -423,6 +427,67 @@ html.js main section.in{opacity:1;transform:none}
       <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/06-deploy-with-azd/README.md" target="_blank" rel="noopener">📖 Lab 06 &mdash; Deploy with azd</a></p>
     </section>
 
+    <section id="github">
+      <h2>GH &middot; GitHub-in-the-lab <span class="pill">extend it</span></h2>
+      <p class="tag">Goal: take what you built and prove the GitHub workflow around it &mdash; fork, run CI, make one bounded extension with Copilot, and keep every test green.</p>
+      <ol class="steps">
+        <li><strong>Fork &amp; run CI.</strong> Fork <code class="mono">EstablishedCorp/all-clear</code>, push any branch, then open <strong>Actions</strong> and run <code class="mono">smoke-test.yml</code> on your fork.</li>
+        <li><strong>Pick one bounded extension</strong> &mdash; either add one <strong>ActionAgent tool</strong> (with bounded authority + docs) <em>or</em> add one <strong>scenario pack</strong> (deterministic, mock-mode parity). Leave the RouterExecutor untouched.</li>
+        <li><strong>Turn the starter test green.</strong> <code class="mono">labs/09-github-in-the-lab/test_starter_red_to_green.py</code> ships <em>red</em> on purpose. Make your change, then re-run until it passes &mdash; without weakening any existing test.</li>
+      </ol>
+      <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0"><code class="mono">smoke-test.yml</code> is green on your fork, the starter test went red&nbsp;→&nbsp;green, and the full suite still passes: <code class="mono">cd labs/09-github-in-the-lab &amp;&amp; python -m pytest -q test_starter_red_to_green.py</code>.</p></div>
+      <div class="tip"><span class="eyebrow">Why this matters</span><p style="margin:.4em 0 0">This is the loop a real team lives in: a fork, a CI gate, an AI-assisted change, and tests that hold the line. Copilot writes the extension; the deterministic router and the green gate keep it honest.</p></div>
+      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/09-github-in-the-lab/README.md" target="_blank" rel="noopener">📖 Lab 09 &mdash; GitHub-in-the-lab</a></p>
+    </section>
+
+    <section id="alsoships">
+      <h2>+ What else the reference build ships</h2>
+      <p class="lead">Beyond the six stages, the reference All Clear carries four things worth knowing about when you take this back to production. Each one runs in <strong>mock mode</strong> with no Azure credentials.</p>
+      <div class="grid2">
+        <div class="card">
+          <div class="eyebrow">Azure footprint &amp; cost panel</div>
+          <p style="margin:.3em 0 .6em">A read-only inventory of the 11 Azure services behind the app, each with a clearly-labelled <em>estimate</em> &mdash; so the room can see the consumption story, not a black box.</p>
+          <p class="tag"><code class="mono">GET /api/health/azure-footprint</code> &middot; ClearBoard panel</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Responsible-AI control map</div>
+          <p style="margin:.3em 0 .6em">Seven existing controls &mdash; bounded authority, deterministic router, escalation-as-control, no-PII-echo, audit receipts, Foundry red-team/evals, model failover &mdash; mapped to Maryland policy concepts (SB&nbsp;818, DoIT Responsible Use).</p>
+          <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/responsible-ai.md" target="_blank" rel="noopener">📖 Responsible-AI map</a> &middot; in-app Trust view</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Maryland scenario packs &times;4</div>
+          <p style="margin:.3em 0 .6em">Load any of four domain packs &mdash; each seeds knowledge + signals that visibly collapse duplicates on the ClearBoard:</p>
+          <ul style="margin:.2em 0 0;padding-left:1.1em;font-size:14px;line-height:1.55">
+            <li>SOC / Sentinel alert storm</li>
+            <li>311 / 911 city ops</li>
+            <li>Water utility leak surge</li>
+            <li>Traffic / transportation</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="eyebrow">Lab-to-production leave-behind</div>
+          <p style="margin:.3em 0 .6em">A one-page handoff &mdash; architecture, Azure footprint, and the Responsible-AI map in one place &mdash; for teams that want to keep going the same day.</p>
+          <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener">📖 Lab to Production</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="capstone">
+      <h2>★ Make It Yours &mdash; the capstone</h2>
+      <p class="lead">You built the agent on a generic incident-triage shell. The last step is to point it at <em>your</em> world &mdash; and leave a trace of what you'd build next.</p>
+      <ol class="steps">
+        <li>Answer the three reflection prompts for your own agency &mdash; this is the capstone the coaches collect:</li>
+      </ol>
+      <div class="grid2" style="margin:.2em 0 1em">
+        <div class="card"><div class="eyebrow">prompt 1 &middot; the surge</div><p style="margin:0"><strong>What's your surge?</strong> The flood of inbound your team faces &mdash; calls, tickets, alerts, reports.</p></div>
+        <div class="card"><div class="eyebrow">prompt 2 &middot; the signals</div><p style="margin:0"><strong>What signals flood you?</strong> The raw messages that pile up faster than people can triage them.</p></div>
+        <div class="card"><div class="eyebrow">prompt 3 &middot; the incident</div><p style="margin:0"><strong>What's the real incident underneath?</strong> The handful of things that actually matter once the noise collapses.</p></div>
+      </div>
+      <p>Submit your capstone with your <strong>name</strong> and <strong>agency</strong> in the app's <em>Make It Yours</em> panel. It persists to the same data layer you've been testing against, and you can pull every entry back out as <strong>CSV or JSON</strong>.</p>
+      <div class="expect"><span class="eyebrow">Capstone API</span><p style="margin:.4em 0 0"><code class="mono">POST /api/demo/capstone/entries</code> saves an entry; <code class="mono">GET /api/demo/capstone/export?format=csv</code> (or <code class="mono">json</code>) downloads them all. Works in mock mode &mdash; no Azure credentials needed.</p></div>
+      <div class="try"><span class="eyebrow">Take it home</span><p style="margin:.4em 0 0">Want to keep going the same day? The <a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener"><strong>Lab to Production</strong></a> leave-behind has the architecture, footprint, and governance map in one page &mdash; and how to reach Sean &amp; Tracy's team to take it further.</p></div>
+    </section>
+
     <section id="voice">
       <h2>A1 &middot; Voice &mdash; speak to it <span class="pill">optional</span></h2>
       <p>All Clear is built to hold a spoken conversation in the browser, powered by the <strong>Azure OpenAI Realtime API</strong> &mdash; the model transcribes what you say (speech-to-text) and speaks its replies back (text-to-speech) in one low-latency stream.</p>
@@ -457,6 +522,7 @@ html.js main section.in{opacity:1;transform:none}
         <li><strong>S4</strong> &mdash; My agent is fronted by an APIM Consumption gateway with rate limits, token budgets, JWT, and telemetry.</li>
         <li><strong>S5</strong> &mdash; My agent is deployed on Azure Container Apps with the eval suite gating CI.</li>
       </ul>
+      <p style="margin:1.1em 0 0"><span class="eyebrow">Bonus</span> &mdash; Then <a href="#github"><strong>extend it on GitHub</strong></a> (fork → CI → one bounded change → green) and close with the <a href="#capstone"><strong>Make It Yours</strong></a> capstone.</p>
       <div class="try"><span class="eyebrow">Nice work</span><p style="margin:.4em 0 0">You built and shipped a production agent &mdash; scaffold to deployed URL &mdash; in one day. Use the <span class="pill">Mark done</span> buttons in each stage to track your progress; the counter in the sidebar adds up your six.</p></div>
       <p class="footer">All Clear &mdash; participant workbook (student edition), Day&nbsp;2 build lab. Running a session? The companion <strong>Coach's Runbook</strong> has the facilitator notes and talking points. This page lives in <code>participant-runbook/</code>.</p>
     </section>
