@@ -184,7 +184,7 @@ class IncidentAction(BaseModel):
 
 ### 🔹 Step 2: Implement Session Context
 
-Session context maintains state across conversation turns. Open `start/session.py`:
+Session context maintains state across conversation turns. Open `start/pipeline.py` (the session helper classes live at the top of this scaffold):
 
 #### 2a: 💾 Session Store
 
@@ -285,7 +285,7 @@ class SessionManager:
         return False
 ```
 
-**Task:** Complete the session management in `start/session.py`. 📝
+**Task:** Complete the session management in `start/pipeline.py`. 📝
 
 ### 🔹 Step 3: Implement QueryAgent
 
@@ -499,7 +499,7 @@ test that it imports **no** OpenAI client and makes zero network calls. 📝
 ### 🔹 Step 5: Implement the ActionAgent
 
 The ActionAgent acts on the `RoutingDecision` through **exactly three tools** and
-nothing else (Constitution Art. II). Open `start/action_agents.py`:
+nothing else (Constitution Art. II). Open `start/action_agent.py`:
 
 - 🆕 **create_incident** — on `OPEN_INCIDENT`, mint a new incident `AC-####` in the target queue at the decided severity
 - 📚 **search_knowledge** — RAG over incident runbooks/SOPs (Lab 04); returns `KnowledgeArticle`s used to ground the response
@@ -510,7 +510,7 @@ Path rules:
 - **`ATTACH_TO_INCIDENT`** → **no** knowledge search (keeps surge latency flat) → increment the matched incident's magnitude → return a short acknowledgment `IncidentAction(status="attached")`.
 - **`escalate=True`** → hand off to the `escalations` queue; never suppress it.
 
-**Task:** Complete the ActionAgent + its toolbox in `start/action_agents.py`.
+**Task:** Complete the ActionAgent + its toolbox in `start/action_agent.py`.
 Reference [`action_agent.py`](../../backend/app/agents/action_agent.py). 📝
 
 ### 🔹 Step 6: Wire Up the MAF Workflow
@@ -519,36 +519,23 @@ Connect the three stages into one Microsoft Agent Framework workflow. Open
 `start/pipeline.py`:
 
 ```python
-class AllClearPipeline:
-    """
-    🔄 Orchestrates: QueryAgent → RouterExecutor → ActionAgent.
-    Flow: signal --> SignalClassification --> RoutingDecision --> IncidentAction
-    """
+class AgentPipeline:
+    """Coordinates QueryAgent, RouterExecutor, and ActionAgent."""
 
-    async def process_signal(
-        self,
-        signal_text: str,
-        session_id: str = None,
-        channel: str = "chat",
-    ) -> "PipelineResult":
+    async def process(self, signal_text: str, session_id: str | None = None) -> tuple[IncidentAction, str]:
         session = self.session_manager.get_or_create(session_id)
 
         # 🔍 Stage 1: QueryAgent — classify the signal (LLM)
-        classification = await self.query_agent.process(signal_text, session)
+        classification = await self.query_agent.classify(signal_text, session.get_context_summary())
 
         # 🚦 Stage 2: RouterExecutor — decide deterministically (NO LLM)
-        routing = self.router.route(classification, signal_text)
+        decision = await self.router_executor.route(classification, signal_text)
 
         # ⚡ Stage 3: ActionAgent — act through its three tools
-        action = await self.action_agent.execute(routing, classification, signal_text)
+        action = await self.action_agent.execute(decision, session.get_history())
 
-        session.add_turn(signal_text, action.user_message,
-                         classification.intent_category.value, {})
-
-        return PipelineResult(
-            session_id=session.session_id, channel=channel, signal_text=signal_text,
-            classification=classification, routing=routing, action=action,
-        )
+        session.add_turn(signal_text, action.user_message, classification.category.value, classification.entities)
+        return action, session.session_id
 ```
 
 In the real codebase this is assembled with a MAF `WorkflowBuilder`
@@ -569,7 +556,7 @@ real incidents. A correct pipeline opens *one* incident per real-world event and
 # test_surge.py
 async def test_surge():
     """🌊 40 callers, one downed line — expect 1 incident, 40 reports."""
-    pipeline = AllClearPipeline(...)
+    pipeline = AgentPipeline(...)
 
     surge = [
         "Power line down across Main St, sparking near the school",   # OPEN_INCIDENT (SEV1)
@@ -581,11 +568,9 @@ async def test_surge():
 
     session_id = None
     for signal in surge:
-        result = await pipeline.process_signal(signal, session_id)
-        session_id = result.session_id
+        action, session_id = await pipeline.process(signal, session_id)
         print(f"signal : {signal}")
-        print(f"outcome: {result.routing.outcome}  "
-              f"{result.action.incident_id}  {result.routing.severity}\n")
+        print(f"outcome: {action.status}  {action.incident_id}  {action.severity}\n")
 ```
 
 ```bash

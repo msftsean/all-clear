@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # Provisioning the Docs, Workshop & Coach Static Web Apps
 
 This repo deploys **four** independent Azure Static Web Apps (SWAs):
@@ -76,7 +78,7 @@ publish, using the matching name + secret from this table:
    here (e.g. `https://nice-pebble-0abc123.azurestaticapps.net`) is the **site URL**.
 2. Left nav → **Settings → Configuration** (or **Overview → Manage deployment
    token**) → **Manage deployment token** → **Copy** the token value.
-3. In GitHub: **`EstablishedCorp/47doors` → Settings → Secrets and variables →
+3. In GitHub: **`EstablishedCorp/all-clear` → Settings → Secrets and variables →
    Actions → New repository secret**.
    - **Name:** the exact secret from the table (e.g. `AZURE_STATIC_WEB_APPS_API_TOKEN_COACH`).
    - **Secret:** paste the token. **Add secret.**
@@ -162,7 +164,7 @@ TOKEN=$(az staticwebapp secrets list \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS --body "$TOKEN" \
-  --repo EstablishedCorp/47doors
+  --repo EstablishedCorp/all-clear
 ```
 
 ### 3. (Docs only) Configure AAD app settings — REQUIRED or every visitor gets 401
@@ -191,7 +193,7 @@ registrations → New), add the SWA redirect URI
 
 ```bash
 # Trigger the workflow (any push touching docs/, or manually):
-gh workflow run deploy-docs-swa.yml --repo EstablishedCorp/47doors
+gh workflow run deploy-docs-swa.yml --repo EstablishedCorp/all-clear
 ```
 
 ---
@@ -218,13 +220,13 @@ TOKEN=$(az staticwebapp secrets list \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP --body "$TOKEN" \
-  --repo EstablishedCorp/47doors
+  --repo EstablishedCorp/all-clear
 ```
 
 ### 3. Deploy
 
 ```bash
-gh workflow run deploy-workshop-swa.yml --repo EstablishedCorp/47doors
+gh workflow run deploy-workshop-swa.yml --repo EstablishedCorp/all-clear
 ```
 
 The workshop workflow builds the Vite app (`app_location: workshop-site`,
@@ -259,13 +261,13 @@ TOKEN=$(az staticwebapp secrets list \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_COACH --body "$TOKEN" \
-  --repo EstablishedCorp/47doors
+  --repo EstablishedCorp/all-clear
 ```
 
 ### 3. Deploy
 
 ```bash
-gh workflow run deploy-coach-swa.yml --repo EstablishedCorp/47doors
+gh workflow run deploy-coach-swa.yml --repo EstablishedCorp/all-clear
 ```
 
 The coach workflow builds the Vite app (`app_location: coach-site`,

@@ -1,3 +1,5 @@
+> ARCHIVED — legacy 47 Doors/AJCU student-support scenario; not part of the All Clear (Maryland incident-triage) lab path.
+
 # AJCU Scenario Challenge Cards
 
 **Lab 05 — Agent Orchestration · AJCU Jesuit Workshop**

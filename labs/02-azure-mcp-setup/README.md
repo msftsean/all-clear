@@ -108,13 +108,18 @@ az account set --subscription <AZURE_SUBSCRIPTION_ID>
 
 The Azure MCP server package currently requires **Node.js 20+**.
 
-```bash
-# ✅ Ensure Node 20+ is active
-source /usr/local/share/nvm/nvm.sh
-nvm install 20
-nvm use 20
-node --version
-```
+> 💡 **Codespaces:** Node 20+ is already available in the workshop Codespace. Run `node --version` to confirm.
+>
+> 💻 **Windows / PowerShell:** Install Node LTS with `winget install OpenJS.NodeJS.LTS`, then close and reopen PowerShell before running `node --version`.
+>
+> 🍎 **macOS/Linux only:** If you use `nvm`, activate Node 20+ with:
+>
+> ```bash
+> source /usr/local/share/nvm/nvm.sh
+> nvm install 20
+> nvm use 20
+> node --version
+> ```
 
 Install and verify the MCP package via `npx`:
 
@@ -125,31 +130,16 @@ npx -y @azure/mcp@latest --version
 
 You should see a version number (e.g., `1.x.x`). 🎉
 
-### 🔹 Step 3: Configure VS Code Settings
+### 🔹 Step 3: Verify VS Code and Copilot Chat
 
-Open VS Code settings to enable MCP support for GitHub Copilot.
+Use the current workspace-level MCP configuration model. You do **not** need to add stale `github.copilot.chat.experimental.mcp.*` settings to `settings.json`.
 
 1. 🖥️ Open VS Code
-2. ⌨️ Press `Ctrl+Shift+P` (Windows/Linux) or `Cmd+Shift+P` (macOS)
-3. 🔍 Type "Preferences: Open Settings (JSON)" and select it
-4. ➕ Add the following configuration:
+2. ✅ Confirm the GitHub Copilot Chat extension is installed and signed in
+3. ⌨️ Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+4. 🔄 Run "Developer: Reload Window" if Copilot does not discover MCP servers after Step 4
 
-```json
-{
-  "github.copilot.chat.experimental.mcp.enabled": true,
-  "github.copilot.chat.experimental.mcp.servers": {
-    "azure": {
-      "command": "npx",
-      "args": ["-y", "@azure/mcp@latest"],
-      "env": {}
-    }
-  }
-}
-```
-
-> 💡 **Note:** The MCP feature may be in preview. Check the GitHub Copilot documentation for the latest configuration syntax.
-
-### 🔹 Step 4: Add MCP Configuration to Copilot Settings
+### 🔹 Step 4: Add MCP Configuration to `.vscode/mcp.json`
 
 For project-specific MCP configuration, create or update the `.vscode/mcp.json` file in your workspace:
 
@@ -227,7 +217,7 @@ Before moving to the next lab, confirm the following:
 
 - [ ] 🔐 Azure CLI is authenticated (`az account show` returns your account)
 - [ ] 📦 Azure MCP Server is installed (`npx -y @azure/mcp@latest --version` returns a version)
-- [ ] ⚙️ VS Code settings include MCP configuration
+- [ ] ⚙️ `.vscode/mcp.json` includes the Azure MCP server configuration
 - [ ] ✅ Asking "List my Azure subscriptions" in Agent Mode returns results
 - [ ] 💬 Natural language Azure queries in Agent Mode return relevant information about Azure OpenAI, Azure AI Search, and Azure Container Apps
 
@@ -243,7 +233,7 @@ Before moving to the next lab, confirm the following:
 
 1. ✅ Verify npm is installed: `npm --version`
 2. ✅ Verify Node.js version is 20+: `node --version`
-3. 🔄 Activate Node 20 with `nvm use 20`
+3. 🔄 Activate Node 20+ (`nvm use 20` on macOS/Linux, or reinstall Node LTS with `winget install OpenJS.NodeJS.LTS` on Windows)
 4. 🌐 Verify npm registry/network connectivity
 
 ### ❌ AADSTS53003 During Login
@@ -266,7 +256,7 @@ azd auth login --client-id <AZURE_CLIENT_ID> --client-secret <AZURE_CLIENT_SECRE
 
 **Solution:**
 
-1. 💾 Verify VS Code settings are saved correctly
+1. 💾 Verify `.vscode/mcp.json` is saved in the workspace
 2. 🔄 Reload VS Code window: `Ctrl+Shift+P` > "Developer: Reload Window"
 3. 📦 Check that the GitHub Copilot extension is up to date
 4. ✅ Ensure you have GitHub Copilot Chat enabled (not just Copilot completions)

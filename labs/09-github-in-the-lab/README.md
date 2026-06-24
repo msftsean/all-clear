@@ -35,8 +35,20 @@ The starter test is in `labs/09-github-in-the-lab/test_starter_red_to_green.py`.
 
 ## Suggested command
 
+Initial red run:
+
 ```bash
 cd labs/09-github-in-the-lab
 python -m pytest -q test_starter_red_to_green.py
+```
+
+After your exercise change, rerun with the completion flag:
+
+```powershell
+$env:ALL_CLEAR_LAB09_COMPLETE="true"; python -m pytest -q test_starter_red_to_green.py
+```
+
+```bash
+ALL_CLEAR_LAB09_COMPLETE=true python -m pytest -q test_starter_red_to_green.py
 ```
 

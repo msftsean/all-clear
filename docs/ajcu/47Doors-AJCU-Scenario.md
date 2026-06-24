@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # 47 Doors — AJCU Scenario Pack
 
 **Drop-in scenario rewrite for the AJCU pre-conference workshop at Fordham.**

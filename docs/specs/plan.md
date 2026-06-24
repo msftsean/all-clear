@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # Implementation Plan: Universal Front Door Support Agent
 
 **Branch**: `1-front-door-agent` | **Date**: 2026-01-20 | **Spec**: [spec.md](spec.md)

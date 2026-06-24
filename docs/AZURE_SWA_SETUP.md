@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # ☁️ Azure Static Web Apps — Setup Guide
 
 Move the 47 Doors runbook from GitHub Pages to Azure Static Web Apps with built-in Microsoft (Azure AD) authentication.
@@ -21,7 +23,7 @@ az staticwebapp create \
   --name swa-47doors-runbook \
   --resource-group rg-47doors-voice \
   --location eastus2 \
-  --source https://github.com/msftsean/47doors \
+  --source https://github.com/EstablishedCorp/all-clear \
   --branch 002-voice-interaction \
   --app-location "docs" \
   --output-location "" \
@@ -54,7 +56,7 @@ Copy the output — that's your `AZURE_STATIC_WEB_APPS_API_TOKEN`.
 ```bash
 # Using GitHub CLI
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN \
-  --repo msftsean/47doors \
+  --repo EstablishedCorp/all-clear \
   --body "<paste-token-here>"
 ```
 

@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # Feature Specification: Universal Front Door Support Agent
 
 **Feature Branch**: `1-front-door-agent`

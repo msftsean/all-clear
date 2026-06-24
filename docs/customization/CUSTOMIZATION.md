@@ -1,3 +1,5 @@
+> ARCHIVED — superseded by All Clear (incident triage). See CONTEXT.md.
+
 # 🎨 Customization Guide for CIO Hands-On Labs
 
 [![Guide Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)](../CHANGELOG.md)
