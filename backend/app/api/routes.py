@@ -46,6 +46,15 @@ class CapstoneLeadCreate(BaseModel):
     incident_underneath: str = Field(..., min_length=1, max_length=500)
 
 
+def _require_capstone_demo_access(settings: Settings) -> None:
+    """Capstone lead capture is demo-only and never exposed in live mode."""
+    if not settings.use_mock_services:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Capstone lead capture is disabled outside mock mode.",
+        )
+
+
 AZURE_FOOTPRINT_SERVICES = [
     ("azure_openai", "Azure OpenAI"),
     ("embeddings", "Embeddings"),
@@ -362,7 +371,9 @@ async def demo_dedup_probe(
 async def create_capstone_entry(
     payload: CapstoneLeadCreate,
     store=Depends(get_capstone_lead_store),
+    settings: Settings = Depends(get_settings),
 ) -> dict:
+    _require_capstone_demo_access(settings)
     entry = store.create(
         name=payload.name.strip(),
         agency=payload.agency.strip(),
@@ -374,7 +385,11 @@ async def create_capstone_entry(
 
 
 @router.get("/demo/capstone/entries", tags=["Demo"], summary="List capstone lead entries")
-async def list_capstone_entries(store=Depends(get_capstone_lead_store)) -> dict:
+async def list_capstone_entries(
+    store=Depends(get_capstone_lead_store),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    _require_capstone_demo_access(settings)
     entries = store.list_entries()
     return {"count": len(entries), "entries": entries}
 
@@ -383,7 +398,9 @@ async def list_capstone_entries(store=Depends(get_capstone_lead_store)) -> dict:
 async def export_capstone_entries(
     format: Literal["json", "csv"] = "json",
     store=Depends(get_capstone_lead_store),
+    settings: Settings = Depends(get_settings),
 ) -> dict:
+    _require_capstone_demo_access(settings)
     entries = store.list_entries()
     if format == "csv":
         csv_text = store.export_csv()

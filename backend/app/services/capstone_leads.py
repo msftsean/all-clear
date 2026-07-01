@@ -51,6 +51,12 @@ class CapstoneLeadStore:
     def list_entries(self) -> list[dict[str, str]]:
         return [asdict(entry) for entry in self._entries]
 
+    @staticmethod
+    def _escape_csv_formula(value: str) -> str:
+        if value and value[0] in ("=", "+", "-", "@", "\t", "\r"):
+            return f"'{value}"
+        return value
+
     def export_csv(self) -> str:
         output = StringIO()
         writer = csv.DictWriter(
@@ -66,5 +72,9 @@ class CapstoneLeadStore:
             ],
         )
         writer.writeheader()
-        writer.writerows(self.list_entries())
+        sanitized_rows = [
+            {k: self._escape_csv_formula(v) for k, v in entry.items()}
+            for entry in self.list_entries()
+        ]
+        writer.writerows(sanitized_rows)
         return output.getvalue()

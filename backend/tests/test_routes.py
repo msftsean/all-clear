@@ -8,9 +8,13 @@ classification, routing, and action; dedup attaches a near-identical follow-up.
 
 from __future__ import annotations
 
+import csv
+from io import StringIO
+
 import pytest
 from fastapi.testclient import TestClient
 
+from app.core.config import Settings, get_settings
 from app.core.dependencies import clear_service_caches
 from app.main import create_app
 
@@ -101,6 +105,60 @@ def test_capstone_lead_capture_persists_and_exports(client: TestClient) -> None:
     assert exported_csv.headers["content-type"].startswith("text/csv")
     assert "Alex Rivera" in exported_csv.text
     assert "Maryland DoIT" in exported_csv.text
+
+
+def test_capstone_csv_export_escapes_formula_cells(client: TestClient) -> None:
+    payload = {
+        "name": "=HYPERLINK(\"http://evil.invalid\",\"click\")",
+        "agency": "@agency",
+        "surge": "+sum",
+        "signal_flood": "-cmd",
+        "incident_underneath": "normal text",
+    }
+    created = client.post("/api/demo/capstone/entries", json=payload)
+    assert created.status_code == 200, created.text
+
+    exported_csv = client.get("/api/demo/capstone/export", params={"format": "csv"})
+    assert exported_csv.status_code == 200
+    rows = list(csv.DictReader(StringIO(exported_csv.text)))
+    assert rows, "expected at least one exported row"
+    row = rows[-1]
+    assert row["name"].startswith("'=")
+    assert row["agency"].startswith("'@")
+    assert row["surge"].startswith("'+")
+    assert row["signal_flood"].startswith("'-")
+    assert row["incident_underneath"] == "normal text"
+
+
+@pytest.mark.parametrize(
+    ("method", "path"),
+    [
+        ("post", "/api/demo/capstone/entries"),
+        ("get", "/api/demo/capstone/entries"),
+        ("get", "/api/demo/capstone/export"),
+    ],
+)
+def test_capstone_endpoints_forbidden_outside_mock_mode(method: str, path: str) -> None:
+    clear_service_caches()
+    app = create_app()
+    app.dependency_overrides[get_settings] = lambda: Settings(environment="production", mock_mode=False)
+    with TestClient(app) as c:
+        if method == "post":
+            response = c.post(
+                path,
+                json={
+                    "name": "Alex Rivera",
+                    "agency": "Maryland DoIT",
+                    "surge": "Storm outage spikes service calls",
+                    "signal_flood": "Phone calls flood in together",
+                    "incident_underneath": "One outage caused duplicates",
+                },
+            )
+        else:
+            params = {"format": "json"} if path.endswith("/export") else None
+            response = c.get(path, params=params)
+    assert response.status_code == 403
+    assert "disabled outside mock mode" in response.json()["detail"]
 
 
 def test_submit_signal_returns_pipeline_result(client: TestClient) -> None:
