@@ -27,6 +27,7 @@ test.describe("All Clear chat smoke", () => {
   });
 
   test("renders trust controls and doc links", async ({ page }) => {
+    await page.getByTestId("trust-toggle").click();
     await expect(page.getByTestId("trust-view")).toBeVisible();
     await expect(page.getByTestId("trust-map-link")).toBeVisible();
     await expect(page.getByTestId("lab-to-production-link")).toBeVisible();

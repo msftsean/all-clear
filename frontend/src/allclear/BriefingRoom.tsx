@@ -202,6 +202,7 @@ export default function BriefingRoom() {
     Record<string, DemoClearBoard["incidents"][number]>
   >({});
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [trustOpen, setTrustOpen] = useState(false);
   const [adminOpen, setAdminOpen] = useState(false);
   const [studentIdHash, setStudentIdHash] = useState<string | null>(null);
   const [dcwRunning, setDcwRunning] = useState(false);
@@ -564,6 +565,15 @@ export default function BriefingRoom() {
               🕘 history
             </button>
             <button
+              data-testid="trust-toggle"
+              onClick={() => setTrustOpen((v) => !v)}
+              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
+              title="Trust controls"
+              aria-expanded={trustOpen}
+            >
+              🛡 trust
+            </button>
+            <button
               data-testid="admin-toggle"
               onClick={() => setAdminOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
@@ -644,7 +654,9 @@ export default function BriefingRoom() {
           </div>
         )}
 
-        <TrustView azureFootprint={azureFootprint} />
+        {trustOpen && (
+          <TrustView azureFootprint={azureFootprint} onClose={() => setTrustOpen(false)} />
+        )}
         <CapstoneCapture
           form={capstoneForm}
           busy={capstoneBusy}
@@ -951,7 +963,13 @@ function ChipStrip({ r }: { r: PipelineResult }) {
   );
 }
 
-function TrustView({ azureFootprint }: { azureFootprint: AzureFootprint | null }) {
+function TrustView({
+  azureFootprint,
+  onClose,
+}: {
+  azureFootprint: AzureFootprint | null;
+  onClose: () => void;
+}) {
   return (
     <section
       data-testid="trust-view"
@@ -961,6 +979,13 @@ function TrustView({ azureFootprint }: { azureFootprint: AzureFootprint | null }
       <div className="flex items-center justify-between gap-2">
         <p className="font-mono text-[10px] uppercase tracking-wider text-midwarm">trust controls</p>
         <div className="flex items-center gap-2">
+          <button
+            onClick={onClose}
+            className="text-xs text-midwarm hover:text-inkwarm"
+            aria-label="Close trust controls"
+          >
+            ✕
+          </button>
           <a
             data-testid="trust-map-link"
             href="/docs/responsible-ai.md"
