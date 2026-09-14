@@ -1,5 +1,73 @@
 # 📋 Release Notes
 
+## Version 0.1.6 - Theme Restore + Surge Dedup Fix 🌊
+
+**Release Date**: 2026-09-14
+**Branch**: `main`
+**Status**: Stable (hackathon-ready snapshot, tag `v0.1.6-hackathon-ready`)
+
+---
+
+### 🎨 UI: Restored the purple/white "Antigravity" theme
+
+An unreviewed, no-PR push directly to `main` by a temporary workshop account (`azureday-user-12`) had
+inverted the frontend palette to black/gold. Restored `tailwind.config.js`, `index.css`, and every
+hardcoded hex color in `Canvas.tsx`, `CloneGuide.tsx`, and `LiveCalls.tsx` back to the original
+purple/white palette (verified against commit `9b4f739`, the last known-good snapshot before the
+inversion).
+
+### 🎓 UI: Collapsed "Make it yours" capstone lead capture
+
+The capstone lead-capture form (name/agency/surge fields + CSV/JSON export) now lives behind a
+"🎓 capstone" toggle button (closed by default), matching the existing trust-panel pattern, instead of
+always taking up space in the default briefing-room view.
+
+### 🐛 Fixed: Muni Water surge was creating one incident per signal instead of deduplicating
+
+The "🌊 Muni Water surge" demo button was supposed to collapse ~40 paraphrased call-ins onto a small
+number of real incidents. It was instead opening a near-1:1 incident per signal. Root cause was three
+compounding issues, all now fixed:
+
+1. **Classifier keyword coverage gap** (`backend/app/services/mock/maf_chat_client.py`) — the mock
+   classifier's keyword lists didn't cover most of the demo's paraphrased wording, so paraphrases of the
+   same event landed in different `intent_category` buckets. Dedup only compares incidents within the
+   same category, so mismatched categories can never merge. Added the missing keywords per category
+   (water main / pump station / turbidity / chlorine, etc.).
+2. **Embedding similarity below `DEDUP_THRESHOLD`** — the deterministic mock embedding
+   (`backend/app/services/mock/embeddings.py`) needs high token overlap to clear the 0.83 cosine
+   threshold by design (see `backend/mock_data/surge_replay_25.json`). The frontend's demo signal text
+   used much more naturally-varied paraphrasing, so within-cluster similarity only reached ~0.4–0.8.
+   Rewrote `DCWATER_SIGNALS` (`frontend/src/allclear/BriefingRoom.tsx`) to use the same
+   shared-core-phrase pattern as the proven backend fixture.
+3. **TOCTOU concurrency race** — `RouterExecutor.decide()` and incident creation were separated by an
+   `await`, with no locking in `MockIncidentStore`, so concurrent surge requests could all observe "no
+   match yet." Added an `asyncio.Lock` in `AllClearPipeline.__init__` around the
+   decide→create critical section, and dropped the surge's frontend concurrency from 3 to 1.
+
+Also added a mock-mode prompt-injection check (`MockContentFilterException`) so the surge's built-in
+injection probe is rejected the same way the live Azure Content Safety / Prompt Shield path rejects it
+— previously it silently opened an extra incident in mock mode.
+
+**Verified**: 40 signals → 14 distinct incidents (1 H-Street + 1 Anacostia + 1 Dalecarlia + 1 Bryant St +
+9 distinct residential + 1 SCADA), 25 attachments, 1 injection rejected, 0 errors — confirmed against the
+live HTTP API and the live UI surge button.
+
+### 🔧 Fixed: flaky backend test isolation
+
+`get_settings()` is `@lru_cache`'d; a `Settings` instance cached by an early test in a pytest session
+could silently leak local `.env` values into later tests. Added `get_settings.cache_clear()` to the
+`set_test_env` autouse fixture in `backend/tests/conftest.py`.
+
+### 📊 Test Results
+
+| Suite | Result |
+|-------|--------|
+| Backend tests | 348/348 ✅ |
+| Frontend unit tests (vitest) | 24/24 ✅ |
+| Frontend e2e (Playwright, chromium) | 5/5 relevant ✅ (pre-existing quarantined specs unaffected) |
+
+---
+
 ## Version 0.1.5 - Phone Bridge Live 📞
 
 **Release Date**: 2026-04-21
