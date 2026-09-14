@@ -182,10 +182,10 @@ azd up
 
 | Suite | Tests | Status |
 | ----- | ----: | ------ |
-| Backend (pytest, mock mode) | 274/274 | ✅ Passing |
+| Backend (pytest, mock mode) | 348/348 | ✅ Passing |
 | Backend CI (clean venv) | `allclear-backend-ci.yml` | ✅ |
 | Smoke (agents · evals · models · spec) | `smoke-test.yml` | ✅ |
-| Frontend (vitest) | — | ✅ |
+| Frontend (vitest) | 24/24 | ✅ |
 
 > Backend tests run with `ENVIRONMENT=test` and `MOCK_MODE=true` — no Azure credentials required.
 

@@ -227,12 +227,21 @@ def mock_session_store() -> MagicMock:
 
 # Environment variable fixtures
 @pytest.fixture(autouse=True)
-def set_test_env(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
+def set_test_env(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> Generator[None, None, None]:
     """Set test environment variables.
 
     Skips overriding Azure OpenAI credentials for GPT-4.1 evaluation tests
     (test_gpt4o_evals.py) so they can use real API credentials.
+
+    Also clears `get_settings()`'s `lru_cache` before and after each test —
+    without this, whichever test runs first in the session permanently caches
+    its `Settings` instance (env vars set here are otherwise ignored by any
+    code path that goes through `get_settings()`, e.g. FastAPI routes).
     """
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+
     # Check if this is a GPT-4.1 evaluation test that needs real credentials
     test_file = request.fspath.basename if request.fspath else ""
     if test_file == "test_gpt4o_evals.py":
@@ -245,6 +254,8 @@ def set_test_env(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
         monkeypatch.setenv("SERVICENOW_API_KEY", "test-key")
         monkeypatch.setenv("AZURE_SEARCH_ENDPOINT", "https://test.search.windows.net")
         monkeypatch.setenv("AZURE_SEARCH_API_KEY", "test-key")
+        yield
+        get_settings.cache_clear()
         return
 
     # For all other tests, override with test credentials
@@ -259,3 +270,11 @@ def set_test_env(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
     monkeypatch.setenv("SERVICENOW_API_KEY", "test-key")
     monkeypatch.setenv("AZURE_SEARCH_ENDPOINT", "https://test.search.windows.net")
     monkeypatch.setenv("AZURE_SEARCH_API_KEY", "test-key")
+    # Isolate feature-flag/version fields too — otherwise a local backend/.env
+    # (e.g. PHONE_ENABLED=false, AZURE_OPENAI_REALTIME_API_VERSION=2025-08-28
+    # set for the hands-on lab) silently overrides the Settings defaults these
+    # unit tests assert on.
+    monkeypatch.setenv("PHONE_ENABLED", "true")
+    monkeypatch.setenv("AZURE_OPENAI_REALTIME_API_VERSION", "2025-04-01-preview")
+    yield
+    get_settings.cache_clear()

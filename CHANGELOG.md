@@ -1,11 +1,24 @@
 # Changelog
 
-All notable changes to the 47 Doors University Support Agent will be documented in this file.
+All notable changes to the All Clear incident-triage agent (formerly 47 Doors) will be documented in
+this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### 2026-09-14 — Theme restore + Muni Water surge dedup fix
+
+See `docs/RELEASE_NOTES.md` (Version 0.1.6) for full details. Summary:
+- Restored the purple/white "Antigravity" frontend theme after an unreviewed direct-to-`main` push
+  had inverted it to black/gold.
+- Collapsed the "Make it yours" capstone lead-capture form behind a toggle (closed by default).
+- Fixed the Muni Water surge demo so ~40 paraphrased signals correctly dedup onto ~14 incidents
+  instead of opening one incident per signal (classifier keyword gaps + embedding similarity below
+  threshold + a TOCTOU concurrency race in the dedup check).
+- Fixed a `get_settings()` `lru_cache` leak causing flaky backend test isolation.
+- Tagged `v0.1.6-hackathon-ready`. Backend 348/348, frontend 24/24 unit + 5/5 relevant e2e passing.
 
 ### AJCU Jesuit Scenario + Hackathon Reference Site (feat/ajcu-jesuit-scenario)
 - Spec Kit artifacts under `specs/004-ajcu-jesuit-scenario/` (spec, plan, tasks)

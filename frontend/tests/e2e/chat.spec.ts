@@ -27,12 +27,14 @@ test.describe("All Clear chat smoke", () => {
   });
 
   test("renders trust controls and doc links", async ({ page }) => {
+    await page.getByTestId("trust-toggle").click();
     await expect(page.getByTestId("trust-view")).toBeVisible();
     await expect(page.getByTestId("trust-map-link")).toBeVisible();
     await expect(page.getByTestId("lab-to-production-link")).toBeVisible();
   });
 
   test("renders capstone capture + export controls", async ({ page }) => {
+    await page.getByTestId("capstone-toggle").click();
     await expect(page.getByTestId("capstone-capture")).toBeVisible();
     await expect(page.getByTestId("capstone-name")).toBeVisible();
     await expect(page.getByTestId("capstone-submit")).toBeVisible();
