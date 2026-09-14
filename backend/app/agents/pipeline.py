@@ -14,6 +14,7 @@ and the adapter path produce identical incidents and audit entries (Constitution
 
 from __future__ import annotations
 
+import asyncio
 import time
 import uuid
 from dataclasses import dataclass
@@ -135,6 +136,14 @@ class AllClearPipeline:
         self.store = store
         self.session_store = session_store
         self.workflow = build_workflow(query_agent, router, action)
+        # Guards the dedup-check -> incident-create/attach critical section.
+        # RouterExecutor.decide() reads open-incident vectors, then (several awaits
+        # later) ActionExecutor.run_action() creates/attaches the incident. Without
+        # serializing this window, concurrent signals for the same underlying event
+        # (e.g. the Muni Water surge demo, or real simultaneous call-ins) can all
+        # observe "no match yet" and each open a duplicate incident instead of
+        # collapsing onto one (Constitution Art. V.4 dedup guarantee).
+        self._dedup_lock = asyncio.Lock()
 
     async def process_signal(
         self,
@@ -175,28 +184,32 @@ class AllClearPipeline:
             },
         )
 
-        decision, embedding = await self._router.decide(safe_text, classification)
-        await self._publish(
-            session_id,
-            {
-                "type": "signal.routed",
-                "outcome": decision.outcome.value,
-                "severity": decision.severity.value,
-                "queue": decision.target_queue.value,
-                "matched_incident_id": decision.matched_incident_id,
-                "escalate": decision.escalate,
-            },
-        )
+        # Hold the dedup lock across decide() -> run_action() so no other signal can
+        # slip through the "no open incident matched yet" window and create a sibling
+        # duplicate incident for the same event (see lock docstring in __init__).
+        async with self._dedup_lock:
+            decision, embedding = await self._router.decide(safe_text, classification)
+            await self._publish(
+                session_id,
+                {
+                    "type": "signal.routed",
+                    "outcome": decision.outcome.value,
+                    "severity": decision.severity.value,
+                    "queue": decision.target_queue.value,
+                    "matched_incident_id": decision.matched_incident_id,
+                    "escalate": decision.escalate,
+                },
+            )
 
-        routed = RoutedSignal(
-            signal_text=safe_text,
-            classification=classification,
-            routing=decision,
-            embedding=embedding,
-            session_id=session_id,
-            channel=channel,
-        )
-        action: IncidentAction = await self._action.run_action(routed)
+            routed = RoutedSignal(
+                signal_text=safe_text,
+                classification=classification,
+                routing=decision,
+                embedding=embedding,
+                session_id=session_id,
+                channel=channel,
+            )
+            action: IncidentAction = await self._action.run_action(routed)
         await self._publish(
             session_id,
             {

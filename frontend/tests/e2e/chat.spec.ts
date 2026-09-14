@@ -34,6 +34,7 @@ test.describe("All Clear chat smoke", () => {
   });
 
   test("renders capstone capture + export controls", async ({ page }) => {
+    await page.getByTestId("capstone-toggle").click();
     await expect(page.getByTestId("capstone-capture")).toBeVisible();
     await expect(page.getByTestId("capstone-name")).toBeVisible();
     await expect(page.getByTestId("capstone-submit")).toBeVisible();
