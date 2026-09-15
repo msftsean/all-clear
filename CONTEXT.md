@@ -67,9 +67,9 @@ Ubiquitous language for All Clear. One canonical term per concept. Coding agents
 
 ## Engineering Conventions
 
-**allclear.** The one-word lowercase slug for packages, env vars, and CLI. The repo is EstablishedCorp/all-clear; Python packages cannot contain hyphens, so code uses allclear.
+**allclear.** The one-word lowercase slug for packages, env vars, and CLI. The workshop-readiness repo is msftsean/all-clear; Python packages cannot contain hyphens, so code uses allclear.
 
-**Mock mode.** USE_MOCK_MODE=true runs the entire pipeline offline against mock twins of every Azure service. Every live service has a mock twin and they stay in lockstep.
+**Mock mode.** MOCK_MODE=true runs the core workshop pipeline offline against mock twins for the local happy path. Live Azure integrations are optional and require explicit configuration.
 
 **Verifier.** A test, eval set, fixture, or checkpoint script with an executable command and exit code. Built before the implementation it grades (Loop Protocol, specs/001-maf-rehost/plan.md). Owned by Barton; never edited by implementers.
 

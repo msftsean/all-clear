@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # Deck-generation prompt — All Clear, Maryland Azure Days (Day 2)
 # 45-minute, two-part talk · English · 1 live Copilot CLI demo + slides
 

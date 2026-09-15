@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # 🎤 Feature Summary: Voice Interaction (002-voice-interaction)
 
 > **Branch**: `002-voice-interaction` | **Status**: ✅ Shipped — Production (2026-04-21, revision `azd-1776792457`)

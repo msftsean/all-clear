@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # 47 Doors Boot Camp Facilitation Guide
 
 This guide provides facilitators with a structured approach to leading the 47 Doors AI Agent workshop. The **3-hour AJCU format (1:00–4:00 PM)** is an azd-first, build-focused session: provision once with `azd up`, then spend the bulk of the time building and testing the AJCU challenge scenarios. *(For the original 7-hour boot-camp format, switch the docs back per `specs/015-ajcu-3hour-docs/plan.md`.)*

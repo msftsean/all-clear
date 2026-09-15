@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
 ║   🎤  4 7   D O O R S   —   V O I C E   F E A T U R E   R U N B O O K  🎤  ║

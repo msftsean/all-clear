@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # Lab 09 — GitHub-in-the-Lab Path
 
 This lab operationalizes the workshop path: fork, run Actions, make one bounded extension with Copilot, and keep tests green.

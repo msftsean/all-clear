@@ -13,12 +13,12 @@
 [![Microsoft Agent Framework](https://img.shields.io/badge/Microsoft%20Agent%20Framework-1.8.1-5E5E5E?style=flat&logo=microsoft)](https://github.com/microsoft/agent-framework)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react&logoColor=black)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-3178C6?style=flat&logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Azure](https://img.shields.io/badge/Azure-Ready-0078D4?style=flat&logo=microsoft-azure)](https://azure.microsoft.com)
+[![Azure](https://img.shields.io/badge/Azure-live%20path%20optional-0078D4?style=flat&logo=microsoft-azure)](https://azure.microsoft.com)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 > **Collapse the surge.** When a storm, outage, or recall makes 40 people report the same thing, All Clear deduplicates those **signals** into a handful of real **incidents**, routes each by severity and SLA, and drives a live map that flips green when everything is resolved.
 
-> 🧬 **Heritage.** All Clear is the production pivot of [**47 Doors**](https://github.com/EstablishedCorp/47doors). The same three-agent shape — classify → route → act — is rebuilt on the **Microsoft Agent Framework (MAF)** for incident triage in public safety, customer comms, and regulated industries.
+> 🧬 **Heritage.** All Clear is a workshop accelerator evolved from [**47 Doors**](https://github.com/EstablishedCorp/47doors). The same three-agent shape — classify → route → act — is rebuilt on the **Microsoft Agent Framework (MAF)** for incident triage in public safety, customer comms, and regulated industries.
 
 ---
 
@@ -34,7 +34,7 @@ All Clear is a MAF-based triage pipeline that turns a flood of inbound **signals
 - 🎫 **Opens incidents** and **searches knowledge** only on the non-duplicate path (keeps surge latency flat)
 - 📝 **Generates sitreps** — citation-grounded situation reports where every claim cites a source
 - 🛡️ **Escalates to humans** on safety/PII/sentiment rules — a security control, not a refactor
-- 🗺️ **Drives the ClearBoard** — a live map where incident pins visibly merge as reports attach, SLA breaches highlight, and the board flips to its green **all-clear** state
+- 🗺️ **Drives the ClearBoard** — the workshop board where incident cards/pins merge as reports attach, SLA state is visible, and the board can show the green **all-clear** state
 
 **🎯 The hero scenario:** a **surge** where most signals are duplicates of a few incidents. All Clear keeps the responder's queue proportional to *incidents*, not *signal volume*.
 
@@ -66,7 +66,7 @@ One canonical term per concept (see [`CONTEXT.md`](./CONTEXT.md) — if code and
 
 ### 🔄 Three-Stage Pipeline
 
-Three input modalities — text chat, browser voice (WebRTC), and phone (ACS/PSTN) — all route through the **same** pipeline. Each agent has **bounded authority**: it can do only what its role and tools permit.
+Three input modalities — text chat, browser voice (WebRTC), and phone (ACS/PSTN) — use the same pipeline contract. Text and mock voice are workshop-ready offline; live browser voice and phone require the optional Azure Realtime/ACS configuration. Each agent has **bounded authority**: it can do only what its role and tools permit.
 
 ![All Clear agent pipeline](./docs/architecture/allclear-agent-workflow.png)
 
@@ -93,13 +93,13 @@ Severity is mapped from classification indicators by RouterExecutor rules — ne
 
 Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_chat_client.py), which wraps an **ordered list of models** (primary first). When the primary returns a *model-unavailability* condition (404 `DeploymentNotFound`, 401/403 access denied, 503 service unavailable), classification automatically advances to the next configured model — so a model being pulled or restricted doesn't stop triage. It **does not** route around `429` rate limits (those stay on the retry/back-off path) or content-filter / Prompt-Shield blocks (a safety block is the system working, not an outage). The layer is a **no-op until a fallback is configured** (`AZURE_OPENAI_FALLBACK_DEPLOYMENT`), so single-model deployments are unchanged. `GET /api/health/models` and the ClearBoard model badge surface the active model, the fallback chain, and whether failover is active.
 
-### ☁️ Azure Infrastructure
+### ☁️ Azure Infrastructure (optional live path)
 
 ![All Clear Azure deployment](./docs/architecture/allclear-deployment-infrastructure.png)
 
 | 🔧 Service | 📝 Purpose |
 | ---------- | ---------- |
-| 🛡️ API Management | **AI gateway** in front of the API/model — rate limits · token budgets · JWT validation · usage metrics *(Day-1 production posture; not provisioned by `azd up`)* |
+| 🛡️ API Management | **AI gateway** pattern in front of the API/model — rate limits · token budgets · JWT validation · usage metrics *(documented as a production planning posture; not required for mock workshop readiness)* |
 | 🤖 Azure OpenAI | Signal classification + sitrep generation (`gpt-5.1`) — model-agnostic via [`FailoverChatClient`](./backend/app/services/azure/failover_chat_client.py): set `AZURE_OPENAI_FALLBACK_DEPLOYMENT` to arm automatic chat failover |
 | 🧠 Azure OpenAI Embeddings | `text-embedding-3-small` (1536-dim) for dedup similarity |
 | 🔍 Azure AI Search | Knowledge base retrieval (`text-embedding-3-small` index) |
@@ -123,7 +123,7 @@ Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_c
 
 ### 🟡 Mock mode (offline, zero Azure credentials) — start here
 
-The **entire** pipeline runs offline against mock twins of every Azure service. Every live service has a mock twin and they stay in lockstep.
+The core workshop pipeline runs offline against mock twins for the services used by the local happy path. Live Azure integrations are optional and should be treated as separate configuration work.
 
 ```bash
 cd backend
@@ -145,6 +145,19 @@ npm run dev
 
 > 🧪 Mock mode is enabled by `MOCK_MODE=true` / `USE_MOCK_MODE=true`. `Settings.use_mock_services` is also true in the `test` environment.
 
+### ✅ Codespaces readiness and first success
+
+After the dev container finishes its post-create setup, run:
+
+```bash
+npm run readiness
+npm run quickstart:mock
+```
+
+**Definition of done for participants:** `/api/health` returns `{"status":"healthy","mock_mode":true}` and `/api/chat` returns an `AC-*` incident for a downed-line signal. No Azure credentials are required for this first success.
+
+**Coach reset/recovery:** run `npm run reset:workshop`, restart any backend/frontend terminals, then rerun `npm run readiness`. The reset script backs up local `.env` files, recreates mock-mode defaults, and removes local build/test caches without touching source.
+
 ### 🔵 Deploy to Azure with `azd`
 
 ```bash
@@ -152,7 +165,7 @@ azd auth login
 azd up
 ```
 
-`azd up` provisions the Bicep stack in [`infra/`](./infra/) and deploys the backend to Container Apps. The `postdeploy` hook prints the backend URL and its `/api/health` endpoint.
+`azd up` provisions the Bicep stack in [`infra/`](./infra/) and deploys the backend to Container Apps. This is **not** required for the event first success and was not used for local readiness validation.
 
 ---
 
@@ -182,10 +195,10 @@ azd up
 
 | Suite | Tests | Status |
 | ----- | ----: | ------ |
-| Backend (pytest, mock mode) | 348/348 | ✅ Passing |
-| Backend CI (clean venv) | `allclear-backend-ci.yml` | ✅ |
-| Smoke (agents · evals · models · spec) | `smoke-test.yml` | ✅ |
-| Frontend (vitest) | 24/24 | ✅ |
+| Backend (pytest, mock mode) | `cd backend && python -m pytest tests/ -q` | Evidence gate |
+| Backend CI (clean venv) | `allclear-backend-ci.yml` | Evidence gate |
+| Smoke/readiness | `npm run readiness`, `npm run quickstart:mock`, `npm run smoke-test` | Evidence gate |
+| Frontend (vitest/build) | `cd frontend && npm test`, `npm run build` | Evidence gate |
 
 > Backend tests run with `ENVIRONMENT=test` and `MOCK_MODE=true` — no Azure credentials required.
 
@@ -203,6 +216,12 @@ cd frontend
 npm test          # vitest unit tests
 npm run test:e2e  # Playwright E2E
 ```
+
+### Known issues and recovery
+
+- **Windows Git Bash post-create:** Linux Playwright dependency installation is skipped on Windows; Codespaces still runs the Linux path. E2E browsers can be installed later from `frontend/` if needed.
+- **Live Azure mode:** requires explicit Azure OpenAI, Cosmos DB, and AI Search settings. Keep `MOCK_MODE=true` for workshop first success.
+- **Phone/PSTN:** mock endpoints are available for exercises; real ACS phone intake is coach/live-path only and requires ACS configuration.
 
 ---
 

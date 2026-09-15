@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # CONTEXT.md: All Clear Domain Language
 
 Ubiquitous language for All Clear. One canonical term per concept. Coding agents and humans use these words exactly as defined here. If code and this document disagree, this document wins and the code gets fixed.

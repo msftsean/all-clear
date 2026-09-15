@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # Deck 2 - Environment Prep for Day 2
 
 **Speakers:** Sean Gayle (Principal Solution Engineer) & Adrian Wright (Sr. Solution Engineer)

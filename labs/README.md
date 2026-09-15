@@ -51,18 +51,18 @@ was built and how to extend it.
 | --- | ----- | -------------- | ---- |
 | [00](00-setup/) | **Setup** | Get a working environment (Codespaces or `azd up`); run the full pipeline in **mock mode** offline | 30 min |
 | [01](01-understanding-agents/) | **Understanding agents** | Classify a raw signal into a typed `SignalClassification` (intent, entities, severity indicators, PII) | 45 min |
-| [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Wire Azure (OpenAI, AI Search, Container Apps) and drive it from your editor via MCP | 45 min |
+| [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Optional live-path setup for Azure OpenAI, AI Search, and Container Apps; not required for offline first success | 45 min |
 | [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to spec a new capability, then generate code from the spec | 60 min |
-| [04](04-build-rag-pipeline/) | **RAG / knowledge** | Index incident runbooks & SOPs; build the `search_knowledge` tool with grounded **citations** | 60 min |
+| [04](04-build-rag-pipeline/) | **RAG / knowledge** | Optional live-path indexing of incident runbooks & SOPs; the mock KB backs Lab 00/01/05 | 60 min |
 | [05](05-agent-orchestration/) | **Orchestration** | Assemble the QueryAgent → RouterExecutor → ActionAgent workflow; run a **surge** and watch dedup attach reports | 90 min |
-| [06](06-deploy-with-azd/) | **Deploy** | `azd up` All Clear to Azure Container Apps with Bicep infra | 60 min |
+| [06](06-deploy-with-azd/) | **Deploy** | Optional live-path deployment to Azure Container Apps with Bicep infra | 60 min |
 | [07](07-mcp-server/) | **MCP server** | Expose All Clear's tools (`create_incident`, `search_knowledge`, `generate_sitrep`) as an MCP server | 60 min |
 | [09](09-github-in-the-lab/) | **GitHub-in-the-lab path** | Fork + run `smoke-test.yml` + complete one bounded Copilot extension behind a red-to-green starter test | 45 min |
 
-**Recommended order:** 00 → 01 → 05 are the spine (signal in, classify,
-orchestrate). 02/03/04 deepen the platform. 06/07 ship and integrate. In the
-3-hour workshop, run `azd up` (Lab 06's happy path) first so everything is
-provisioned, then do 01 → 05 against the live backend.
+**Recommended 180-minute order:** 00 → 01 → 05 are the spine (signal in,
+classify, orchestrate) and run in mock mode with no Azure credentials. 02/03/04
+deepen the platform. 06/07 are optional live-path topics for teams that already
+have Azure access.
 
 ---
 
@@ -107,9 +107,9 @@ cd backend
 python -m venv .venv && . .venv/Scripts/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
-# run the entire pipeline offline (no Azure needed)
-$env:ENVIRONMENT="test"; $env:MOCK_MODE="true"
-python -m pytest -q          # 276 tests should pass
+# run the workshop readiness gates offline (no Azure needed)
+npm run readiness
+npm run quickstart:mock
 ```
 
 Then open [Lab 00](00-setup/) and work forward. Each lab has a `README.md`

@@ -1,3 +1,5 @@
+<!-- ARCHIVAL NOTICE: This file is inherited 47 Doors or live-deployment reference material. It is not the source of truth for the 2026 All Clear workshop-readiness path. For the event first-success and recovery flow, use README.md and labs/00-setup/README.md. -->
+
 # 💰 Azure Cost Estimation Guide
 
 [![Guide Version](https://img.shields.io/badge/version-1.0.0-blue?style=flat-square)](../CHANGELOG.md)
