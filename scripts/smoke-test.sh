@@ -1,9 +1,9 @@
 #!/bin/bash
-# Smoke Test Script for 47 Doors Boot Camp
-# Quick validation that the environment is set up correctly
-# Run time: ~2-3 minutes
+# Smoke Test Script for All Clear
+# Quick validation that the environment is set up correctly.
+# Run time: ~2-3 minutes after dependencies are installed.
 
-set -e
+set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -21,17 +21,17 @@ WARNINGS=0
 # Helper functions
 pass() {
     echo -e "${GREEN}✓ PASS${NC}: $1"
-    ((PASSED++))
+    PASSED=$((PASSED + 1))
 }
 
 fail() {
     echo -e "${RED}✗ FAIL${NC}: $1"
-    ((FAILED++))
+    FAILED=$((FAILED + 1))
 }
 
 warn() {
     echo -e "${YELLOW}⚠ WARN${NC}: $1"
-    ((WARNINGS++))
+    WARNINGS=$((WARNINGS + 1))
 }
 
 info() {
@@ -39,7 +39,7 @@ info() {
 }
 
 echo "=========================================="
-echo "47 Doors Boot Camp - Smoke Test Suite"
+echo "All Clear - Smoke Test Suite"
 echo "=========================================="
 echo ""
 
@@ -60,7 +60,7 @@ fi
 if node --version 2>&1 | grep -q "v1[89]\|v2[0-9]"; then
     pass "Node.js 18+ installed ($(node --version))"
 else
-    fail "Node.js 18+ required (found: $(node --version))"
+    fail "Node.js 18+ required (found: $(node --version 2>&1))"
 fi
 
 # npm
@@ -112,17 +112,16 @@ echo ""
 
 cd "$PROJECT_ROOT/backend"
 
-# Run a subset of critical tests
+# Run a subset of critical tests that exists in the All Clear repo.
 echo "Running critical backend tests..."
-if python -m pytest tests/test_agents.py tests/test_models.py -v --tb=short -q 2>&1 | tail -5; then
-    TEST_RESULT=$(python -m pytest tests/test_agents.py tests/test_models.py -q 2>&1 | tail -1)
-    if echo "$TEST_RESULT" | grep -q "passed"; then
-        pass "Backend agent tests passing"
-    else
-        fail "Backend agent tests failing"
-    fi
+TEST_OUTPUT=$(MOCK_MODE=true USE_MOCK_MODE=true ENVIRONMENT=test python -m pytest \
+    tests/test_pipeline_e2e.py tests/test_routes.py tests/test_router_no_llm.py -q --tb=short 2>&1)
+TEST_RC=$?
+echo "$TEST_OUTPUT" | tail -10
+if [ "$TEST_RC" -eq 0 ]; then
+    pass "Backend incident pipeline tests passing"
 else
-    fail "Backend tests could not run"
+    fail "Backend incident pipeline tests failing"
 fi
 
 echo ""
@@ -146,7 +145,7 @@ fi
 # Start backend if not running
 if [ "$BACKEND_RUNNING" = false ]; then
     info "Starting backend server..."
-    USE_MOCK_MODE=true python -m uvicorn app.main:app --port 8000 &
+    MOCK_MODE=true USE_MOCK_MODE=true ENVIRONMENT=test python -m uvicorn app.main:app --port 8000 &
     BACKEND_PID=$!
     sleep 5
 fi
@@ -159,10 +158,10 @@ else
 fi
 
 # Test OpenAPI docs
-if curl -s http://localhost:8000/docs | grep -q "swagger\|openapi"; then
-    pass "Backend /docs (OpenAPI) available"
+if curl -s http://localhost:8000/api/docs | grep -q "swagger\|openapi"; then
+    pass "Backend /api/docs (OpenAPI) available"
 else
-    warn "Backend /docs not available"
+    warn "Backend /api/docs not available"
 fi
 
 # Cleanup
@@ -180,34 +179,29 @@ echo ""
 
 cd "$PROJECT_ROOT/backend"
 
-# Test mock LLM service
-if python -c "
-from app.services.mock.llm_service import MockLLMService
-import asyncio
+# Test deterministic mock classifier
+if MOCK_MODE=true USE_MOCK_MODE=true ENVIRONMENT=test python -c "
+from app.agents.schemas import SignalCategory
+from app.services.mock.maf_chat_client import classify_signal
 
-async def test():
-    service = MockLLMService()
-    result = await service.classify_intent('I forgot my password')
-    assert result.intent == 'password_reset'
-    assert result.confidence > 0.5
-    return True
-
-print('Testing mock LLM service...')
-asyncio.run(test())
+r = classify_signal('Power line down and sparking near Main Street')
+assert r.intent_category is SignalCategory.FIELD_HAZARD
+assert r.intent == 'report_field_hazard'
+assert r.confidence > 0.5
 " 2>/dev/null; then
-    pass "Mock LLM service working (intent classification)"
+    pass "Mock classifier working (intent classification)"
 else
-    fail "Mock LLM service not working"
+    fail "Mock classifier not working"
 fi
 
 # Test mock knowledge service
-if python -c "
+if MOCK_MODE=true USE_MOCK_MODE=true ENVIRONMENT=test python -c "
 from app.services.mock.knowledge_service import MockKnowledgeService
 import asyncio
 
 async def test():
     service = MockKnowledgeService()
-    results = await service.search('password reset')
+    results = await service.search('downed sparking power line')
     assert len(results) > 0
     return True
 
@@ -228,8 +222,8 @@ echo ""
 
 cd "$PROJECT_ROOT"
 
-# Check critical lab directories
-LABS=("00-setup" "01-understanding-agents" "04-build-rag-pipeline" "05-agent-orchestration" "06-deploy-with-azd")
+# Check critical lab directories for the 180-minute spine.
+LABS=("00-setup" "01-understanding-agents" "05-agent-orchestration")
 
 for lab in "${LABS[@]}"; do
     if [ -d "labs/$lab" ] && [ -f "labs/$lab/README.md" ]; then
@@ -269,7 +263,7 @@ echo ""
 if [ $FAILED -eq 0 ]; then
     echo -e "${GREEN}=========================================="
     echo "All critical checks passed!"
-    echo "Environment is ready for the boot camp."
+    echo "Environment is ready for the All Clear workshop."
     echo -e "==========================================${NC}"
     exit 0
 else

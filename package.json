@@ -1,10 +1,13 @@
 {
-  "name": "47doors-boot-camp",
+  "name": "all-clear-workshop",
   "version": "1.0.0",
-  "description": "47 Doors University Support Agent - Boot Camp Curriculum",
+  "description": "All Clear incident-triage workshop accelerator",
   "private": true,
   "scripts": {
     "smoke-test": "bash scripts/smoke-test.sh",
+    "readiness": "bash scripts/readiness-check.sh",
+    "quickstart:mock": "bash scripts/quickstart.sh --mock",
+    "reset:workshop": "bash scripts/reset-workshop.sh",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
     "start:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000",
     "start:frontend": "cd frontend && npm run dev",
@@ -28,16 +31,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/msftsean/hiedcab_frontdoor_agent.git"
+    "url": "https://github.com/msftsean/all-clear.git"
   },
   "keywords": [
-    "boot camp",
+    "workshop",
     "ai-agents",
     "azure-openai",
     "rag",
-    "higher-education"
+    "incident-triage"
   ],
-  "author": "Microsoft Higher Education",
+  "author": "Microsoft",
   "contributors": [
     {
       "name": "Sean Gayle",

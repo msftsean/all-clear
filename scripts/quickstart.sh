@@ -54,7 +54,7 @@ Flags:
 Required environment (live lane only — not needed with --mock):
   AZURE_SEARCH_ENDPOINT, AZURE_SEARCH_API_KEY (or AZURE_SEARCH_KEY),
   AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY
-  Optional: AZURE_SEARCH_INDEX_NAME (default university-kb),
+  Optional: AZURE_SEARCH_INDEX_NAME (default knowledge-base),
             AZURE_OPENAI_EMBEDDING_DEPLOYMENT (default text-embedding-ada-002)
 
 Exit codes: 0 scenario-ready | 1 a step failed | 2 missing env / bad args
@@ -77,7 +77,7 @@ while [ $# -gt 0 ]; do
 done
 
 echo "=================================================="
-echo "47 Doors — Cold-Start Quickstart"
+echo "All Clear — Cold-Start Quickstart"
 echo "=================================================="
 echo ""
 
@@ -98,7 +98,7 @@ print_banner_mock() {
   echo ""
   echo "=================================================="
   echo "✅ Scenario-ready"
-  echo "   Mock lane: pipeline validated with no Azure credentials."
+  echo "     Mock lane: incident pipeline validated with no Azure credentials."
   echo "   Next:  ${SCENARIOS_LINK}"
   echo "=================================================="
 }
@@ -107,38 +107,36 @@ print_banner_mock() {
 # Mock lane — no Azure credentials required
 # ----------------------------------------------------------------------------
 run_mock_lane() {
-  echo ">>> Mock lane (USE_MOCK_MODE=true, no Azure required)"
+  echo ">>> Mock lane (MOCK_MODE=true / USE_MOCK_MODE=true, no Azure required)"
   echo ""
   local rc=0
   cd "$PROJECT_ROOT/backend" || { fail "backend directory not found"; return 1; }
 
-  # 1) Mock LLM intent classification (mirrors smoke-test.sh Section 5)
-  if USE_MOCK_MODE=true python -c "
-import asyncio
-from app.services.mock.llm_service import MockLLMService
+  # 1) Deterministic mock classifier used by the MAF mock chat client
+  if MOCK_MODE=true USE_MOCK_MODE=true python -c "
+from app.agents.schemas import SignalCategory
+from app.services.mock.maf_chat_client import classify_signal
 
-async def t():
-    svc = MockLLMService()
-    r = await svc.classify_intent('I forgot my password')
-    assert r.intent == 'password_reset', r.intent
-    assert r.confidence > 0.5
-
-asyncio.run(t())
+r = classify_signal('Power line down and sparking near Main Street')
+assert r.intent_category is SignalCategory.FIELD_HAZARD, r.intent_category
+assert r.intent == 'report_field_hazard', r.intent
+assert r.confidence > 0.5
 " 2>/dev/null; then
-    pass "Mock LLM service (intent classification)"
+    pass "Mock classifier (intent classification)"
   else
-    fail "Mock LLM service not working"; rc=1
+    fail "Mock classifier not working"; rc=1
   fi
 
   # 2) Mock knowledge/KB search
-  if USE_MOCK_MODE=true python -c "
+  if MOCK_MODE=true USE_MOCK_MODE=true python -c "
 import asyncio
 from app.services.mock.knowledge_service import MockKnowledgeService
 
 async def t():
     svc = MockKnowledgeService()
-    results = await svc.search('password reset')
-    assert len(results) > 0
+    results = await svc.search('downed sparking power line')
+    assert len(results) > 0, 'expected mock incident-response article'
+    assert results[0].article_id.startswith('kb-')
 
 asyncio.run(t())
 " 2>/dev/null; then
@@ -148,7 +146,7 @@ asyncio.run(t())
   fi
 
   # 3) Backend /api/health via in-process TestClient (no port, reliable in CI)
-  if USE_MOCK_MODE=true python -c "
+  if MOCK_MODE=true USE_MOCK_MODE=true python -c "
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -202,7 +200,7 @@ run_live_lane() {
   local env_rc=$?
   [ $env_rc -eq 2 ] && return 2
 
-  local index_name="${AZURE_SEARCH_INDEX_NAME:-university-kb}"
+  local index_name="${AZURE_SEARCH_INDEX_NAME:-knowledge-base}"
 
   # Step 1: seed index (idempotent upsert)
   echo ""

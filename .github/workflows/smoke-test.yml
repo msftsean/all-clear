@@ -1,4 +1,4 @@
-# 47 Doors Boot Camp - Smoke Test CI
+# All Clear workshop smoke-test CI
 # Runs on every push/PR to validate the environment works correctly
 # This catches issues before participants encounter them in Codespaces
 
@@ -68,7 +68,7 @@ jobs:
         run: npm run lint || echo "Linting complete with warnings"
 
       - name: Run type check
-        run: npm run type-check || echo "Type checking complete"
+        run: npm run typecheck || echo "Type checking complete"
 
       - name: Build frontend
         run: npm run build

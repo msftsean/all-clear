@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # ==========================================================================
     # Application Settings
     # ==========================================================================
-    app_name: str = Field(default="Front Door Support Agent")
+    app_name: str = Field(default="All Clear")
     app_version: str = Field(default="1.0.0")
     environment: Literal["development", "staging", "production", "test"] = Field(
         default="development"

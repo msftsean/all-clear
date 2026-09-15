@@ -1,5 +1,5 @@
 """
-FastAPI application entry point for the Front Door Support Agent.
+FastAPI application entry point for All Clear.
 """
 
 from contextlib import asynccontextmanager
@@ -52,23 +52,14 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         version=settings.app_version,
         description="""
-        Universal Front Door Support Agent API
+        All Clear incident-triage API.
 
-        A three-agent system that routes student support requests to appropriate
-        departments, creates tickets, and retrieves relevant knowledge base articles.
+        A three-stage pipeline processes inbound signals: QueryAgent classifies,
+        RouterExecutor deterministically deduplicates and maps severity/SLA, and
+        ActionAgent opens or attaches incidents through bounded tools.
 
-        ## Features
-
-        - **Intent Detection**: Analyze natural language queries to detect intent
-        - **Smart Routing**: Route requests to the correct department
-        - **Ticket Creation**: Create support tickets automatically
-        - **Knowledge Base**: Retrieve relevant help articles
-        - **Human Escalation**: Escalate complex issues to human reviewers
-
-        ## Authentication
-
-        Most endpoints require a Bearer JWT token from university SSO.
-        The `/api/knowledge/search` and `/api/health` endpoints are public.
+        Mock mode is the workshop default and requires no Azure credentials.
+        Live Azure integrations are optional and must be configured explicitly.
         """,
         openapi_url=f"{settings.api_prefix}/openapi.json",
         docs_url=f"{settings.api_prefix}/docs",

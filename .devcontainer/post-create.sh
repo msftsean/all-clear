@@ -31,7 +31,18 @@ npm install
 # --- Playwright browser (E2E) — optional; never fail setup -------------------
 echo ""
 echo ">>> Installing Playwright browser (chromium) for E2E tests..."
-npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped (E2E is optional)."
+case "$(uname -s 2>/dev/null || echo unknown)" in
+  MINGW*|MSYS*|CYGWIN*)
+    echo "WARN: Skipping Playwright Linux dependency install on Windows Git Bash (E2E is optional)."
+    ;;
+  *)
+    if command -v timeout >/dev/null 2>&1; then
+      timeout 180s npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped or timed out (E2E is optional)."
+    else
+      npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped (E2E is optional)."
+    fi
+    ;;
+esac
 
 # --- Environment files: mock mode by default (runs fully offline) ------------
 echo ""
@@ -66,8 +77,8 @@ echo "  cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 echo "  cd frontend && npm run dev"
 echo ""
 echo "Verify the offline pipeline (no Azure):"
-echo "  cd backend && MOCK_MODE=true PYTHONPATH=. python -m pytest tests/ -q"
-echo "  npm run smoke-test"
+echo "  npm run readiness"
+echo "  npm run quickstart:mock"
 echo ""
 echo "Labs: start at labs/00-setup, then labs/01-understanding-agents -> labs/05-agent-orchestration."
 echo ""
