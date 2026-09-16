@@ -23,6 +23,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.core.dependencies import get_realtime_service, get_settings
 from app.services.azure.phone import PHONE_SYSTEM_PROMPT
+from app.services.pii import redact_pii_text
 from app.services.transcript_bus import transcript_bus
 
 logger = logging.getLogger(__name__)
@@ -109,7 +110,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
             return
         if item_id in caller_published:
             return
-        text = caller_transcript_buf.pop(item_id, "").strip()
+        text = redact_pii_text(caller_transcript_buf.pop(item_id, "").strip())
         if not text:
             return
         caller_published.add(item_id)
@@ -272,7 +273,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                 # -- Transcript logging -----------------------------------
                 # Support both preview and GA event names for agent speech transcript
                 if t in ("response.audio_transcript.done", "response.output_audio_transcript.done"):
-                    text = msg.get("transcript", "")
+                    text = redact_pii_text(msg.get("transcript", ""))
                     logger.info(
                         "Media bridge: AI said (call_id=%s): %s",
                         call_id, text[:120],
@@ -290,7 +291,7 @@ async def acs_media_bridge(ws: WebSocket) -> None:
 
                 if t == "conversation.item.input_audio_transcription.completed":
                     item_id = msg.get("item_id")
-                    text = (msg.get("transcript") or "").strip()
+                    text = redact_pii_text((msg.get("transcript") or "").strip())
                     if text and item_id and item_id not in caller_published:
                         caller_published.add(item_id)
                         caller_transcript_buf.pop(item_id, None)

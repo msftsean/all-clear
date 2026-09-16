@@ -14,6 +14,7 @@ import json
 import os
 
 import pytest
+from fastapi.testclient import TestClient
 
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("MOCK_MODE", "true")
@@ -65,6 +66,7 @@ class TestSSEResponseHeaders:
 
         mock_request = AsyncMock()
         mock_request.is_disconnected.return_value = True  # disconnect immediately
+        mock_request.query_params = {"call_id": "hdr-1"}
 
         response = await stream_transcripts(mock_request)
 
@@ -89,7 +91,7 @@ class TestSSEGeneratorIntegration:
         mock_request = AsyncMock()
         mock_request.is_disconnected.return_value = False
 
-        gen = _event_generator(mock_request)
+        gen = _event_generator(mock_request, call_id="int-1")
         received: list[dict] = []
 
         test_events = [
@@ -139,7 +141,7 @@ class TestSSEGeneratorIntegration:
         mock_request = AsyncMock()
         mock_request.is_disconnected.return_value = False
 
-        gen = _event_generator(mock_request)
+        gen = _event_generator(mock_request, call_id="fmt-1")
         raw_chunks: list[str] = []
 
         async def _read():
@@ -167,3 +169,29 @@ class TestSSEGeneratorIntegration:
         json_str = data_chunks[0][len("data: "):].strip()
         payload = json.loads(json_str)
         assert payload["type"] == "user_speech"
+
+
+class TestSSEAuthAndScoping:
+    def test_stream_fails_closed_when_admin_secret_unset(self):
+        from app.main import create_app
+
+        with TestClient(create_app()) as client:
+            response = client.get("/api/phone/transcripts/stream?call_id=c1")
+        assert response.status_code == 503
+        assert "Admin API token is not configured" in response.json()["detail"]
+
+    def test_stream_requires_call_or_session_scope(self):
+        from app.core.config import Settings, get_settings
+        from app.main import create_app
+
+        app = create_app()
+        app.dependency_overrides[get_settings] = lambda: Settings(
+            mock_mode=True, admin_api_token="secret"
+        )
+        with TestClient(app) as client:
+            response = client.get(
+                "/api/phone/transcripts/stream",
+                headers={"X-Admin-Token": "secret"},
+            )
+        assert response.status_code == 400
+        assert "call_id or session_id" in response.json()["detail"]

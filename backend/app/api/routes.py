@@ -20,6 +20,7 @@ from pydantic import BaseModel, Field
 
 from app.agents.pipeline import AllClearPipeline
 from app.agents.schemas import KnowledgeArticle, PipelineResult
+from app.core.auth import verify_admin
 from app.core.config import Settings, get_settings
 from app.core.dependencies import (
     get_capstone_lead_store,
@@ -370,6 +371,7 @@ async def demo_dedup_probe(
 @router.post("/demo/capstone/entries", tags=["Demo"], summary="Create capstone lead entry")
 async def create_capstone_entry(
     payload: CapstoneLeadCreate,
+    _: None = Depends(verify_admin),
     store=Depends(get_capstone_lead_store),
     settings: Settings = Depends(get_settings),
 ) -> dict:
@@ -386,6 +388,7 @@ async def create_capstone_entry(
 
 @router.get("/demo/capstone/entries", tags=["Demo"], summary="List capstone lead entries")
 async def list_capstone_entries(
+    _: None = Depends(verify_admin),
     store=Depends(get_capstone_lead_store),
     settings: Settings = Depends(get_settings),
 ) -> dict:
@@ -397,6 +400,7 @@ async def list_capstone_entries(
 @router.get("/demo/capstone/export", tags=["Demo"], summary="Export capstone lead entries")
 async def export_capstone_entries(
     format: Literal["json", "csv"] = "json",
+    _: None = Depends(verify_admin),
     store=Depends(get_capstone_lead_store),
     settings: Settings = Depends(get_settings),
 ) -> dict:
@@ -435,6 +439,7 @@ async def demo_loadtest_start(
     mode: str = Body(default="varied", embed=True),
     started_by: str = Body(default="coach", embed=True),
     pack: Optional[str] = Body(default=None, embed=True),
+    _: None = Depends(verify_admin),
     coordinator=Depends(get_loadtest_coordinator),
 ) -> dict:
     """Fire a burst of realistic signals through the live pipeline (demo surge).

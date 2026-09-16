@@ -9,6 +9,15 @@ _PII_PATTERNS = [
     re.compile(r"\b\d{3}[-.]\d{3}[-.]\d{4}\b"),
     re.compile(r"\b\(\d{3}\)\s?\d{3}[-.]\d{4}\b"),
     re.compile(r"\b[\w.-]+@[\w.-]+\.\w+\b"),
+    re.compile(
+        r"\b\d{1,6}\s+[A-Z][\w.'-]*(?:\s+[A-Z][\w.'-]*){0,4}\s+"
+        r"(?:st|street|ave|avenue|rd|road|blvd|boulevard|dr|drive|ln|lane|ct|court|way|pkwy|parkway)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(?:mrs|mr|ms|miss|mx|dr)\.?\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}\b",
+        re.IGNORECASE,
+    ),
 ]
 
 # Context-anchored patterns: only redact when the number is explicitly labeled
@@ -36,6 +45,11 @@ _DOB_PATTERN = re.compile(
     rf"(?:{_NUMERIC_DOB}|{_TEXT_DOB})\b",
     re.IGNORECASE,
 )
+_NAME_PATTERN = re.compile(
+    r"\b(my name is|caller is|this is|i am|i'm)\s+"
+    r"[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}\b",
+    re.IGNORECASE,
+)
 
 
 def redact_pii_text(value: str) -> str:
@@ -43,6 +57,7 @@ def redact_pii_text(value: str) -> str:
     redacted = value
     redacted = _STUDENT_ID_PATTERN.sub(r"\1 \2 [REDACTED]", redacted)
     redacted = _DOB_PATTERN.sub(r"\1 [REDACTED]", redacted)
+    redacted = _NAME_PATTERN.sub(r"\1 [REDACTED]", redacted)
     for pattern in _PII_PATTERNS:
         redacted = pattern.sub("[REDACTED]", redacted)
     return redacted

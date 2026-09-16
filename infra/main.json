@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.40.2.10011",
-      "templateHash": "767179505999262238"
+      "version": "0.43.8.12551",
+      "templateHash": "5585853415305747075"
     }
   },
   "parameters": {
@@ -30,18 +30,39 @@
         "description": "Dedicated location for Cosmos DB when regional capacity is constrained"
       }
     },
+    "searchLocation": {
+      "type": "string",
+      "defaultValue": "eastus",
+      "metadata": {
+        "description": "Dedicated location for AI Search when regional capacity is constrained"
+      }
+    },
     "openAiModel": {
       "type": "string",
-      "defaultValue": "gpt-4.1",
+      "defaultValue": "gpt-5.1",
       "metadata": {
-        "description": "Azure OpenAI deployment model"
+        "description": "Azure OpenAI chat deployment model (All Clear runs on gpt-5.1 only)"
       }
     },
     "openAiModelVersion": {
       "type": "string",
-      "defaultValue": "2025-04-14",
+      "defaultValue": "2025-11-13",
       "metadata": {
-        "description": "OpenAI model version"
+        "description": "OpenAI chat model version"
+      }
+    },
+    "embeddingModel": {
+      "type": "string",
+      "defaultValue": "text-embedding-3-small",
+      "metadata": {
+        "description": "Azure OpenAI embedding deployment model (required for RouterExecutor dedup)"
+      }
+    },
+    "embeddingModelVersion": {
+      "type": "string",
+      "defaultValue": "1",
+      "metadata": {
+        "description": "OpenAI embedding model version"
       }
     },
     "realtimeModel": {
@@ -58,11 +79,25 @@
         "description": "Realtime model version"
       }
     },
-    "mockMode": {
+    "realtimeLocation": {
+      "type": "string",
+      "defaultValue": "swedencentral",
+      "metadata": {
+        "description": "Region for the realtime OpenAI account (realtime models are not available in eastus)"
+      }
+    },
+    "deployRealtime": {
       "type": "bool",
       "defaultValue": false,
       "metadata": {
-        "description": "Enable mock mode (no external service connections)"
+        "description": "Deploy the realtime (voice) OpenAI account and model. Facilitators should enable only after confirming gpt-realtime quota and regional availability."
+      }
+    },
+    "mockMode": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Enable mock mode (no external service connections). Event default keeps the deployed app on mock services unless a facilitator opts into live services."
       }
     },
     "deploymentDate": {
@@ -84,7 +119,8 @@
       "solution-accelerator": "university-front-door-agent",
       "deployment-date": "[parameters('deploymentDate')]"
     },
-    "cognitiveServicesOpenAIUserRoleId": "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd"
+    "cognitiveServicesOpenAIUserRoleId": "5e0bd9bd-7b93-4f28-af87-19fc36ad61bd",
+    "acsContributorRoleId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
   },
   "resources": [
     {
@@ -115,8 +151,8 @@
         }
       },
       "sku": {
-        "name": "Standard",
-        "capacity": 30
+        "name": "GlobalStandard",
+        "capacity": 150
       },
       "dependsOn": [
         "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai', variables('prefix')))]"
@@ -125,7 +161,45 @@
     {
       "type": "Microsoft.CognitiveServices/accounts/deployments",
       "apiVersion": "2023-10-01-preview",
-      "name": "[format('{0}/{1}', format('{0}-openai', variables('prefix')), parameters('realtimeModel'))]",
+      "name": "[format('{0}/{1}', format('{0}-openai', variables('prefix')), parameters('embeddingModel'))]",
+      "properties": {
+        "model": {
+          "format": "OpenAI",
+          "name": "[parameters('embeddingModel')]",
+          "version": "[parameters('embeddingModelVersion')]"
+        }
+      },
+      "sku": {
+        "name": "Standard",
+        "capacity": 50
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai', variables('prefix')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai', variables('prefix')), parameters('openAiModel'))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployRealtime')]",
+      "type": "Microsoft.CognitiveServices/accounts",
+      "apiVersion": "2023-10-01-preview",
+      "name": "[format('{0}-openai-rt', variables('prefix'))]",
+      "location": "[parameters('realtimeLocation')]",
+      "tags": "[variables('tags')]",
+      "kind": "OpenAI",
+      "sku": {
+        "name": "S0"
+      },
+      "properties": {
+        "customSubDomainName": "[format('{0}-openai-rt', variables('prefix'))]",
+        "publicNetworkAccess": "Enabled",
+        "disableLocalAuth": true
+      }
+    },
+    {
+      "condition": "[parameters('deployRealtime')]",
+      "type": "Microsoft.CognitiveServices/accounts/deployments",
+      "apiVersion": "2023-10-01-preview",
+      "name": "[format('{0}/{1}', format('{0}-openai-rt', variables('prefix')), parameters('realtimeModel'))]",
       "properties": {
         "model": {
           "format": "OpenAI",
@@ -135,11 +209,10 @@
       },
       "sku": {
         "name": "GlobalStandard",
-        "capacity": 1
+        "capacity": 10
       },
       "dependsOn": [
-        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai', variables('prefix')))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai', variables('prefix')), parameters('openAiModel'))]"
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix')))]"
       ]
     },
     {
@@ -222,10 +295,30 @@
       ]
     },
     {
+      "condition": "[not(parameters('mockMode'))]",
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-11-15",
+      "name": "[format('{0}/{1}/{2}', variables('cosmosAccountName'), 'frontdoor', 'incidents')]",
+      "properties": {
+        "resource": {
+          "id": "incidents",
+          "partitionKey": {
+            "paths": [
+              "/intent_category"
+            ],
+            "kind": "Hash"
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosAccountName'), 'frontdoor')]"
+      ]
+    },
+    {
       "type": "Microsoft.Search/searchServices",
       "apiVersion": "2023-11-01",
       "name": "[format('{0}-search', variables('prefix'))]",
-      "location": "[parameters('location')]",
+      "location": "[parameters('searchLocation')]",
       "tags": "[variables('tags')]",
       "sku": {
         "name": "basic"
@@ -234,6 +327,16 @@
         "replicaCount": 1,
         "partitionCount": 1,
         "hostingMode": "default"
+      }
+    },
+    {
+      "type": "Microsoft.Communication/communicationServices",
+      "apiVersion": "2023-04-01",
+      "name": "[format('{0}-acs', variables('prefix'))]",
+      "location": "global",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "dataLocation": "unitedstates"
       }
     },
     {
@@ -310,6 +413,18 @@
       ]
     },
     {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2023-07-01",
+      "name": "[format('{0}/{1}', variables('keyVaultName'), 'acs-connection-string')]",
+      "properties": {
+        "value": "[listKeys(resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix'))), '2023-04-01').primaryConnectionString]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]",
+        "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+      ]
+    },
+    {
       "type": "Microsoft.ContainerRegistry/registries",
       "apiVersion": "2023-07-01",
       "name": "[replace(format('{0}acr', variables('prefix')), '-', '')]",
@@ -351,6 +466,10 @@
             {
               "name": "search-api-key",
               "value": "[listAdminKeys(resourceId('Microsoft.Search/searchServices', format('{0}-search', variables('prefix'))), '2023-11-01').primaryKey]"
+            },
+            {
+              "name": "acs-connection-string",
+              "value": "[if(parameters('mockMode'), '', listKeys(resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix'))), '2023-04-01').primaryConnectionString)]"
             }
           ],
           "registries": [
@@ -380,8 +499,20 @@
                   "value": "[parameters('openAiModel')]"
                 },
                 {
+                  "name": "AZURE_OPENAI_EMBEDDING_DEPLOYMENT",
+                  "value": "[parameters('embeddingModel')]"
+                },
+                {
+                  "name": "AZURE_OPENAI_API_VERSION",
+                  "value": "preview"
+                },
+                {
+                  "name": "AZURE_OPENAI_REALTIME_ENDPOINT",
+                  "value": "[if(parameters('deployRealtime'), reference(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix'))), '2023-10-01-preview').endpoint, '')]"
+                },
+                {
                   "name": "AZURE_OPENAI_REALTIME_DEPLOYMENT",
-                  "value": "[parameters('realtimeModel')]"
+                  "value": "[if(parameters('deployRealtime'), parameters('realtimeModel'), '')]"
                 },
                 {
                   "name": "AZURE_COSMOS_ENDPOINT",
@@ -402,6 +533,26 @@
                 {
                   "name": "AZURE_SEARCH_KEY",
                   "secretRef": "search-api-key"
+                },
+                {
+                  "name": "AZURE_SEARCH_INDEX",
+                  "value": "knowledge-base"
+                },
+                {
+                  "name": "AZURE_ACS_ENDPOINT",
+                  "value": "[if(parameters('mockMode'), '', format('https://{0}', reference(resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix'))), '2023-04-01').hostName))]"
+                },
+                {
+                  "name": "AZURE_ACS_CONNECTION_STRING",
+                  "secretRef": "acs-connection-string"
+                },
+                {
+                  "name": "PHONE_CALLBACK_BASE_URL",
+                  "value": "[if(parameters('mockMode'), '', format('https://{0}-backend.{1}', variables('prefix'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}-env', variables('prefix'))), '2023-08-01-preview').defaultDomain))]"
+                },
+                {
+                  "name": "ACS_PHONE_NUMBER",
+                  "value": "+18442070169"
                 }
               ],
               "resources": {
@@ -412,18 +563,21 @@
           ],
           "scale": {
             "minReplicas": 1,
-            "maxReplicas": 2
+            "maxReplicas": 1
           }
         }
       },
       "dependsOn": [
+        "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]",
         "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', variables('prefix')))]",
         "[resourceId('Microsoft.ContainerRegistry/registries', replace(format('{0}acr', variables('prefix')), '-', ''))]",
         "[resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosAccountName'))]",
         "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', variables('cosmosAccountName'), 'frontdoor')]",
         "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai', variables('prefix')))]",
         "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai', variables('prefix')), parameters('openAiModel'))]",
-        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai', variables('prefix')), parameters('realtimeModel'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai', variables('prefix')), parameters('embeddingModel'))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts/deployments', format('{0}-openai-rt', variables('prefix')), parameters('realtimeModel'))]",
         "[resourceId('Microsoft.Search/searchServices', format('{0}-search', variables('prefix')))]"
       ]
     },
@@ -440,6 +594,81 @@
       "dependsOn": [
         "[resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix')))]",
         "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai', variables('prefix')))]"
+      ]
+    },
+    {
+      "condition": "[parameters('deployRealtime')]",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix')))]",
+      "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix'))), resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix'))), variables('cognitiveServicesOpenAIUserRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('cognitiveServicesOpenAIUserRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix'))), '2023-08-01-preview', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix')))]",
+        "[resourceId('Microsoft.CognitiveServices/accounts', format('{0}-openai-rt', variables('prefix')))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]",
+      "name": "[guid(resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix'))), resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix'))), variables('acsContributorRoleId'))]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('acsContributorRoleId'))]",
+        "principalId": "[reference(resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix'))), '2023-08-01-preview', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]",
+        "[resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix')))]"
+      ]
+    },
+    {
+      "condition": "[not(parameters('mockMode'))]",
+      "type": "Microsoft.EventGrid/systemTopics",
+      "apiVersion": "2022-06-15",
+      "name": "[format('{0}-acs-events', variables('prefix'))]",
+      "location": "global",
+      "tags": "[variables('tags')]",
+      "properties": {
+        "source": "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]",
+        "topicType": "Microsoft.Communication.CommunicationServices"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix')))]"
+      ]
+    },
+    {
+      "condition": "[not(parameters('mockMode'))]",
+      "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+      "apiVersion": "2022-06-15",
+      "name": "[format('{0}/{1}', format('{0}-acs-events', variables('prefix')), 'incoming-call')]",
+      "properties": {
+        "destination": {
+          "endpointType": "WebHook",
+          "properties": {
+            "endpointUrl": "[format('https://{0}-backend.{1}/api/phone/incoming', variables('prefix'), reference(resourceId('Microsoft.App/managedEnvironments', format('{0}-env', variables('prefix'))), '2023-08-01-preview').defaultDomain)]"
+          }
+        },
+        "filter": {
+          "includedEventTypes": [
+            "Microsoft.Communication.IncomingCall"
+          ]
+        },
+        "eventDeliverySchema": "EventGridSchema",
+        "retryPolicy": {
+          "maxDeliveryAttempts": 10,
+          "eventTimeToLiveInMinutes": 5
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.EventGrid/systemTopics', format('{0}-acs-events', variables('prefix')))]",
+        "[resourceId('Microsoft.App/containerApps', format('{0}-backend', variables('prefix')))]",
+        "[resourceId('Microsoft.App/managedEnvironments', format('{0}-env', variables('prefix')))]"
       ]
     },
     {
@@ -509,9 +738,9 @@
       "type": "string",
       "value": "[parameters('openAiModel')]"
     },
-    "AZURE_OPENAI_REALTIME_DEPLOYMENT": {
+    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": {
       "type": "string",
-      "value": "[parameters('realtimeModel')]"
+      "value": "[parameters('embeddingModel')]"
     },
     "AZURE_COSMOS_ENDPOINT": {
       "type": "string",
@@ -548,6 +777,10 @@
     "AZURE_KEY_VAULT_NAME": {
       "type": "string",
       "value": "[variables('keyVaultName')]"
+    },
+    "AZURE_ACS_ENDPOINT": {
+      "type": "string",
+      "value": "[if(parameters('mockMode'), '', format('https://{0}', reference(resourceId('Microsoft.Communication/communicationServices', format('{0}-acs', variables('prefix'))), '2023-04-01').hostName))]"
     },
     "MOCK_MODE": {
       "type": "bool",

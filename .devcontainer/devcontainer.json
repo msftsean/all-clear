@@ -1,16 +1,20 @@
 {
   "name": "All Clear — Lab Dev Environment",
-  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
 
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
-      "version": "18"
+      "version": "18.20.8"
     },
-    "ghcr.io/devcontainers/features/azure-cli:1": {},
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "2.76.0"
+    },
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "moby": false
     },
-    "ghcr.io/azure/azure-dev/azd:latest": {}
+    "ghcr.io/azure/azure-dev/azd:1": {
+      "version": "1.18.1"
+    }
   },
 
   "customizations": {

@@ -49,7 +49,7 @@ was built and how to extend it.
 
 | Lab | Phase | What you build | Time |
 | --- | ----- | -------------- | ---- |
-| [00](00-setup/) | **Setup** | Get a working environment (Codespaces or `azd up`); run the full pipeline in **mock mode** offline | 30 min |
+| [00](00-setup/) | **Setup** | Get a working Codespaces/local environment; run the full pipeline in **mock mode** offline | 30 min |
 | [01](01-understanding-agents/) | **Understanding agents** | Classify a raw signal into a typed `SignalClassification` (intent, entities, severity indicators, PII) | 45 min |
 | [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Optional live-path setup for Azure OpenAI, AI Search, and Container Apps; not required for offline first success | 45 min |
 | [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to spec a new capability, then generate code from the spec | 60 min |
@@ -108,8 +108,7 @@ python -m venv .venv && . .venv/Scripts/activate   # Windows: .venv\Scripts\Acti
 pip install -r requirements.txt
 
 # run the workshop readiness gates offline (no Azure needed)
-npm run readiness
-npm run quickstart:mock
+npm run first-success
 ```
 
 Then open [Lab 00](00-setup/) and work forward. Each lab has a `README.md`

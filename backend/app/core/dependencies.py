@@ -102,9 +102,9 @@ def get_audit_log(settings: Settings | None = None) -> AuditLogInterface:
         from app.services.mock.audit_log import MockAuditLog
         return MockAuditLog()
     else:
-        # TODO: Implement Cosmos DB audit log
-        from app.services.mock.audit_log import MockAuditLog
-        return MockAuditLog()
+        raise RuntimeError(
+            "Live mode blocked: durable Cosmos audit log is not implemented."
+        )
 
 
 @lru_cache

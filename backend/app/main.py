@@ -31,6 +31,11 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     if missing:
         bar = "=" * 72
         print(bar)
+
+    blockers = settings.live_mode_blockers()
+    if blockers:
+        joined = "; ".join(blockers)
+        raise RuntimeError(f"Live mode blocked: {joined}")
         print("WARNING: LIVE mode (MOCK_MODE=false) but required Azure settings are missing:")
         for name in missing:
             print(f"  - {name}")
@@ -67,12 +72,19 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    # Configure CORS - allow all origins in development
-    if settings.environment == "development":
-        origins = ["*"]
-    else:
-        origins = settings.allowed_origins
-    
+    origins = list(settings.allowed_origins)
+    import os
+
+    codespace_name = os.getenv("CODESPACE_NAME")
+    if codespace_name:
+        origins.extend(
+            [
+                f"https://{codespace_name}-5173.app.github.dev",
+                f"https://{codespace_name}-3000.app.github.dev",
+            ]
+        )
+    origins = sorted(set(origins))
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,

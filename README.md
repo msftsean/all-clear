@@ -150,22 +150,24 @@ npm run dev
 After the dev container finishes its post-create setup, run:
 
 ```bash
-npm run readiness
-npm run quickstart:mock
+npm run first-success
 ```
 
 **Definition of done for participants:** `/api/health` returns `{"status":"healthy","mock_mode":true}` and `/api/chat` returns an `AC-*` incident for a downed-line signal. No Azure credentials are required for this first success.
 
 **Coach reset/recovery:** run `npm run reset:workshop`, restart any backend/frontend terminals, then rerun `npm run readiness`. The reset script backs up local `.env` files, recreates mock-mode defaults, and removes local build/test caches without touching source.
 
-### 🔵 Deploy to Azure with `azd`
+### 🔵 Deploy to Azure with `azd` (facilitator/coach only)
 
 ```bash
+npm run azure-preflight
 azd auth login
 azd up
 ```
 
-`azd up` provisions the Bicep stack in [`infra/`](./infra/) and deploys the backend to Container Apps. This is **not** required for the event first success and was not used for local readiness validation.
+`azd up` provisions the Bicep stack in [`infra/`](./infra/) and deploys the backend to Container Apps. This is **not** required for the event first success and was not used for local readiness validation. Event defaults keep `mockMode=true` and `deployRealtime=false`; facilitators should opt into live Cosmos/ACS/realtime only after confirming quota and regional availability.
+
+For shared Azure environments, assign each team a unique prefix such as `allclear-team01`, a unique `ADMIN_API_TOKEN`, and a unique `PHONE_WEBHOOK_SECRET`. Do not point multiple teams at the same live backend unless the demo is intentionally shared; local mock stores and transcript streams are process-local, and live audit persistence must be configured before disabling mock mode.
 
 ---
 

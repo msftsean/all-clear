@@ -33,7 +33,7 @@ from agent_framework import (
 
 from app.agents.action_agent import ActionExecutor, ActionToolbox
 from app.agents.envelopes import ClassifiedSignal, RoutedSignal
-from app.agents.escalation_rules import contains_harm_signal
+from app.agents.escalation_rules import contains_harm_signal, contains_life_safety_signal
 from app.agents.query_agent import build_query_agent
 from app.agents.retry import with_rate_limit_retry
 from app.agents.router_agent import RouterExecutor
@@ -164,6 +164,7 @@ class AllClearPipeline:
         # voice (007 demo hardening / Constitution Art. I + V).
         if contains_harm_signal(text):
             return await self._handle_crisis(text, session_id, channel, started)
+        raw_life_safety = contains_life_safety_signal(text)
 
         # Classify on the raw text so the QueryAgent can still detect/flag PII
         # (pii_detected/pii_types stay accurate for routing). After classification
@@ -173,6 +174,22 @@ class AllClearPipeline:
         # This mirrors the voice path (realtime.py redact_pii on ingress/egress)
         # and satisfies Constitution Art. I.1 + voice/text lockstep (Art. V.1).
         classification = await classify_signal(self._query_agent, text)
+        if raw_life_safety:
+            indicators = set(classification.entities.severity_indicators)
+            indicators.add("raw_life_safety_signal")
+            classification = classification.model_copy(
+                update={
+                    "intent": "report_safety_threat",
+                    "intent_category": SignalCategory.PUBLIC_SAFETY,
+                    "target_queue": Queue.FIELD_OPERATIONS,
+                    "confidence": max(classification.confidence, 0.95),
+                    "requires_escalation": True,
+                    "escalation_reason": EscalationReason.LIFE_SAFETY,
+                    "entities": classification.entities.model_copy(
+                        update={"severity_indicators": sorted(indicators)}
+                    ),
+                }
+            )
         safe_text = redact_pii_text(text)
         await self._publish(
             session_id,

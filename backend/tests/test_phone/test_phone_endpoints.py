@@ -12,6 +12,9 @@ import pytest
 from fastapi.testclient import TestClient
 from uuid import uuid4
 
+import app.api.phone as phone_api
+from app.core.config import Settings, get_settings
+from app.main import create_app
 from app.main import app
 
 
@@ -312,3 +315,84 @@ class TestCallCallbacks:
         assert response.status_code == 200
         data = response.json()
         assert data["results"][0]["error"] == "missing_call_connection_id"
+
+
+class TestLivePhoneWebhookProtection:
+    """Live phone webhooks fail closed and do not trust forwarded Host headers."""
+
+    def _incoming_call_payload(self):
+        return [
+            {
+                "id": str(uuid4()),
+                "eventType": "Microsoft.Communication.IncomingCall",
+                "subject": "incomingCall",
+                "eventTime": "2026-01-01T00:00:00Z",
+                "data": {
+                    "incomingCallContext": "ctx-live",
+                    "from": {"rawId": "+12065550100"},
+                    "to": {"rawId": "+14255550199"},
+                    "correlationId": str(uuid4()),
+                },
+                "dataVersion": "1",
+            }
+        ]
+
+    def test_live_incoming_call_requires_configured_webhook_secret(self):
+        live_settings = Settings(environment="production", mock_mode=False, phone_enabled=True)
+        test_app = create_app()
+        test_app.dependency_overrides[get_settings] = lambda: live_settings
+
+        response = TestClient(test_app).post(
+            "/api/phone/incoming",
+            json=self._incoming_call_payload(),
+            headers={"aeg-event-type": "Notification"},
+        )
+
+        assert response.status_code == 503
+        assert response.json()["detail"] == "Phone webhook secret is not configured."
+
+    def test_live_incoming_call_rejects_invalid_webhook_secret(self):
+        live_settings = Settings(
+            environment="production",
+            mock_mode=False,
+            phone_enabled=True,
+            phone_webhook_secret="expected-token",
+        )
+        test_app = create_app()
+        test_app.dependency_overrides[get_settings] = lambda: live_settings
+
+        response = TestClient(test_app).post(
+            "/api/phone/incoming",
+            json=self._incoming_call_payload(),
+            headers={"aeg-event-type": "Notification", "X-Webhook-Token": "wrong-token"},
+        )
+
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Invalid phone webhook token."
+
+    def test_live_incoming_call_requires_explicit_callback_base_url(self, monkeypatch):
+        live_settings = Settings(
+            environment="production",
+            mock_mode=False,
+            phone_enabled=True,
+            phone_webhook_secret="expected-token",
+        )
+        test_app = create_app()
+        test_app.dependency_overrides[get_settings] = lambda: live_settings
+        monkeypatch.setattr(phone_api, "get_settings", lambda: live_settings)
+
+        response = TestClient(test_app).post(
+            "/api/phone/incoming",
+            json=self._incoming_call_payload(),
+            headers={
+                "aeg-event-type": "Notification",
+                "X-Webhook-Token": "expected-token",
+                "Host": "attacker.invalid",
+                "X-Forwarded-Host": "attacker.invalid",
+            },
+        )
+
+        assert response.status_code == 503
+        assert response.json()["detail"] == (
+            "PHONE_CALLBACK_BASE_URL is required when phone is live."
+        )

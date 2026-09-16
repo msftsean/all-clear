@@ -4,9 +4,10 @@ import asyncio
 import json
 import logging
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 
+from app.core.auth import verify_admin
 from app.services.transcript_bus import transcript_bus
 
 logger = logging.getLogger(__name__)
@@ -14,9 +15,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-async def _event_generator(request: Request):
+async def _event_generator(
+    request: Request,
+    *,
+    call_id: str | None = None,
+    session_id: str | None = None,
+):
     """Yield SSE-formatted transcript events until the client disconnects."""
-    async with transcript_bus.subscribe() as queue:
+    async with transcript_bus.subscribe(call_id=call_id, session_id=session_id) as queue:
         while True:
             if await request.is_disconnected():
                 break
@@ -28,7 +34,7 @@ async def _event_generator(request: Request):
                 yield ": keepalive\n\n"
 
 
-@router.get("/transcripts/stream")
+@router.get("/transcripts/stream", dependencies=[Depends(verify_admin)])
 async def stream_transcripts(request: Request) -> StreamingResponse:
     """Server-Sent Events stream of live phone call transcripts.
 
@@ -36,8 +42,15 @@ async def stream_transcripts(request: Request) -> StreamingResponse:
     shared API contract (call_started, user_speech, agent_speech,
     tool_call, call_ended).
     """
+    call_id = request.query_params.get("call_id")
+    session_id = request.query_params.get("session_id")
+    if not call_id and not session_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Provide call_id or session_id to scope the transcript stream.",
+        )
     return StreamingResponse(
-        _event_generator(request),
+        _event_generator(request, call_id=call_id, session_id=session_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

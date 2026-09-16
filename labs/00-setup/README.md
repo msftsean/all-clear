@@ -20,6 +20,7 @@ All Clear is Codespaces-first for the workshop. Your first success is the local/
 From the repository root:
 
 ```bash
+npm run local-preflight
 npm run readiness
 ```
 
@@ -35,7 +36,7 @@ If this fails, run the recovery steps below before continuing.
 ## 3. Run the offline quickstart
 
 ```bash
-npm run quickstart:mock
+npm run first-success
 ```
 
 Expected success marker:
@@ -88,6 +89,8 @@ Optional live-path variables, not needed for first success:
 | Cosmos DB | `AZURE_COSMOS_ENDPOINT`, `AZURE_COSMOS_KEY`, `AZURE_COSMOS_DATABASE` |
 | Voice realtime | `AZURE_OPENAI_REALTIME_DEPLOYMENT`, `AZURE_OPENAI_REALTIME_ENDPOINT` |
 | Phone/ACS | `PHONE_ENABLED`, `AZURE_ACS_ENDPOINT`, `ACS_PHONE_NUMBER` |
+| Admin/demo routes | `ADMIN_API_TOKEN` |
+| Live phone webhooks | `PHONE_WEBHOOK_SECRET`, `PHONE_CALLBACK_BASE_URL` |
 
 Never paste credential values into docs, issues, screenshots, or commits.
 

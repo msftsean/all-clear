@@ -34,11 +34,11 @@ param realtimeModelVersion string = '2025-08-28'
 @description('Region for the realtime OpenAI account (realtime models are not available in eastus)')
 param realtimeLocation string = 'swedencentral'
 
-@description('Deploy the realtime (voice) OpenAI account and model. Disable when gpt-realtime quota is unavailable.')
-param deployRealtime bool = true
+@description('Deploy the realtime (voice) OpenAI account and model. Facilitators should enable only after confirming gpt-realtime quota and regional availability.')
+param deployRealtime bool = false
 
-@description('Enable mock mode (no external service connections)')
-param mockMode bool = false
+@description('Enable mock mode (no external service connections). Event default keeps the deployed app on mock services unless a facilitator opts into live services.')
+param mockMode bool = true
 
 @description('Deployment timestamp for tagging')
 param deploymentDate string = utcNow('yyyy-MM-dd')
@@ -315,7 +315,7 @@ resource cosmosKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (!m
   parent: keyVault
   name: 'cosmos-db-key'
   properties: {
-    value: cosmosAccount.listKeys().primaryMasterKey
+    value: cosmosAccount!.listKeys().primaryMasterKey
   }
 }
 
@@ -377,7 +377,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
         }
         {
           name: 'cosmos-db-key'
-          value: mockMode ? 'mock' : cosmosAccount.listKeys().primaryMasterKey
+          value: mockMode ? 'mock' : cosmosAccount!.listKeys().primaryMasterKey
         }
         {
           name: 'search-api-key'
@@ -427,7 +427,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'AZURE_OPENAI_REALTIME_ENDPOINT'
-              value: deployRealtime ? openAiRealtime.properties.endpoint : ''
+              value: deployRealtime ? openAiRealtime!.properties.endpoint : ''
             }
             {
               name: 'AZURE_OPENAI_REALTIME_DEPLOYMENT'
@@ -435,7 +435,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'AZURE_COSMOS_ENDPOINT'
-              value: mockMode ? '' : cosmosAccount.properties.documentEndpoint
+              value: mockMode ? '' : cosmosAccount!.properties.documentEndpoint
             }
             {
               name: 'AZURE_COSMOS_KEY'
@@ -635,8 +635,8 @@ resource frontendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' =
 output AZURE_OPENAI_ENDPOINT string = openAi.properties.endpoint
 output AZURE_OPENAI_DEPLOYMENT string = openAiDeployment.name
 output AZURE_OPENAI_EMBEDDING_DEPLOYMENT string = openAiEmbeddingDeployment.name
-output AZURE_COSMOS_ENDPOINT string = mockMode ? '' : cosmosAccount.properties.documentEndpoint
-output AZURE_COSMOS_DATABASE string = mockMode ? 'frontdoor' : cosmosDatabase.name
+output AZURE_COSMOS_ENDPOINT string = mockMode ? '' : cosmosAccount!.properties.documentEndpoint
+output AZURE_COSMOS_DATABASE string = mockMode ? 'frontdoor' : cosmosDatabase!.name
 output AZURE_SEARCH_ENDPOINT string = 'https://${searchService.name}.search.windows.net'
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer
 output AZURE_CONTAINER_ENV_ID string = containerAppEnv.id

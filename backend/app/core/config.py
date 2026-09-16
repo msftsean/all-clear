@@ -41,6 +41,14 @@ class Settings(BaseSettings):
     allowed_origins: list[str] = Field(
         default=["http://localhost:5173", "http://localhost:3000"]
     )
+    admin_api_token: str = Field(
+        default="",
+        description="Shared secret required for admin, transcript, capstone, and coach-only routes",
+    )
+    phone_webhook_secret: str = Field(
+        default="",
+        description="Shared secret required on live ACS/Event Grid webhook requests",
+    )
 
     # ==========================================================================
     # Azure OpenAI Settings
@@ -386,7 +394,17 @@ class Settings(BaseSettings):
             missing.append("AZURE_COSMOS_ENDPOINT")
         if not self.azure_search_endpoint:
             missing.append("AZURE_SEARCH_ENDPOINT")
+        if not self.phone_callback_base_url and self.phone_enabled:
+            missing.append("PHONE_CALLBACK_BASE_URL")
         return missing
+
+    def live_mode_blockers(self) -> list[str]:
+        """Known unimplemented live-mode controls that must fail closed."""
+        if self.use_mock_services:
+            return []
+        return [
+            "Durable Cosmos audit log is not implemented; live mode would lose audit records."
+        ]
 
     @property
     def realtime_endpoint(self) -> str:

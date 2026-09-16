@@ -13,6 +13,9 @@ on:
     paths:
       - 'hackathon-site/**'
 
+permissions:
+  contents: read
+
 jobs:
   build_and_deploy:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')

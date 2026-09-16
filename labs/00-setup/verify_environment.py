@@ -5,6 +5,7 @@ Environment verification script for the All Clear boot camp.
 Checks all required tools and configurations are in place before starting.
 """
 
+import argparse
 import io
 import json
 import os
@@ -137,50 +138,79 @@ def check_docker() -> tuple[str, str, bool]:
     return "pass", "Docker Desktop running", True
 
 
-def check_env_file() -> tuple[str, str, bool]:
-    """Check .env file exists and has required variables."""
-    # Look for .env in project root (two levels up from this script)
+def _project_root() -> Path:
+    """Return the repository root."""
     script_dir = Path(__file__).resolve().parent
-    project_root = script_dir.parent.parent
-    env_path = project_root / ".env"
+    return script_dir.parent.parent
 
-    required_vars = [
-        "AZURE_OPENAI_ENDPOINT",
-        "AZURE_OPENAI_API_KEY",
-        "AZURE_OPENAI_DEPLOYMENT_NAME",
-    ]
 
-    optional_vars = [
-        "AZURE_SEARCH_ENDPOINT",
-        "AZURE_SEARCH_KEY",
-    ]
-
-    if not env_path.exists():
-        # Check for .env.example
-        example_path = project_root / ".env.example"
-        if example_path.exists():
-            return "warn", f".env not found (copy from .env.example)", False
-        return "warn", ".env not found (using mock mode)", False
-
-    # Read and parse .env file
+def _read_env_file(env_path: Path) -> dict[str, str]:
+    """Read a simple KEY=VALUE dotenv file."""
     env_vars = {}
-    with open(env_path, "r") as f:
+    if not env_path.exists():
+        return env_vars
+    with open(env_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#") and "=" in line:
                 key, _, value = line.partition("=")
                 env_vars[key.strip()] = value.strip().strip('"').strip("'")
+    return env_vars
 
-    # Check for missing required variables
-    missing = []
-    for var in required_vars:
-        if var not in env_vars or not env_vars[var]:
-            missing.append(var)
+
+def _truthy(value: str | None) -> bool:
+    return (value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def check_local_env_file() -> tuple[str, str, bool]:
+    """Check local/mock env posture without requiring Azure secrets."""
+    env_path = _project_root() / "backend" / ".env"
+    env_vars = _read_env_file(env_path)
+
+    if not env_path.exists():
+        return "warn", "backend/.env not found; post-create or npm run reset:workshop will create it", True
+
+    mock_mode = env_vars.get("MOCK_MODE") or os.environ.get("MOCK_MODE")
+    use_mock_mode = env_vars.get("USE_MOCK_MODE") or os.environ.get("USE_MOCK_MODE")
+    environment = env_vars.get("ENVIRONMENT") or os.environ.get("ENVIRONMENT")
+
+    if _truthy(mock_mode) or _truthy(use_mock_mode) or environment == "test":
+        return "pass", "backend/.env is configured for local/mock first success", True
+
+    return "warn", "backend/.env is not mock-mode; set MOCK_MODE=true for Lab 00", True
+
+
+def check_azure_env_file() -> tuple[str, str, bool]:
+    """Check live Azure env variables for the optional facilitator path."""
+    env_path = _project_root() / "backend" / ".env"
+    env_vars = {**_read_env_file(env_path), **os.environ}
+
+    required_vars = [
+        "AZURE_OPENAI_ENDPOINT",
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_DEPLOYMENT",
+        "AZURE_SEARCH_ENDPOINT",
+        "AZURE_SEARCH_KEY",
+        "ADMIN_API_TOKEN",
+    ]
+
+    optional_vars = [
+        "AZURE_COSMOS_ENDPOINT",
+        "AZURE_COSMOS_KEY",
+        "PHONE_WEBHOOK_SECRET",
+        "PHONE_CALLBACK_BASE_URL",
+    ]
+
+    missing = [var for var in required_vars if not env_vars.get(var)]
 
     if missing:
-        return "warn", f".env missing {', '.join(missing)} (using mock mode)", False
+        return "fail", f"live Azure env missing {', '.join(missing)}", False
 
-    return "pass", ".env configured with Azure credentials", True
+    missing_optional = [var for var in optional_vars if not env_vars.get(var)]
+    if missing_optional:
+        return "warn", f"Azure env ready; optional unset: {', '.join(missing_optional)}", True
+
+    return "pass", "backend/.env configured for live Azure facilitator path", True
 
 
 def check_health_endpoint() -> tuple[str, str, bool]:
@@ -216,19 +246,35 @@ def print_result(status: str, message: str) -> None:
 
 def main() -> int:
     """Run all environment checks and report results."""
-    print("\nAll Clear Boot Camp - Environment Verification\n")
+    parser = argparse.ArgumentParser(description="All Clear environment verification")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--local", action="store_true", help="credential-free local/mock preflight")
+    mode.add_argument("--azure", action="store_true", help="facilitator live Azure preflight")
+    args = parser.parse_args()
+
+    azure_mode = args.azure
+    mode_label = "Azure facilitator preflight" if azure_mode else "Local mock preflight"
+
+    print(f"\nAll Clear Boot Camp - {mode_label}\n")
     print("=" * 50)
     print()
 
     checks = [
         ("Python", check_python_version),
         ("Node.js", check_node_version),
-        ("Azure CLI", check_azure_cli),
-        ("Azure Developer CLI", check_azd),
-        ("Docker", check_docker),
-        ("Environment File", check_env_file),
+        ("Environment File", check_local_env_file),
         ("Health Endpoint", check_health_endpoint),
     ]
+    if azure_mode:
+        checks = [
+            ("Python", check_python_version),
+            ("Node.js", check_node_version),
+            ("Azure CLI", check_azure_cli),
+            ("Azure Developer CLI", check_azd),
+            ("Docker", check_docker),
+            ("Environment File", check_azure_env_file),
+            ("Health Endpoint", check_health_endpoint),
+        ]
 
     results = []
     for name, check_func in checks:
@@ -250,7 +296,7 @@ def main() -> int:
 
     print()
     if failed == 0:
-        print(f"Ready for boot camp! ({passed}/{total} checks passed)")
+        print(f"Ready for {mode_label.lower()}! ({passed}/{total} checks passed)")
         return 0
     else:
         print(f"Some issues found ({passed}/{total} checks passed)")

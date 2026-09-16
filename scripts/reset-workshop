@@ -1,0 +1,7 @@
+#!/bin/bash
+# Compatibility wrapper for coaches who look for scripts/reset-workshop.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$SCRIPT_DIR/reset-workshop.sh" "$@"

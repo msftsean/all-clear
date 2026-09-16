@@ -28,21 +28,25 @@ echo ">>> Installing frontend dependencies..."
 cd "$REPO_ROOT/frontend" || { echo "ERROR: frontend/ not found"; exit 1; }
 npm install
 
-# --- Playwright browser (E2E) — optional; never fail setup -------------------
+# --- Playwright browser (E2E) — opt-in; never block first success -------------
 echo ""
-echo ">>> Installing Playwright browser (chromium) for E2E tests..."
-case "$(uname -s 2>/dev/null || echo unknown)" in
-  MINGW*|MSYS*|CYGWIN*)
-    echo "WARN: Skipping Playwright Linux dependency install on Windows Git Bash (E2E is optional)."
-    ;;
-  *)
-    if command -v timeout >/dev/null 2>&1; then
-      timeout 180s npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped or timed out (E2E is optional)."
-    else
-      npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped (E2E is optional)."
-    fi
-    ;;
-esac
+if [ "${INSTALL_PLAYWRIGHT_BROWSERS:-false}" = "true" ]; then
+  echo ">>> Installing Playwright browser (chromium) for E2E tests..."
+  case "$(uname -s 2>/dev/null || echo unknown)" in
+    MINGW*|MSYS*|CYGWIN*)
+      echo "WARN: Skipping Playwright Linux dependency install on Windows Git Bash (E2E is optional)."
+      ;;
+    *)
+      if command -v timeout >/dev/null 2>&1; then
+        timeout 180s npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped or timed out (E2E is optional)."
+      else
+        npx playwright install --with-deps chromium || echo "WARN: Playwright browser install skipped (E2E is optional)."
+      fi
+      ;;
+  esac
+else
+  echo ">>> Skipping Playwright browser install (set INSTALL_PLAYWRIGHT_BROWSERS=true for E2E authoring)."
+fi
 
 # --- Environment files: mock mode by default (runs fully offline) ------------
 echo ""
@@ -76,9 +80,8 @@ echo "Quick start (two terminals):"
 echo "  cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 echo "  cd frontend && npm run dev"
 echo ""
-echo "Verify the offline pipeline (no Azure):"
-echo "  npm run readiness"
-echo "  npm run quickstart:mock"
+echo "Prove the offline pipeline immediately (no Azure):"
+echo "  npm run first-success"
 echo ""
 echo "Labs: start at labs/00-setup, then labs/01-understanding-agents -> labs/05-agent-orchestration."
 echo ""

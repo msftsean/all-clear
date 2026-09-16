@@ -13,8 +13,8 @@ from app.models.enums import ActionStatus, Department, EscalationReason, Priorit
 
 CRISIS_MESSAGE = (
     "It sounds like you may be going through something serious, and you deserve "
-    "to talk to a real person right now. I'm connecting you with a counselor. "
-    "If you are in immediate danger, call 911 or campus safety. You can also "
+    "to talk to a real person right now. I am flagging this for a human dispatcher now. "
+    "If you are in immediate danger, call 911. You can also "
     "reach the 988 Suicide & Crisis Lifeline by calling or texting 988."
 )
 

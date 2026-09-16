@@ -25,14 +25,14 @@ export default function ResponsibleAI() {
               <h3 className="font-semibold text-xl text-dark-text">Transparency</h3>
             </div>
             <p className="text-ink/75 mb-3">
-              Every decision is auditable. Every tool call, routing decision, and escalation is logged 
-              with input_modality, session ID, and filtered content.
+              The workshop path exposes inspectable traces for routing and escalation decisions. Demo
+              transcripts are admin-scoped and PII-redacted before display.
             </p>
             <ul className="text-sm text-ink/70 space-y-1">
-              <li>• Session traces for all interactions</li>
+              <li>• Session traces for local/mock interactions</li>
               <li>• Input modality logged (text/voice)</li>
-              <li>• PII-filtered transcripts only</li>
-              <li>• Tool call arguments and results</li>
+              <li>• PII-filtered transcript display</li>
+              <li>• Live mode must configure durable audit storage</li>
             </ul>
           </div>
 
@@ -74,7 +74,8 @@ export default function ResponsibleAI() {
         <div className="card mb-8">
           <h3 className="font-semibold text-lg mb-4 text-dark-text">Audit Trail Visualization</h3>
           <p className="text-sm text-ink/70 mb-4">
-            What a log entry looks like — every interaction is traceable:
+            What a production log entry should look like. The local workshop uses in-memory mock stores;
+            live mode fails closed unless durable audit storage is configured:
           </p>
           <pre className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-xs font-mono">
 {`{
@@ -111,7 +112,7 @@ export default function ResponsibleAI() {
         <div className="card mb-8">
           <h3 className="font-semibold text-lg mb-4 text-dark-text">Health Check Dashboard</h3>
           <p className="text-sm text-ink/70 mb-4">
-            What administrators see — service status at a glance:
+            What administrators should verify before a live demo — mock mode is intentionally explicit:
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
@@ -132,7 +133,7 @@ export default function ResponsibleAI() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
               <div className="text-2xl mb-1">✅</div>
               <div className="text-xs font-semibold text-ink">Session Store</div>
-              <div className="text-xs text-green-600">Operational</div>
+              <div className="text-xs text-green-600">Mock or Cosmos</div>
             </div>
           </div>
           <div className="mt-4 p-3 bg-brand/5 rounded border border-blue-200">
@@ -140,8 +141,8 @@ export default function ResponsibleAI() {
               Voice Availability: <span className="text-brand">GET /api/realtime/availability</span>
             </div>
             <div className="text-xs text-ink/70">
-              Returns <code>{"{ \"available\": true, \"reason\": \"\" }"}</code> when voice is enabled; 
-              frontend hides mic button when unavailable
+              Returns availability only when a realtime deployment is configured; frontend hides the
+              mic button in mock/offline mode.
             </div>
           </div>
         </div>
@@ -178,21 +179,23 @@ export default function ResponsibleAI() {
             <strong>University IT teams ask:</strong> "How do we know what the AI is doing?"
           </p>
           <p className="mb-3">
-            The answer is <strong>architectural transparency</strong>. Every tool call, every routing decision, 
-            every escalation is logged with:
+            The answer is <strong>architectural transparency</strong>: keep the workshop traceable, and
+            require durable audit logging before a live consequential-use deployment. Routing and
+            escalation records should include:
           </p>
           <ul className="list-disc pl-6 mb-3 space-y-1">
             <li>The modality (voice or text)</li>
             <li>The session ID (for tracing conversations)</li>
-            <li>PII-filtered content (no raw audio, no SSNs, no sensitive data)</li>
+            <li>PII-filtered content (no raw audio, no SSNs, no known sensitive identifiers)</li>
             <li>Tool execution time and results</li>
             <li>Department routing and priority assignment</li>
           </ul>
           <p className="mb-3">
-            This isn't a "trust us" model. It's a "verify everything" model. Administrators can:
+            This is not a production attestation by itself. With durable audit storage enabled,
+            administrators should be able to:
           </p>
           <ul className="list-disc pl-6 mb-3 space-y-1">
-            <li>Audit any session by ID</li>
+            <li>Audit scoped sessions by ID</li>
             <li>Search logs for specific tool calls or departments</li>
             <li>Track escalation patterns and response times</li>
             <li>Monitor PII filtering effectiveness</li>

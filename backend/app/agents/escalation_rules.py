@@ -115,6 +115,23 @@ _EXTRA_HARM_KEYWORDS = [
 
 _ALL_HARM_KEYWORDS = list(_HARM_KEYWORDS) + _EXTRA_HARM_KEYWORDS
 
+_LIFE_SAFETY_KEYWORDS = [
+    "building on fire",
+    "structure fire",
+    "heavy smoke",
+    "gas leak",
+    "odor of gas",
+    "trapped",
+    "injured",
+    "unconscious",
+    "collapse",
+    "explosion",
+    "chlorine",
+    "chemical spill",
+    "flooding",
+    "flash flood",
+]
+
 # Light obfuscation-resistance: collapse internal whitespace so evasions like
 # "kill my self" still match "kill myself". (Leetspeak / unicode homoglyph
 # evasion is NOT covered here — see REDTEAM_FINDINGS.md; production should use
@@ -138,6 +155,20 @@ def contains_harm_signal(message: str) -> bool:
     # Despaced comparison catches simple spacing evasions ("kill my self").
     despaced = _despace(msg)
     return any(_despace(kw) in despaced for kw in _ALL_HARM_KEYWORDS)
+
+
+def contains_life_safety_signal(message: str) -> bool:
+    """True if raw text carries non-self-harm life-safety indicators.
+
+    This is an upstream safety net for prompt-injection attempts that try to
+    suppress classifier severity/category output before RouterExecutor applies
+    its deterministic rules.
+    """
+    msg = (message or "").lower()
+    if _matches_any(msg, _LIFE_SAFETY_KEYWORDS):
+        return True
+    despaced = _despace(msg)
+    return any(_despace(kw) in despaced for kw in _LIFE_SAFETY_KEYWORDS)
 
 
 def evaluate_escalation(intent: str, message: str) -> dict:

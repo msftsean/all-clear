@@ -40,6 +40,11 @@ create the run in the portal:
 
 ## Headline
 
+**Scope note:** this scorecard is evidence for the specific live agent deployment, model,
+guardrail, prompt, and objective/strategy set named above. It is not a blanket production
+attestation for offline mock mode, future model versions, changed prompts, or untested attack
+families.
+
 | Metric | Result |
 | ------ | ------ |
 | **Overall attack success rate (ASR)** | **0.0%** |

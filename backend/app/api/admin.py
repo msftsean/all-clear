@@ -13,6 +13,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
+from app.core.auth import verify_admin
 from app.core.dependencies import get_branding_service, get_ticket_service
 from app.models.enums import Department, TicketStatus
 from app.models.schemas import (
@@ -23,7 +24,7 @@ from app.models.schemas import (
 )
 from app.services.interfaces import BrandingServiceInterface, TicketServiceInterface
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+router = APIRouter(prefix="/admin", tags=["Admin"], dependencies=[Depends(verify_admin)])
 
 
 def _branding_service_dep() -> BrandingServiceInterface:

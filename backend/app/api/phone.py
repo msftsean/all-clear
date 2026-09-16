@@ -4,14 +4,13 @@ import inspect
 import logging
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+from app.core.auth import verify_phone_webhook
 from app.core.dependencies import get_phone_service, get_settings
 from app.models.phone_schemas import PhoneHealthResponse
 from app.services.interfaces import PhoneServiceInterface
-
-settings = get_settings()
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +30,7 @@ async def _call(method, *args, **kwargs):
     return result
 
 
-@router.post("/incoming")
+@router.post("/incoming", dependencies=[Depends(verify_phone_webhook)])
 async def handle_incoming_call(request: Request) -> JSONResponse:
     """Event Grid webhook for ACS IncomingCall events.
 
@@ -51,6 +50,7 @@ async def handle_incoming_call(request: Request) -> JSONResponse:
         raise HTTPException(status_code=400, detail="Empty event array")
 
     # Process the first event in the batch
+    settings = get_settings()
     event = events[0]
     event_type = event.get("eventType") or event.get("type", "")
 
@@ -82,20 +82,18 @@ async def handle_incoming_call(request: Request) -> JSONResponse:
             logger.warning("Phone: IncomingCall event missing incomingCallContext")
             return JSONResponse(content={"status": "skipped", "reason": "missing_context"})
 
-        # ACS requires a publicly-reachable HTTPS callback URL.
-        # Container Apps terminate TLS at the ingress, so request.base_url
-        # yields an internal http:// URL.  Prefer the explicit config; fall
-        # back to reconstructing from forwarded headers.
+        # ACS requires a publicly-reachable HTTPS callback URL. Live mode must
+        # use explicit config; never derive callbacks from attacker-controlled
+        # Host / X-Forwarded-Host headers.
         if settings.phone_callback_base_url:
             base = settings.phone_callback_base_url.rstrip("/")
-        else:
-            scheme = request.headers.get("x-forwarded-proto", "https")
-            host = (
-                request.headers.get("x-forwarded-host")
-                or request.headers.get("host")
-                or ""
+        elif not settings.use_mock_services:
+            raise HTTPException(
+                status_code=503,
+                detail="PHONE_CALLBACK_BASE_URL is required when phone is live.",
             )
-            base = f"{scheme}://{host}" if host else str(request.base_url).rstrip("/")
+        else:
+            base = str(request.base_url).rstrip("/")
         callback_url = f"{base}/api/phone/callbacks"
         logger.info(f"Phone: using callback URL: {callback_url}")
 
@@ -124,7 +122,7 @@ async def handle_incoming_call(request: Request) -> JSONResponse:
     return JSONResponse(content={"status": "unhandled", "event_type": event_type})
 
 
-@router.post("/callbacks")
+@router.post("/callbacks", dependencies=[Depends(verify_phone_webhook)])
 async def handle_call_callbacks(request: Request) -> JSONResponse:
     """Call Automation callback endpoint.
 
