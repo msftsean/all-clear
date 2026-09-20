@@ -90,6 +90,19 @@
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
 
+### Incident-Triage and Safety Constraints *(mandatory when behavior touches the pipeline)*
+
+- **Authority impact**: State whether QueryAgent, RouterExecutor, or ActionAgent
+  changes, and prove that no component gains an unauthorized capability.
+- **Escalation impact**: State how SEV1, statutory-clock, PII, safety/sentiment,
+  low-confidence, and explicit-human-request triggers are preserved.
+- **Data impact**: State the PII, audit, retention, embedding, and external-service
+  effects.
+- **Mock-mode impact**: State how the capability is exercised without Azure
+  credentials.
+- **Grounding impact**: State how factual output is cited or how uncertainty is
+  disclosed.
+
 *Example of marking unclear requirements:*
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
@@ -112,4 +125,6 @@
 - **SC-001**: [Measurable metric, e.g., "Users can complete account creation in under 2 minutes"]
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
-- **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+- **SC-004**: [Business metric, e.g., "Reduce repeated incident reports by 50%"]
+- **SC-005**: [Verification command or deterministic check proving the safety and
+  authority constraints above]

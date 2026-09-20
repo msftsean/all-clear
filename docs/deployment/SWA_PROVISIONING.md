@@ -58,7 +58,7 @@ publish, using the matching name + secret from this table:
    **Create**.
 2. **Basics** tab:
    - **Subscription:** Cloudforce Sponsorship (`098ef2f6-cea4-4839-8093-ef90622e1b8c`).
-   - **Resource Group:** `rg-ajcu-hackathon` (same RG as the hackathon site).
+   - **Resource Group:** `rg-allclear` (or the existing All Clear resource group).
    - **Name:** the resource name from the table above (e.g. `swa-allclear-coach`).
    - **Plan type:** **Free** is fine for the public **Workshop** and **Coach** sites.
      Choose **Standard** for **Docs** (it uses a custom Entra app registration — see
@@ -126,7 +126,7 @@ The sections below do exactly the same thing from a shell with Azure access.
 ```bash
 az login
 az account set --subscription 098ef2f6-cea4-4839-8093-ef90622e1b8c   # Cloudforce Sponsorship
-RG=rg-ajcu-hackathon                                                  # same RG as the hackathon SWA
+RG=rg-allclear                                                        # existing All Clear resource group
 LOCATION=eastus2
 ```
 

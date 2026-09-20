@@ -157,13 +157,13 @@ async def test_update_session(session_store: SessionStoreInterface) -> None:
     session = _make_session()
     await session_store.create_session(session)
 
-    session.topic_summary = "Financial Aid inquiry"
+    session.topic_summary = "Flood response inquiry"
     session.incident_ids = ["AC-001"]
     await session_store.update_session(session)
 
     fetched = await session_store.get_session(session.session_id)
     assert fetched is not None
-    assert fetched.topic_summary == "Financial Aid inquiry"
+    assert fetched.topic_summary == "Flood response inquiry"
     assert "AC-001" in fetched.incident_ids
 
 
