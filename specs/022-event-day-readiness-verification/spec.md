@@ -99,6 +99,43 @@ no broken links, and no visual regressions versus the last verified state.
 
 ---
 
+### User Story 3 - Live phone-call demo path is provisioned and verified (Priority: P2, added mid-session)
+
+For the Thursday demo, the facilitator wants to place a **real live phone
+call** to the deployed app (not just the mock-mode simulation) and see the
+transcript appear on `/phone`. This requires a live Azure Communication
+Services (ACS) phone number and `MOCK_MODE=false` for the phone subsystem,
+which is a materially different (and cost-bearing) configuration from the
+mock-mode deployment used for Stories 1 and 2.
+
+**Why this priority**: Explicitly requested by the user ("to test the calling
+feature, you'll need to provision a phone number and setup acs"). It's P2
+because it's an additive stretch capability layered on top of the P1
+core-readiness gates, not a blocker for them.
+
+**Independent Test**: With a purchased ACS number wired into the live
+deployment, place a real call to that number and confirm the backend's Call
+Automation webhook receives it and a transcript renders on `/phone`.
+
+**Acceptance Scenarios**:
+
+1. **Given** a live `azd`-deployed environment, **When** an ACS phone number
+   is purchased and `MOCK_MODE` is set to `false` with the number wired into
+   the bicep `acsPhoneNumber` param, **Then** the backend's
+   `get_phone_service()` resolves to `AzurePhoneService` instead of
+   `MockPhoneService` (per `backend/app/core/config.py`'s
+   `_auto_disable_features` validator).
+2. **Given** that configuration, **When** someone calls the purchased number,
+   **Then** ACS's Event Grid `IncomingCall` subscription (only created when
+   not in mock mode, per `infra/main.bicep`) delivers the event to the
+   backend's phone webhook and a live transcript appears on `/phone`.
+3. **Given** this is a purchased, billable resource, **When** testing is
+   complete, **Then** the number is released/cleaned up rather than left
+   running indefinitely, per the repo's existing convention (
+   `labs/06-deploy-with-azd/exercises/06b-azure-deployment.md`: *"purchase and
+   configure its own ACS number; ... must never reuse another deployment's
+   number"*).
+
 ### Edge Cases
 
 - What happens if `azd up` fails partway (quota, RBAC, provider registration,
