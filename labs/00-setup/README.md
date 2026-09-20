@@ -52,7 +52,7 @@ Before starting this lab, ensure you have:
 
 | ✅ Requirement       | 📝 Details                                      |
 | -------------------- | ----------------------------------------------- |
-| 🐙 GitHub Account    | With access to the EstablishedCorp/all-clear repo |
+| 🐙 GitHub Account    | With access to the Public-sector-hacks-Org/all-clear repo |
 | 🤖 GitHub Copilot    | Active subscription (required for labs)         |
 | ☁️ Azure Credentials | Provided by your instructor for labs 04, 05, 07 |
 | 🌐 Web Browser       | Chrome, Edge, or Firefox (latest version)       |
@@ -64,7 +64,7 @@ Before starting this lab, ensure you have:
 
 GitHub Codespaces provides:
 
-- ✅ **Pre-configured environment** - Python 3.11, Node.js 18, all dependencies ready
+- ✅ **Pre-configured environment** - Python 3.11, Node.js 18, Docker, Azure CLI, azd, GitHub CLI, and all dependencies ready
 - ✅ **Consistent across all participants** - No "works on my machine" issues
 - ✅ **Cloud-based** - Access from any device with a browser
 - ✅ **Integrated with VS Code** - Full IDE experience in the browser
@@ -82,7 +82,7 @@ First-time participants should keep the lab identity isolated from personal acco
 
 1. Open an **InPrivate/Incognito** browser window.
 2. Go to <https://github.com> and sign in with the **CloudForce GitHub account** your instructor provided.
-3. Open <https://github.com/EstablishedCorp/all-clear>.
+3. Open <https://github.com/Public-sector-hacks-Org/all-clear>.
 4. Select **Code → Codespaces → Create codespace on main**.
 5. When the Codespace opens, verify GitHub CLI authentication in the terminal:
 
@@ -113,7 +113,7 @@ azd env set AZURE_SUBSCRIPTION_ID <CLOUDFORCE_SUBSCRIPTION_ID>
 
 ### 🔹 Step 1: Launch GitHub Codespaces
 
-1. 🔗 Navigate to the [all-clear repository](https://github.com/EstablishedCorp/all-clear) on GitHub
+1. 🔗 Navigate to the [all-clear repository](https://github.com/Public-sector-hacks-Org/all-clear) on GitHub
 2. 🟢 Click the green **Code** button
 3. 📑 Select the **Codespaces** tab
 4. ➕ Click **Create codespace on main**

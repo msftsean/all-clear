@@ -13,12 +13,12 @@ services:
       - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
       - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
       - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT:-gpt-4.1}
-      - COSMOS_DB_ENDPOINT=${COSMOS_DB_ENDPOINT:-}
-      - COSMOS_DB_KEY=${COSMOS_DB_KEY:-}
+      - AZURE_COSMOS_ENDPOINT=${AZURE_COSMOS_ENDPOINT:-}
+      - AZURE_COSMOS_KEY=${AZURE_COSMOS_KEY:-}
       - SERVICENOW_INSTANCE=${SERVICENOW_INSTANCE:-}
       - SERVICENOW_API_KEY=${SERVICENOW_API_KEY:-}
       - AZURE_SEARCH_ENDPOINT=${AZURE_SEARCH_ENDPOINT:-}
-      - AZURE_SEARCH_API_KEY=${AZURE_SEARCH_API_KEY:-}
+      - AZURE_SEARCH_KEY=${AZURE_SEARCH_KEY:-}
     volumes:
       - ./backend:/app
     healthcheck:
@@ -44,4 +44,4 @@ services:
 
 networks:
   default:
-    name: frontdoor-network
+    name: all-clear-network

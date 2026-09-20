@@ -17,7 +17,7 @@ export default function Layout() {
         <header className="relative bg-cream border-b border-deep-cream">
           <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
             <Link to="/" className="font-serif text-xl font-bold text-maroon hover:text-gold transition-colors">
-              47 Doors
+              All Clear
             </Link>
             <nav aria-label="Primary" className="hidden sm:flex gap-4 text-sm font-medium">
               {HUB_LINKS.map((link) => (

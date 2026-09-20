@@ -1,6 +1,6 @@
 # Register All Clear as a Foundry agent
 
-Registers All Clear as a Foundry **prompt agent** in the `allclear-redteam` project so it
+Registers All Clear as a Foundry **prompt agent** in your student-owned project so it
 becomes a selectable target in the New Foundry **Red team** and **Evaluation** _Create_ flows,
 and for the `microsoft-foundry` skill's MCP eval tools.
 
@@ -30,19 +30,20 @@ For the **higher-fidelity safety test** that exercises the real guardrails, keep
 
 ```powershell
 az login
-$env:AZURE_AI_PROJECT_ENDPOINT = "https://allclear-foundry-kt5fw24guxoxy.services.ai.azure.com/api/projects/allclear-redteam"
+$env:AZURE_AI_PROJECT_ENDPOINT = "https://<your-foundry-subdomain>.services.ai.azure.com/api/projects/<your-project-name>"
 
 pip install -r requirements.txt
-python register_agent.py            # create/update the agent version
+python register_agent.py --model "<your-model-deployment>"  # create/update with your deployment
 python register_agent.py --list     # list existing versions
 ```
 
-Auth uses `DefaultAzureCredential`. The signed-in identity needs the Foundry project's
-data-plane role (**Azure AI User** / **Azure AI Developer**) to create agent versions.
+The endpoint is the value printed by `safety/foundry-project/create_foundry_project.ps1`, or an
+existing project endpoint supplied by your instructor. Auth uses `DefaultAzureCredential`; the
+signed-in identity needs **Azure AI User** or **Azure AI Developer** on the Foundry project.
 
 ## Where to use the registered agent
 
 - **Foundry portal** (New Foundry ON): **Red team** or **Evaluation** tab → **Create** →
   pick target **Agent** → `all-clear-triage`.
-- **microsoft-foundry skill** (from VS Code with Azure MCP): the `observe` / red team workflows
-  resolve this agent via [`../../.foundry/agent-metadata.yaml`](../../.foundry/agent-metadata.yaml).
+- **microsoft-foundry skill** (from VS Code with Azure MCP): configure the local metadata from
+  [`../../.foundry/agent-metadata.local.yaml.example`](../../.foundry/agent-metadata.local.yaml.example).

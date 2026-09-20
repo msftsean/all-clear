@@ -4,7 +4,7 @@
 [![Currency](https://img.shields.io/badge/currency-USD-green?style=flat-square)](.)
 [![Updated](https://img.shields.io/badge/updated-January%202026-orange?style=flat-square)](.)
 
-This document provides detailed cost estimates for deploying the University Front Door Support Agent on Azure.
+This document provides detailed cost estimates for deploying All Clear on Azure.
 
 ---
 
@@ -436,13 +436,13 @@ Use Azure Dev/Test subscriptions for non-production:
 ```bash
 # 📊 Create a budget alert for the resource group
 az consumption budget create \
-  --budget-name frontdoor-budget \
+  --budget-name allclear-budget \
   --amount 500 \
   --category Cost \
   --time-grain Monthly \
   --start-date 2024-01-01 \
   --end-date 2024-12-31 \
-  --resource-group frontdoor-rg
+  --resource-group allclear-rg
 ```
 
 ---

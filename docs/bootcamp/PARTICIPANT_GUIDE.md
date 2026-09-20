@@ -76,7 +76,7 @@ Your progress will be evaluated on these deliverables:
 
 | Resource | URL |
 |----------|-----|
-| Repository | `https://github.com/EstablishedCorp/all-clear` |
+| Repository | `https://github.com/Public-sector-hacks-Org/all-clear` |
 | API Documentation | `http://localhost:8000/docs` (after starting backend) |
 | Azure Portal | `https://portal.azure.com` |
 | Azure OpenAI Studio | `https://oai.azure.com` |

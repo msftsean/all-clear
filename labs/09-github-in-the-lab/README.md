@@ -12,7 +12,7 @@ This lab operationalizes the workshop path: fork, run Actions, make one bounded 
 
 ## Step 1: Fork and run CI
 
-1. Fork `EstablishedCorp/all-clear`.
+1. Fork `Public-sector-hacks-Org/all-clear`.
 2. Push any branch to your fork.
 3. Open **Actions** and run `smoke-test.yml`.
 
@@ -51,4 +51,3 @@ $env:ALL_CLEAR_LAB09_COMPLETE="true"; python -m pytest -q test_starter_red_to_gr
 ```bash
 ALL_CLEAR_LAB09_COMPLETE=true python -m pytest -q test_starter_red_to_green.py
 ```
-

@@ -1,9 +1,9 @@
 {
-  "name": "47doors-coach-site",
+  "name": "all-clear-facilitator-guide",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Coach prep companion site for the 47 Doors AJCU hackathon — how to prepare for and help participants",
+  "description": "All Clear incident-triage facilitator guide",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

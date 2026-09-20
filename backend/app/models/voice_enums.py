@@ -1,4 +1,4 @@
-"""Voice-specific enumerations for the 47 Doors voice interaction feature."""
+"""Voice-specific enumerations for All Clear voice interaction."""
 
 from enum import Enum
 

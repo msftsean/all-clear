@@ -1,104 +1,28 @@
 import { Link } from 'react-router-dom';
 
-const intents = [
-  {
-    name: 'Financial Aid',
-    key: 'financial_aid',
-    office: 'Bursar / Financial Aid',
-    topics: 'Cost, scholarships, aid packages, billing, work-study',
-  },
-  {
-    name: 'Registrar',
-    key: 'registrar',
-    office: "Registrar's Office",
-    topics: 'Registration, transcripts, enrollment, course changes, graduation',
-  },
-  {
-    name: 'Campus Ministry',
-    key: 'campus_ministry',
-    office: 'Office of Campus Ministry',
-    topics: 'Liturgy, sacraments, retreats, chaplaincy, service & immersion, interfaith life',
-  },
-  {
-    name: 'IT',
-    key: 'it',
-    office: 'University IT',
-    topics: 'Accounts, passwords, Wi-Fi, devices, learning systems',
-  },
-  {
-    name: 'Student Wellness',
-    key: 'student_wellness',
-    office: 'Counseling & Health Services',
-    topics: 'Mental health, medical, crisis, accessibility, basic needs',
-  },
-  {
-    name: 'General / Mission',
-    key: 'general',
-    office: 'Front-desk pool',
-    topics: 'Anything else; mission and student-life questions',
-  },
+const queues = [
+  { name: 'Identity Security', key: 'identity_security', owner: 'Security on-call', topics: 'Credential attacks, access anomalies, account containment' },
+  { name: 'Payments Reliability', key: 'payments_reliability', owner: 'Payments incident lead', topics: 'Checkout, transaction errors, release regressions' },
+  { name: 'Privacy & Security', key: 'privacy_security', owner: 'Privacy response lead', topics: 'Possible exposure, sensitive evidence, external notifications' },
+  { name: 'Network Operations', key: 'network_operations', owner: 'Network on-call', topics: 'Connectivity, policy rollouts, site telemetry gaps' },
+  { name: 'Safety Response', key: 'safety_response', owner: 'Safety on-call', topics: 'Credible threats, immediate risk, restricted case handling' },
+  { name: 'Platform Observability', key: 'platform_observability', owner: 'Platform on-call', topics: 'Alert noise, dependency health, error-budget signals' },
 ];
 
 export default function Intents() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl sm:text-4xl font-serif font-bold text-maroon gold-rule">
-        The Six Doors
-      </h1>
-
-      {/* Desktop table */}
+      <p className="font-mono text-sm uppercase tracking-[0.2em] text-gold">Ownership map</p>
+      <h1 className="mt-2 text-3xl sm:text-4xl font-serif font-bold text-maroon gold-rule">Response queues</h1>
+      <p className="mb-7 max-w-2xl text-ink/75">A queue is an accountable response team—not a mailbox. Triage selects one lead queue and records supporting responders when needed.</p>
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b-2 border-gold">
-              <th className="py-3 pr-4 font-serif text-maroon">Intent</th>
-              <th className="py-3 pr-4 font-mono text-sm text-gold">Key</th>
-              <th className="py-3 pr-4 font-serif text-maroon">Office</th>
-              <th className="py-3 font-serif text-maroon">Topics</th>
-            </tr>
-          </thead>
-          <tbody>
-            {intents.map((intent) => (
-              <tr key={intent.key} className="border-b border-deep-cream">
-                <td className="py-3 pr-4 font-semibold">{intent.name}</td>
-                <td className="py-3 pr-4 font-mono text-sm text-ink/60">
-                  {intent.key}
-                </td>
-                <td className="py-3 pr-4 text-ink/80">{intent.office}</td>
-                <td className="py-3 text-sm text-ink/70">{intent.topics}</td>
-              </tr>
-            ))}
-          </tbody>
+          <thead><tr className="border-b-2 border-gold"><th className="py-3 pr-4 font-serif text-maroon">Queue</th><th className="py-3 pr-4 font-mono text-sm text-gold">Key</th><th className="py-3 pr-4 font-serif text-maroon">Primary owner</th><th className="py-3 font-serif text-maroon">Typical signals</th></tr></thead>
+          <tbody>{queues.map((queue) => <tr key={queue.key} className="border-b border-deep-cream"><td className="py-3 pr-4 font-semibold">{queue.name}</td><td className="py-3 pr-4 font-mono text-sm text-ink/60">{queue.key}</td><td className="py-3 pr-4 text-ink/80">{queue.owner}</td><td className="py-3 text-sm text-ink/70">{queue.topics}</td></tr>)}</tbody>
         </table>
       </div>
-
-      {/* Mobile cards */}
-      <div className="sm:hidden space-y-4">
-        {intents.map((intent) => (
-          <div
-            key={intent.key}
-            className="bg-white rounded-xl border border-deep-cream p-4 shadow-sm"
-          >
-            <h3 className="font-serif font-bold text-maroon">{intent.name}</h3>
-            <p className="font-mono text-xs text-gold mt-0.5">{intent.key}</p>
-            <p className="text-sm text-ink/80 mt-1">{intent.office}</p>
-            <p className="text-xs text-ink/60 mt-2">{intent.topics}</p>
-          </div>
-        ))}
-      </div>
-
-      <p className="text-center text-ink/60 italic mt-8 max-w-lg mx-auto">
-        "Campus Ministry is a first-class peer to IT and the Registrar — not an afterthought."
-      </p>
-
-      <div className="text-center mt-8">
-        <Link
-          to="/"
-          className="text-maroon hover:text-gold transition-colors font-medium"
-        >
-          ← Back to all cards
-        </Link>
-      </div>
+      <div className="sm:hidden space-y-4">{queues.map((queue) => <article key={queue.key} className="bg-white rounded-xl border border-deep-cream p-4 shadow-sm"><h2 className="font-serif font-bold text-maroon">{queue.name}</h2><p className="font-mono text-xs text-gold mt-0.5">{queue.key}</p><p className="text-sm text-ink/80 mt-1">{queue.owner}</p><p className="text-xs text-ink/60 mt-2">{queue.topics}</p></article>)}</div>
+      <div className="text-center mt-8"><Link to="/" className="text-maroon hover:text-gold transition-colors font-medium">← Back to ClearBoard</Link></div>
     </div>
   );
 }

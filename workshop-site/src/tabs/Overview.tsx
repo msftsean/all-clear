@@ -1,81 +1,51 @@
 import CollapsibleNotes from '../components/CollapsibleNotes'
+import CalloutCard from '../components/CalloutCard'
+
+const outcomes = [
+  ['Name the objects', 'Distinguish the inbound signal, the real-world incident, and the report that links them.'],
+  ['Explain the decision', 'Read severity, queue, SLA, escalation, and dedup outcomes as an auditable contract.'],
+  ['Operate the surge', 'Use magnitude and ClearBoard to see many reports converge on fewer incidents.'],
+]
 
 export default function Overview() {
   return (
     <div role="tabpanel" id="overview-panel" aria-labelledby="overview-tab">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-semibold tracking-tight text-dark-text mb-2">
-          Trustworthy Agentic AI in Higher Education
-        </h2>
-        <p className="text-xl text-ink/70 mb-8">
-          A 45-minute executive briefing on building AI agents that earn institutional trust
+        <p className="mono-label text-ink/70 mb-3">Workshop brief / 45 minutes</p>
+        <h2 className="text-4xl font-semibold tracking-tight text-dark-text mb-4">Incident triage is a decision system</h2>
+        <p className="text-xl text-ink/70 mb-10">
+          All Clear preserves every incoming account, determines whether it describes a new or existing event, and gives operators a governed path from first signal to final resolution.
         </p>
 
-        <div className="bg-brand/5 border border-brand/20 p-6 rounded-xl shadow-sm mb-10">
-          <p className="text-lg font-medium text-dark-text">
-            This is not a chatbot demo. This is an architecture lesson.
-          </p>
+        <CalloutCard title="The central idea">
+          Many people can describe the same event. Preserve every signal, group reports around the correct incident, and let deterministic rules control operational consequences.
+        </CalloutCard>
+
+        <div className="grid md:grid-cols-3 gap-6 my-12">
+          {outcomes.map(([title, description], index) => (
+            <article className="card" key={title}>
+              <span className="mono-label text-ink/60">0{index + 1}</span>
+              <h3 className="font-semibold text-xl my-3 text-dark-text">{title}</h3>
+              <p className="text-ink/75">{description}</p>
+            </article>
+          ))}
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="card">
-            <div className="text-4xl mb-3">🚪</div>
-            <h3 className="font-semibold text-lg mb-2 text-dark-text">The Problem</h3>
-            <p className="text-ink/75">
-              Students don't know which of 47+ university portals to use for help. The routing problem is institutional, not individual.
-            </p>
-          </div>
-
-          <div className="card">
-            <div className="text-4xl mb-3">🤖</div>
-            <h3 className="font-semibold text-lg mb-2 text-dark-text">The Architecture</h3>
-            <p className="text-ink/75">
-              A three-agent pipeline (Query → Router → Action) that routes students to the right department with ticket creation and knowledge base search.
-            </p>
-          </div>
-
-          <div className="card">
-            <div className="text-4xl mb-3">🔒</div>
-            <h3 className="font-semibold text-lg mb-2 text-dark-text">The Trust Model</h3>
-            <p className="text-ink/75">
-              Trust built architecturally through constitutional boundaries, not policy documents. Seven principles enforced in code.
-            </p>
-          </div>
-        </div>
-
-        <div className="bg-surface border border-border rounded-xl shadow-sm p-8 mb-8">
-          <h3 className="font-semibold text-xl mb-6 text-dark-text text-center">The Journey</h3>
-          <div className="flex items-center justify-center gap-4 text-5xl">
-            <span role="img" aria-label="Many doors">🚪</span>
-            <span className="text-2xl text-ink/40">→</span>
-            <span role="img" aria-label="Agent">🤖</span>
-            <span className="text-2xl text-ink/40">→</span>
-            <span role="img" aria-label="Trust">🔒</span>
-            <span className="text-2xl text-ink/40">→</span>
-            <span role="img" aria-label="Voice">🎤</span>
-            <span className="text-2xl text-ink/40">→</span>
-            <span role="img" aria-label="University">🏫</span>
-          </div>
-          <p className="text-center text-ink/70 mt-6">
-            From chaos to clarity: One front door for every student need
-          </p>
+        <div className="card">
+          <h3 className="font-semibold text-xl mb-5 text-dark-text">The workshop arc</h3>
+          <ol className="grid md:grid-cols-5 gap-4">
+            {['Signal arrives', 'Classify', 'Route + dedup', 'Act safely', 'Reach all clear'].map((step, index) => (
+              <li key={step} className="border-l-2 border-brand pl-3">
+                <span className="mono-label text-ink/60">{index + 1}</span>
+                <p className="font-semibold mt-1">{step}</p>
+              </li>
+            ))}
+          </ol>
         </div>
 
         <CollapsibleNotes>
-          <p className="mb-3">
-            <strong>Workshop Context:</strong> This workshop is designed for university IT leadership, CIOs, 
-            and technical decision-makers who need to understand how agentic AI differs from traditional 
-            chatbots and how trust can be architected into AI systems.
-          </p>
-          <p className="mb-3">
-            <strong>Goal:</strong> Demystify agentic AI and demonstrate that trust is not achieved through 
-            policy documents alone — it must be built into the system architecture through bounded authority, 
-            human escalation, privacy-first design, and graceful degradation.
-          </p>
           <p>
-            <strong>Key Takeaway:</strong> By the end of this workshop, attendees will understand the 
-            three-agent pattern, the seven constitutional principles, and how voice interaction extends 
-            the same trust model to a new modality.
+            Open by separating observation from event. A chat thread, call, or submitted form is a signal. The outage, hazard, or compliance event it describes is the incident. That distinction makes dedup possible without deleting anyone's account.
           </p>
         </CollapsibleNotes>
       </div>

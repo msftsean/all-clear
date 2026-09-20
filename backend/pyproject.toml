@@ -3,14 +3,14 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "front-door-agent"
+name = "all-clear"
 version = "1.0.0"
-description = "Universal Front Door Support Agent - Three-agent system for routing student support requests"
+description = "All Clear incident-triage application"
 readme = "README.md"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "University IT", email = "it@university.edu"}
+    {name = "All Clear contributors"}
 ]
 classifiers = [
     "Development Status :: 4 - Beta",

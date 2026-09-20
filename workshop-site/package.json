@@ -1,8 +1,8 @@
 {
-  "name": "47doors-workshop-site",
+  "name": "all-clear-workshop-site",
   "version": "1.0.0",
   "type": "module",
-  "description": "Workshop companion site for Trustworthy Agentic AI in Higher Education",
+  "description": "All Clear incident-triage workshop companion",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

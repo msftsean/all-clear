@@ -1,6 +1,6 @@
 /**
  * CloneGuide — All Clear-branded page showing three ways to clone the
- * EstablishedCorp/all-clear repository to a local machine.
+ * Public-sector-hacks-Org/all-clear repository to a local machine.
  *
  * Aesthetic: mirrors the All Clear "paper world" sidebar exactly —
  * paper / paper2 / paperline / inkwarm / midwarm / voice tokens,
@@ -10,8 +10,8 @@
 
 import { useState } from "react";
 
-const REPO_URL = "https://github.com/EstablishedCorp/all-clear";
-const REPO_SSH = "git@github.com:EstablishedCorp/all-clear.git";
+const REPO_URL = "https://github.com/Public-sector-hacks-Org/all-clear";
+const REPO_SSH = "git@github.com:Public-sector-hacks-Org/all-clear.git";
 
 interface Method {
   id: string;
@@ -45,7 +45,7 @@ const METHODS: Method[] = [
       },
       {
         title: "Clone the repo",
-        code: "gh repo clone EstablishedCorp/all-clear",
+        code: "gh repo clone Public-sector-hacks-Org/all-clear",
       },
       {
         title: "Run locally in mock mode",
@@ -70,11 +70,11 @@ const METHODS: Method[] = [
       {
         title: "Create a PAT",
         note:
-          "GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens. Grant read access to EstablishedCorp/all-clear.",
+          "GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens. Grant read access to Public-sector-hacks-Org/all-clear.",
       },
       {
         title: "Clone",
-        code: "git clone https://github.com/EstablishedCorp/all-clear",
+        code: "git clone https://github.com/Public-sector-hacks-Org/all-clear",
         note: "When prompted for a password, enter your PAT (not your GitHub password).",
       },
       {
@@ -294,7 +294,7 @@ export default function CloneGuide() {
             Clone to your local machine
           </p>
           <p className="mt-1.5 text-sm leading-relaxed text-midwarm">
-            Three ways to get <span className="font-mono text-[12px] text-inkwarm">EstablishedCorp/all-clear</span> running locally. Choose the method that fits your setup.
+            Three ways to get <span className="font-mono text-[12px] text-inkwarm">Public-sector-hacks-Org/all-clear</span> running locally. Choose the method that fits your setup.
           </p>
         </div>
 
@@ -360,7 +360,7 @@ export default function CloneGuide() {
                 {[
                   { cmd: "brew install gh", label: "Install" },
                   { cmd: "gh auth login", label: "Authenticate" },
-                  { cmd: "gh repo clone EstablishedCorp/all-clear", label: "Clone" },
+                  { cmd: "gh repo clone Public-sector-hacks-Org/all-clear", label: "Clone" },
                 ].map(({ cmd, label }, i) => (
                   <div key={i} className="flex items-center gap-3">
                     <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-nline font-mono text-[10px] text-ndim">
@@ -410,7 +410,7 @@ MOCK_MODE=true ENVIRONMENT=test \\
 
             {/* Footer note */}
             <p className="mt-5 text-center font-mono text-[10px] text-ndim/60 uppercase tracking-wider">
-              All Clear · EstablishedCorp/all-clear · {new Date().getFullYear()}
+              All Clear · Public-sector-hacks-Org/all-clear · {new Date().getFullYear()}
             </p>
           </div>
         </div>

@@ -1,8 +1,8 @@
-// University Front Door Support Agent - Azure Infrastructure
+// All Clear incident-triage application - Azure Infrastructure
 // Deploy with: azd provision
 
 @description('Name prefix for all resources')
-param resourcePrefix string = 'frontdoor'
+param resourcePrefix string = 'allclear'
 
 @description('Location for all resources')
 param location string = resourceGroup().location
@@ -40,6 +40,9 @@ param deployRealtime bool = true
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
 
+@description('E.164 phone number purchased in your own ACS resource (for example +15551234567). Leave empty unless enabling the optional phone stretch goal; ACS numbers cannot be shared across deployments.')
+param acsPhoneNumber string = ''
+
 @description('Deployment timestamp for tagging')
 param deploymentDate string = utcNow('yyyy-MM-dd')
 
@@ -53,7 +56,7 @@ var cosmosAccountName = '${resourcePrefix}-${cosmosToken}-cosmos'
 // Tags for all resources
 var tags = {
   'azd-env-name': resourcePrefix
-  'solution-accelerator': 'university-front-door-agent'
+  'solution-accelerator': 'all-clear'
   'deployment-date': deploymentDate
 }
 
@@ -171,10 +174,10 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2023-11-15' = if (
 
 resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2023-11-15' = if (!mockMode) {
   parent: cosmosAccount
-  name: 'frontdoor'
+  name: 'allclear'
   properties: {
     resource: {
-      id: 'frontdoor'
+      id: 'allclear'
     }
   }
 }
@@ -443,7 +446,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'AZURE_COSMOS_DATABASE'
-              value: mockMode ? 'frontdoor' : cosmosDatabase.name
+              value: mockMode ? 'allclear' : cosmosDatabase.name
             }
             {
               name: 'AZURE_SEARCH_ENDPOINT'
@@ -472,7 +475,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             }
             {
               name: 'ACS_PHONE_NUMBER'
-              value: '+18442070169'
+              value: acsPhoneNumber
             }
           ]
           resources: {
@@ -636,7 +639,7 @@ output AZURE_OPENAI_ENDPOINT string = openAi.properties.endpoint
 output AZURE_OPENAI_DEPLOYMENT string = openAiDeployment.name
 output AZURE_OPENAI_EMBEDDING_DEPLOYMENT string = openAiEmbeddingDeployment.name
 output AZURE_COSMOS_ENDPOINT string = mockMode ? '' : cosmosAccount.properties.documentEndpoint
-output AZURE_COSMOS_DATABASE string = mockMode ? 'frontdoor' : cosmosDatabase.name
+output AZURE_COSMOS_DATABASE string = mockMode ? 'allclear' : cosmosDatabase.name
 output AZURE_SEARCH_ENDPOINT string = 'https://${searchService.name}.search.windows.net'
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerRegistry.properties.loginServer
 output AZURE_CONTAINER_ENV_ID string = containerAppEnv.id

@@ -390,6 +390,7 @@ class AllClearPipeline:
             turn_number = len(session.conversation_history) + 1
             incident_id = result.action.incident_id if result.action else None
             agent_msg = result.action.user_message if result.action else None
+            input_modality = channel if channel in {"text", "voice", "phone"} else "text"
 
             turn = ConversationTurn(
                 turn_number=turn_number,
@@ -400,7 +401,7 @@ class AllClearPipeline:
                 signal_text=signal_text,
                 agent_response=agent_msg,
                 incident_id=incident_id,
-                input_modality=channel,
+                input_modality=input_modality,
             )
             session.conversation_history.append(turn)
 

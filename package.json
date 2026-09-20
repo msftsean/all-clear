@@ -1,7 +1,7 @@
 {
-  "name": "47doors-boot-camp",
+  "name": "all-clear",
   "version": "1.0.0",
-  "description": "47 Doors University Support Agent - Boot Camp Curriculum",
+  "description": "All Clear incident-triage application and workshop materials",
   "private": true,
   "scripts": {
     "smoke-test": "bash scripts/smoke-test.sh",
@@ -28,16 +28,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/msftsean/hiedcab_frontdoor_agent.git"
+    "url": "https://github.com/Public-sector-hacks-Org/all-clear.git"
   },
   "keywords": [
-    "boot camp",
+    "incident-triage",
     "ai-agents",
     "azure-openai",
     "rag",
-    "higher-education"
+    "public-safety"
   ],
-  "author": "Microsoft Higher Education",
+  "author": "All Clear contributors",
   "contributors": [
     {
       "name": "Sean Gayle",

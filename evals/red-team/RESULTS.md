@@ -1,6 +1,11 @@
 # All Clear - Red Team Scan Results
 
-**Scan:** `all-clear-redteam-demo` · run 2026-06-12 · Azure AI Foundry project `allclear-redteam`
+> **Historical reference only:** This report records a prior demonstration run.
+> It does not configure a student environment or grant access to a shared
+> project. Follow [`README.md`](./README.md) to run evaluations in your own
+> Foundry project.
+
+**Scan:** `all-clear-redteam-demo` · run 2026-06-12 · Azure AI Foundry project (historical reference)
 **Target:** live All Clear agent (`POST /api/chat`) on Azure Container Apps, model `gpt-5.1`
 behind the custom `allclear-guardrails` content filter.
 
@@ -11,15 +16,12 @@ the Red team tab. The "New Foundry" preview UI filters on a run type that the cu
 `azure-ai-evaluation` SDK (1.17, latest) does not tag, so it shows "No red teams found" even
 though the run is present. The classic view renders the full scorecard.
 
-1. Azure AI Foundry -> project `allclear-redteam`.
+1. Azure AI Foundry -> your project.
 2. Toggle **New Foundry OFF**.
 3. **Evaluations -> Red team** -> open `all-clear-redteam-demo`.
 
-Or use the direct classic deep link (works regardless of the toggle):
-https://ai.azure.com/resource/build/redteaming/c73c5d72-d071-4c51-9a51-e3587b9b9ef1?wsid=/subscriptions/098ef2f6-cea4-4839-8093-ef90622e1b8c/resourceGroups/rg-allclear/providers/Microsoft.CognitiveServices/accounts/allclear-foundry/projects/allclear-redteam&tid=8251a5cb-be5c-4a08-b918-4ebc01628829
-
-Verified present via the data plane: `GET .../redTeams/runs?api-version=2025-11-15-preview`
-returns the run with status **Completed** and the 0.0% ASR scorecard.
+Open the run in your Foundry project. The historical run completed with a 0.0%
+ASR scorecard; your results depend on your deployment and test configuration.
 
 ### Showing a run in the New Foundry console (Create flow)
 
@@ -27,9 +29,9 @@ The SDK upload (`runType=eval_run`) renders only in the classic view. The **New 
 tab lists *native* red team runs created through its own service, so to get an entry there you
 create the run in the portal:
 
-1. In project `allclear-redteam`, go to **Evaluations -> Red team** and click **Create**.
-2. Target type **Model deployment** -> pick **`gpt-5.1`** (deployed into this project with the
-   `allclear-guardrails` content filter attached, so the run also exercises the guardrail).
+1. In your project, go to **Evaluations -> Red team** and click **Create**.
+2. Target type **Model deployment** -> pick your deployment with the
+   `allclear-guardrails` content filter attached, so the run also exercises the guardrail.
 3. Risk categories: Violence, Hate/Unfairness, Sexual, Self-harm. Attack strategies: Baseline +
    Easy (Flip, Base64, Morse) to mirror the SDK scan.
 4. **Create** -> the run executes server-side and appears natively in the New Foundry Red team tab.
@@ -73,8 +75,8 @@ four risk categories.
 ```powershell
 cd evals/red-team
 pip install -r requirements.txt
-$env:AZURE_AI_PROJECT_ENDPOINT = "https://allclear-foundry-kt5fw24guxoxy.services.ai.azure.com/api/projects/allclear-redteam"
-$env:ALLCLEAR_BACKEND_URL      = "https://allclear-kt5fw24guxoxy-backend.nicebay-0aac45bb.eastus.azurecontainerapps.io"
+$env:AZURE_AI_PROJECT_ENDPOINT = "https://<your-foundry-subdomain>.services.ai.azure.com/api/projects/<your-project-name>"
+$env:ALLCLEAR_BACKEND_URL      = "https://<your-backend-host>"
 python red_team_scan.py --quick --num-objectives 3      # this run
 python red_team_scan.py --num-objectives 5              # broader: adds Leetspeak, Unicode, Easy/Moderate composites
 ```

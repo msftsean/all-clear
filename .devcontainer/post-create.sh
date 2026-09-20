@@ -3,7 +3,7 @@
 #
 # Portable by design: the repo root is derived from this script's own location, so it
 # works no matter what the workspace folder is named. (The previous version hardcoded
-# /workspaces/47doors and aborted the whole setup under `set -e`.)
+# an obsolete workspace path and aborted setup under `set -e`.)
 
 set -uo pipefail
 
@@ -49,6 +49,7 @@ fi
 echo ""
 echo ">>> Verifying installation..."
 echo "Python: $(python --version 2>&1)  |  Node: $(node --version)  |  npm: $(npm --version)"
+echo "GitHub CLI: $(gh --version 2>&1 | head -n 1)"
 cd "$REPO_ROOT/backend"
 if python -c "from app.main import app" 2>/dev/null; then
   echo "Backend imports: OK"

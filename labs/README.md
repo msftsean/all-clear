@@ -74,7 +74,7 @@ canonical term per concept:
 - **Signal** — one inbound communication. Never deduplicated away; always preserved.
 - **Incident** (`AC-####`) — the real-world event signals describe. Has a severity, queue, SLA clock, magnitude, status.
 - **Report** — the attachment of a signal to an incident. Increments **magnitude**.
-- **Queue** — destination work stream (`field-operations`, `customer-comms`, `compliance-desk`, `engineering`, `escalations`). *(Replaces 47 Doors "department".)*
+- **Queue** — destination work stream (`field-operations`, `customer-comms`, `compliance-desk`, `engineering`, `escalations`).
 - **Severity** — **SEV1** (life safety / total outage / statutory clock; 15-min SLA, always escalates) … **SEV4** (informational; next-business-day). *(Replaces "priority".)*
 - **Dedup** — embedding-similarity match of a signal against open incidents in the same `intent_category`. ≥ `DEDUP_THRESHOLD` (default 0.83 cosine) → **ATTACH_TO_INCIDENT**; below → **OPEN_INCIDENT**.
 - **Sitrep** — citation-grounded situation report from `generate_sitrep`. No citation, no claim.

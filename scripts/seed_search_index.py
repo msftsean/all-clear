@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Seed the Azure AI Search index from the canonical six-intent corpus.
+"""Seed the Azure AI Search index from the canonical All Clear incident-response corpus.
 
 Feature 006 (Cold-Start Quickstart). A thin, dedicated seeder that mirrors the
 index schema, field mapping, and embedding logic of
 ``labs/04-build-rag-pipeline/setup_index.py`` (which is the Lab 04 *exercise* and
-must remain untouched), but defaults its data directory to the canonical AJCU
-corpus at ``infra/ai-search/seed-articles`` and adds an offline ``--dry-run``
+must remain untouched), but defaults its data directory to the canonical All Clear
+incident-response corpus at ``infra/ai-search/seed-articles`` and adds an offline ``--dry-run``
 mode that needs NO Azure credentials.
 
 Idempotency: documents are upserted keyed by ``id = article_id`` (Azure AI Search
@@ -43,7 +43,7 @@ CONTENT_TRUNCATE_CHARS = 8000
 def load_articles(data_dir: Path) -> list[dict]:
     """Load all KB articles from JSON files under ``data_dir``.
 
-    Accepts both the ``{"articles": [...]}`` wrapper used by the canonical AJCU
+    Accepts both the ``{"articles": [...]}`` wrapper used by the canonical All Clear
     corpus and a bare top-level list (older lab corpora). Mirrors the loader in
     ``setup_index.py`` but understands the wrapper.
     """
@@ -258,7 +258,7 @@ def run_dry_run(articles: list[dict], index_name: str) -> int:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Seed the Azure AI Search index from the AJCU seed corpus."
+        description="Seed the Azure AI Search index from the All Clear incident-response corpus."
     )
     repo_root = Path(__file__).resolve().parents[1]
     parser.add_argument(

@@ -1,70 +1,43 @@
-# 🚪 47 Doors — Sean's Stage Cue Card
+# All Clear — Facilitator Stage Cue Card
 
-**Fordham · LAW 3-09 · Mon Jun 1, 2026 · 1:00–4:00 PM · 5 teams**
-**Promise: a working agent by 3:00.**
+**90-minute incident-triage workshop**
 
-> Verbatim opening + transition lines only. Glance, say the line, look back up.
+## 0:00–0:10 · Open and set safety
 
----
+**OPEN:** *“Today we will turn a surge of fictional inputs into a safe, shared response. We will practice decisions—not simulate an emergency.”*
 
-## ⏱ 1:00–1:08 · OPEN & FRAME *(8 min)*
+**SAFETY:** *“All Clear supports human responders. If a real safety concern arises, we stop and use the organization’s emergency procedure.”*
 
-**OPEN:** *"We have three hours. The old way burns 285 minutes on setup and leaves 165 to build. Today we flip that — setup is one command, and the rest of this room is yours to build in."*
+**→ TRANSITION:** *“First, let’s separate the three things that arrive during a surge: signals, reports, and incidents.”*
 
-**→ TRANSITION:** *"So what are you building? One agent with good judgment. Let me show you the three parts."*
+## 0:10–0:25 · Surge triage
 
----
+**OPEN:** *“A signal is an observation. A report is an account. An incident is the record we open to coordinate action. We preserve all three without assuming they mean the same thing.”*
 
-## ⏱ 1:08–1:22 · THE PATTERN — THREE AGENTS *(14 min)*
+**PROMPT:** *“What do we know? What is duplicated? What evidence would change the decision?”*
 
-**OPEN:** *"Every request walks through three agents: one reads intent, one routes on consequence — not keywords — and one takes the action. That's the whole pattern."*
+**→ TRANSITION:** *“Once we open an incident, we make impact and urgency explicit.”*
 
-**SAFETY BEAT:** *"And one rule overrides everything: if a student signals harm, we escalate to a human and the 988 line — every time, no exceptions."*
+## 0:25–0:40 · Severity and SLA
 
-**→ TRANSITION:** *"Talk is cheap. Jake — show them it's real."* → **STEP BACK**
+**OPEN:** *“Severity is not a feeling. We use scope, credible risk, and operational impact to choose a response target.”*
 
----
+**→ TRANSITION:** *“Now make that decision useful to the next responder on ClearBoard.”*
 
-## ⏸ 1:22–1:32 · Jake — Live Demo · Card D *(you're off)*
+## 0:40–1:00 · ClearBoard
 
----
+**OPEN:** *“A complete board update names the evidence, magnitude, severity, owner, status, and next update time.”*
 
-## ⏱ 1:32–1:40 · FORM TEAMS · PICK A CARD *(8 min, you lead)*
+**CHECK:** *“Could someone joining now understand what happened and what they should do next?”*
 
-**OPEN:** *"Here's where it becomes yours. Six real student messages — six doors. You just watched Card D run live."*
+## 1:00–1:15 · Voice and phone
 
-**FRAME:** *"D is the live demo — Phishing Storm, two tickets from one message. E is your gentlest warmup — Mass of the Holy Spirit, the interfaith welcome. Newer team? Start at E."*
+**OPEN:** *“Voice and phone are alternate intake paths, not alternate safety policies. Confirm key details, offer text access, and record the same traceable incident.”*
 
-**→ TRANSITION (kick the sprint):** *"Six doors, five teams, one working agent by 3:00. Pick your door — and build the agent behind it. Coaches are yours. Go."* → **STEP BACK**
+## 1:15–1:25 · Safety rehearsal
 
----
+**OPEN:** *“For safety-critical content: pause, escalate to the designated human responder, and document only what is necessary for the handoff.”*
 
-## ⏸ 1:40–3:55 · Build sprints · break · demos *(you coach, you don't present)*
+## 1:25–1:30 · Close
 
----
-
-## ⏱ 3:55–4:00 · CLOSE *(5 min)*
-
-**OPEN:** *"You started with a blank repo and three hours. You're leaving with a working agent."*
-
-**LAND IT:** *"This pattern goes home with you — what you built today runs on your campus Monday. That's the point."*
-
-**FINAL:** *"Thank you. Go build the front door your students deserve."*
-
----
-
-## ⚡ IF ASKED — one-line answers
-
-- **Which lane?** → *"Mock first — everyone — to get the logic right. Then `azd up` for your own live version. Shared only if you want to skip provisioning."*
-- **What does `azd up` stand up?** → *"Azure OpenAI, AI Search, and Container Apps — one command, into your own resource group."*
-- **How done is done?** → *"Working beats perfect. Routing right, escalation fires live — that's the rubric."*
-
----
-
-## 🎯 PRE-STAGE
-
-You control three things: **pace · the clock · the promise.**
-
-## ✂ IF BEHIND
-
-Cut the Shared lane to one sentence · trim the pattern to Query → Route → Act · **protect the build sprint — that's the heart.**
+**CLOSE:** *“Good triage makes uncertainty visible, assigns the next safe action, and keeps the response moving. Use ClearBoard to leave a reliable handoff.”*

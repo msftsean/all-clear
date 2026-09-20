@@ -1,8 +1,7 @@
 """
 QueryAgent: classify an inbound signal (001-maf-rehost, T5).
 
-Ported from the legacy 47 Doors QueryAgent, with the FERPA university taxonomy
-swapped for the All Clear cross-vertical incident-triage taxonomy (CONTEXT.md).
+Built for the All Clear cross-vertical incident-triage taxonomy (CONTEXT.md).
 
 Bounded Authority (Constitution Art. II):
 - CAN: analyse text, detect intent/category, suggest a target queue, extract entities,

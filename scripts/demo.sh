@@ -1,12 +1,12 @@
 #!/bin/bash
-# demo.sh — One-command live-demo launcher for the 47 Doors front-door agent.
+# demo.sh — One-command mock-mode launcher for All Clear incident triage.
 #
 # Boots BOTH halves of the demo in MOCK MODE (zero Azure credentials) and waits
 # until they are healthy, so a presenter never has to juggle two terminals:
 #   - backend  : FastAPI (uvicorn) on :8000  with MOCK_MODE=true
 #   - frontend : Vite dev server on :5173    (proxies /api -> :8000)
 #
-# In mock mode the crisis-safety net, intent routing, ticketing, KB, and PII
+# In mock mode the crisis-safety net, incident routing, knowledge retrieval, and PII
 # redaction all work offline; voice self-hides (no Azure Realtime deployment).
 #
 # Usage:
@@ -112,7 +112,7 @@ fi
 
 # --- ready --------------------------------------------------------------------
 echo
-echo "${BLD}${GRN}47 Doors demo is live (mock mode).${RST}"
+echo "${BLD}${GRN}All Clear demo is live (mock mode).${RST}"
 $RUN_FRONTEND && echo "  ${BLD}Open:${RST}  http://${HOST}:${FRONTEND_PORT}"
 echo "  API:   http://${HOST}:${BACKEND_PORT}/api/health"
 echo "  Try:   type ${BLD}\"I want to kill myself\"${RST} → expect a human escalation + 988 lifeline."

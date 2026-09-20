@@ -360,7 +360,7 @@ html.js main section.in{opacity:1;transform:none}
         <li>Run the environment check and get the <strong>first eval stub</strong> to pass &mdash; that green test is your baseline.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Prereqs verified, the scaffold runs, and one eval passes. You can hit your local <code class="mono">/api/health</code>.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/00-setup/README.md" target="_blank" rel="noopener">📖 Lab 00 &mdash; Environment Setup</a> &nbsp;·&nbsp; <a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/03-spec-driven-development/README.md" target="_blank" rel="noopener">📖 Lab 03 &mdash; Spec-Driven Development</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/00-setup/README.md" target="_blank" rel="noopener">📖 Lab 00 &mdash; Environment Setup</a> &nbsp;·&nbsp; <a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/03-spec-driven-development/README.md" target="_blank" rel="noopener">📖 Lab 03 &mdash; Spec-Driven Development</a></p>
     </section>
 
     <section id="stage1">
@@ -375,7 +375,7 @@ html.js main section.in{opacity:1;transform:none}
       <div class="tip"><span class="eyebrow">Why model-agnostic matters now</span><p style="margin:.4em 0 0">A frontier model can be restricted or pulled overnight. For a regulated triage system that's operational risk, not just inconvenience &mdash; so design for it: route around an <em>unavailable</em> model, but never route around a <span class="pill">429</span> rate limit (retry instead) or a content-safety block (that's the system working). The goal is continuity without a safety bypass.</p></div>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">A plain-language report becomes a classified, routed, structured incident, and anything public-facing stops at an approval gate.</p></div>
       <div class="tip"><span class="eyebrow">Why the router uses no AI</span><p style="margin:.4em 0 0">Severity, SLA, and escalation are safety-critical, so they're computed by deterministic rules &mdash; not the model. Nobody can talk the system into a lower severity. You'll harden this further in S3.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/01-understanding-agents/README.md" target="_blank" rel="noopener">📖 Lab 01 &mdash; Understanding Agents</a> &nbsp;·&nbsp; <a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/05-agent-orchestration/README.md" target="_blank" rel="noopener">📖 Lab 05 &mdash; Agent Orchestration</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/01-understanding-agents/README.md" target="_blank" rel="noopener">📖 Lab 01 &mdash; Understanding Agents</a> &nbsp;·&nbsp; <a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/05-agent-orchestration/README.md" target="_blank" rel="noopener">📖 Lab 05 &mdash; Agent Orchestration</a></p>
     </section>
 
     <section id="stage2">
@@ -387,7 +387,7 @@ html.js main section.in{opacity:1;transform:none}
         <li>Fold retrieval into the pipeline so the action step can cite what it used.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">A query returns relevant KB articles and the response carries citation pills (<code class="mono">[AC-####]</code>) you can trace.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/04-build-rag-pipeline/README.md" target="_blank" rel="noopener">📖 Lab 04 &mdash; Build the RAG Pipeline</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/04-build-rag-pipeline/README.md" target="_blank" rel="noopener">📖 Lab 04 &mdash; Build the RAG Pipeline</a></p>
     </section>
 
     <section id="stage3">
@@ -399,7 +399,7 @@ html.js main section.in{opacity:1;transform:none}
         <li><strong>Red-team it:</strong> attempt PII leakage, prompt injection, and a "talk the router down" attack &mdash; confirm PII is redacted, jailbreaks are rejected, and severity can't be influenced.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0"><code class="mono">@all-clear</code> tools respond in VS Code, and your three red-team probes all fail to break the system.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/07-mcp-server/README.md" target="_blank" rel="noopener">📖 Lab 07 &mdash; MCP Server</a> &nbsp;·&nbsp; <a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/02-azure-mcp-setup/README.md" target="_blank" rel="noopener">📖 Lab 02 &mdash; Azure MCP Setup</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/07-mcp-server/README.md" target="_blank" rel="noopener">📖 Lab 07 &mdash; MCP Server</a> &nbsp;·&nbsp; <a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/02-azure-mcp-setup/README.md" target="_blank" rel="noopener">📖 Lab 02 &mdash; Azure MCP Setup</a></p>
     </section>
 
     <section id="stage4">
@@ -412,7 +412,7 @@ html.js main section.in{opacity:1;transform:none}
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">A signal triages <em>through</em> the gateway; the 21st call returns <span class="pill">429</span>; calls with no token return <span class="pill">401</span>; traffic shows up in App Insights.</p></div>
       <div class="note"><span class="eyebrow">Why Consumption SKU</span><p style="margin:.4em 0 0">No fixed cost, provisions in minutes, and it's verified to handle a whole class creating gateways at once. Use the <code class="mono">-by-key</code> policy variants; semantic caching is out of scope on this tier.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/08-apim-gateway/README.md" target="_blank" rel="noopener">📖 Lab 08 &mdash; APIM as the AI Gateway</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/08-apim-gateway/README.md" target="_blank" rel="noopener">📖 Lab 08 &mdash; APIM as the AI Gateway</a></p>
     </section>
 
     <section id="stage5">
@@ -424,20 +424,20 @@ html.js main section.in{opacity:1;transform:none}
         <li>Wire the <strong>eval suite into CI</strong> so a regression blocks the merge &mdash; that's the gate that makes it production-grade.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Your agent answers at a public URL, the health check is green, and CI runs the evals and fails on regression.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/06-deploy-with-azd/README.md" target="_blank" rel="noopener">📖 Lab 06 &mdash; Deploy with azd</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/06-deploy-with-azd/README.md" target="_blank" rel="noopener">📖 Lab 06 &mdash; Deploy with azd</a></p>
     </section>
 
     <section id="github">
       <h2>GH &middot; GitHub-in-the-lab <span class="pill">extend it</span></h2>
       <p class="tag">Goal: take what you built and prove the GitHub workflow around it &mdash; fork, run CI, make one bounded extension with Copilot, and keep every test green.</p>
       <ol class="steps">
-        <li><strong>Fork &amp; run CI.</strong> Fork <code class="mono">EstablishedCorp/all-clear</code>, push any branch, then open <strong>Actions</strong> and run <code class="mono">smoke-test.yml</code> on your fork.</li>
+        <li><strong>Fork &amp; run CI.</strong> Fork <code class="mono">Public-sector-hacks-Org/all-clear</code>, push any branch, then open <strong>Actions</strong> and run <code class="mono">smoke-test.yml</code> on your fork.</li>
         <li><strong>Pick one bounded extension</strong> &mdash; either add one <strong>ActionAgent tool</strong> (with bounded authority + docs) <em>or</em> add one <strong>scenario pack</strong> (deterministic, mock-mode parity). Leave the RouterExecutor untouched.</li>
         <li><strong>Turn the starter test green.</strong> <code class="mono">labs/09-github-in-the-lab/test_starter_red_to_green.py</code> ships <em>red</em> on purpose. Make your change, then re-run until it passes &mdash; without weakening any existing test.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0"><code class="mono">smoke-test.yml</code> is green on your fork, the starter test went red&nbsp;→&nbsp;green, and the full suite still passes: <code class="mono">cd labs/09-github-in-the-lab &amp;&amp; python -m pytest -q test_starter_red_to_green.py</code>.</p></div>
       <div class="tip"><span class="eyebrow">Why this matters</span><p style="margin:.4em 0 0">This is the loop a real team lives in: a fork, a CI gate, an AI-assisted change, and tests that hold the line. Copilot writes the extension; the deterministic router and the green gate keep it honest.</p></div>
-      <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/labs/09-github-in-the-lab/README.md" target="_blank" rel="noopener">📖 Lab 09 &mdash; GitHub-in-the-lab</a></p>
+      <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/labs/09-github-in-the-lab/README.md" target="_blank" rel="noopener">📖 Lab 09 &mdash; GitHub-in-the-lab</a></p>
     </section>
 
     <section id="alsoships">
@@ -452,7 +452,7 @@ html.js main section.in{opacity:1;transform:none}
         <div class="card">
           <div class="eyebrow">Responsible-AI control map</div>
           <p style="margin:.3em 0 .6em">Seven existing controls &mdash; bounded authority, deterministic router, escalation-as-control, no-PII-echo, audit receipts, Foundry red-team/evals, model failover &mdash; mapped to Maryland policy concepts (SB&nbsp;818, DoIT Responsible Use).</p>
-          <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/responsible-ai.md" target="_blank" rel="noopener">📖 Responsible-AI map</a> &middot; in-app Trust view</p>
+          <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/docs/responsible-ai.md" target="_blank" rel="noopener">📖 Responsible-AI map</a> &middot; in-app Trust view</p>
         </div>
         <div class="card">
           <div class="eyebrow">Maryland scenario packs &times;4</div>
@@ -467,7 +467,7 @@ html.js main section.in{opacity:1;transform:none}
         <div class="card">
           <div class="eyebrow">Lab-to-production leave-behind</div>
           <p style="margin:.3em 0 .6em">A one-page handoff &mdash; architecture, Azure footprint, and the Responsible-AI map in one place &mdash; for teams that want to keep going the same day.</p>
-          <p class="tag"><a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener">📖 Lab to Production</a></p>
+          <p class="tag"><a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener">📖 Lab to Production</a></p>
         </div>
       </div>
     </section>
@@ -485,7 +485,7 @@ html.js main section.in{opacity:1;transform:none}
       </div>
       <p>Submit your capstone with your <strong>name</strong> and <strong>agency</strong> in the app's <em>Make It Yours</em> panel. It persists to the same data layer you've been testing against, and you can pull every entry back out as <strong>CSV or JSON</strong>.</p>
       <div class="expect"><span class="eyebrow">Capstone API</span><p style="margin:.4em 0 0"><code class="mono">POST /api/demo/capstone/entries</code> saves an entry; <code class="mono">GET /api/demo/capstone/export?format=csv</code> (or <code class="mono">json</code>) downloads them all. Works in mock mode &mdash; no Azure credentials needed.</p></div>
-      <div class="try"><span class="eyebrow">Take it home</span><p style="margin:.4em 0 0">Want to keep going the same day? The <a href="https://github.com/EstablishedCorp/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener"><strong>Lab to Production</strong></a> leave-behind has the architecture, footprint, and governance map in one page &mdash; and how to reach Sean &amp; Tracy's team to take it further.</p></div>
+      <div class="try"><span class="eyebrow">Take it home</span><p style="margin:.4em 0 0">Want to keep going the same day? The <a href="https://github.com/Public-sector-hacks-Org/all-clear/blob/main/docs/lab-to-production.md" target="_blank" rel="noopener"><strong>Lab to Production</strong></a> leave-behind has the architecture, footprint, and governance map in one page &mdash; and how to reach Sean &amp; Tracy's team to take it further.</p></div>
     </section>
 
     <section id="voice">

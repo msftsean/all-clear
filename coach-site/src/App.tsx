@@ -160,16 +160,16 @@ function App() {
               <div className="min-w-0">
                 <p className="text-ink/80 leading-relaxed">
                   This is a calm, scannable companion for{" "}
-                  <strong>coaches</strong> running the 47 Doors AJCU hackathon.
-                  It re-presents the existing coach guides — how to prepare the
-                  room and tech, run the day, frame the mission, help blocked
-                  participants, troubleshoot setup failures, and assess the
-                  build sprint.
+                  <strong>facilitators</strong> leading an All Clear
+                  incident-triage exercise. It covers preparation, surge
+                  triage, signals, incidents, reports, magnitude, severity,
+                  SLA, ClearBoard, safety, and accessible voice or phone
+                  intake.
                 </p>
                 <p className="text-ink/80 leading-relaxed mt-3">
-                  Use it on a laptop or phone, before and during the event. Jump
-                  to any of the six sections below; <strong>Prepare</strong> is
-                  the place to start the night before.
+                  Use it before and during the exercise. Jump to any of the six
+                  sections below; <strong>Prepare</strong> is the place to
+                  start.
                 </p>
               </div>
             </div>

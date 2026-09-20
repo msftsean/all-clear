@@ -53,7 +53,7 @@ export default function HeroBanner({
               aria-hidden="true"
             />
             <span className="font-serif text-white text-lg sm:text-xl truncate">
-              47 Doors <span className="text-white/55">Coach Prep</span>
+              All Clear <span className="text-white/55">Facilitator Guide</span>
             </span>
           </div>
           <button
@@ -174,14 +174,14 @@ export default function HeroBanner({
               aria-hidden="true"
             />
             <span className="text-white/70 text-xs font-medium tracking-wide uppercase">
-              AJCU Hackathon · Coach Guide
+              Incident Triage · Facilitator Guide
             </span>
           </div>
 
           <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl text-white leading-tight tracking-tight">
-            47 Doors
+            All Clear
             <br />
-            <span className="text-white/60">Coach Prep</span>
+            <span className="text-white/60">Facilitator Guide</span>
           </h1>
 
           <p
@@ -195,8 +195,8 @@ export default function HeroBanner({
                 : {}
             }
           >
-            How to prepare for and help participants during the 47 Doors AJCU
-            hackathon.
+            Lead a safe, clear demonstration of incident triage under surge
+            conditions.
           </p>
 
           <button

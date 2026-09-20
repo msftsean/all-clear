@@ -1,15 +1,15 @@
 # 🚪 Head-Start Guide — From Cold Start to Scenario-Ready
 
 > **Goal:** get from *zero* to **scenario-ready** (Labs 01 & 04 effectively done)
-> in minutes, so your time goes to the AJCU scenarios in
-> [Lab 05](../../labs/05-agent-orchestration/scenarios/ajcu/README.md) — not setup.
+> in minutes, so your time goes to the All Clear orchestration exercise in
+> [Lab 05](../../labs/05-agent-orchestration/README.md) — not setup.
 
 If you have never used GitHub Codespaces, GitHub Copilot, or Azure AI tooling,
 **start here.** The labs stay intact as optional deep-dives; this guide is the
 fast lane that does the "plumbing" (intent classification + the RAG index) for
 you so a cold team still reaches the scenarios.
 
-> ⭐ **For the 3-hour AJCU workshop, the recommended lane is 🔵 Self-serve `azd`
+> ⭐ **For the 3-hour All Clear workshop, the recommended lane is 🔵 Self-serve `azd`
 > (Lane 2).** A single `azd up` provisions Azure **and** auto-seeds the AI Search
 > index via the `azure.yaml` **`postprovision`** hook, so you reach
 > **scenario-ready at the moment `azd up` finishes** — no extra seeding step. The
@@ -39,7 +39,7 @@ You are ready for Day-1 when the Codespace is open, Copilot is signed in, and
 
 ## 🛣️ Pick your lane
 
-There are **three** ways to reach scenario-ready. For the 3-hour AJCU workshop the
+There are **three** ways to reach scenario-ready. For the 3-hour All Clear workshop the
 **default is 🔵 Self-serve `azd` (Lane 2)**; otherwise pick the first one that fits.
 
 | Lane | Use when | Azure needed? | Command |
@@ -125,11 +125,11 @@ Tie this checklist to the actual `verify`/`smoke` output:
 - [ ] **Mock lane:** `bash scripts/quickstart.sh --mock` exits `0` and prints
       **`✅ Scenario-ready`** with all three mock checks `✓ PASS`.
 - [ ] You can open
-      [`labs/05-agent-orchestration/scenarios/ajcu/README.md`](../../labs/05-agent-orchestration/scenarios/ajcu/README.md)
-      and start a challenge.
+      [`labs/05-agent-orchestration/README.md`](../../labs/05-agent-orchestration/README.md)
+      and start the orchestration exercise.
 
 When the banner shows **`✅ Scenario-ready`**, Labs 01 & 04 are effectively done —
-go straight to the AJCU scenarios.
+go straight to the Lab 05 orchestration exercise.
 
 ---
 

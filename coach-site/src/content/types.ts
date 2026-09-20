@@ -1,4 +1,4 @@
-// Content model for the Coach Prep Companion Site.
+// Content model for the All Clear Facilitator Guide.
 //
 // This is a static content site — the "data model" is the compile-time content/IA
 // structure the components render. See specs/009-coach-prep-site/data-model.md.
@@ -14,7 +14,7 @@ export type ContentBlock =
   | { kind: 'schedule'; rows: { start: string; end: string; block: string; lead: string; min: number }[] }
   | { kind: 'link'; label: string; href: string }
 
-/** A coach-facing topic area rendered as one tab/section. */
+/** A facilitator-facing topic area rendered as one tab/section. */
 export interface Section {
   /** Unique slug; used as nav anchor/route. One of the six fixed ids. */
   id: string
@@ -24,7 +24,7 @@ export interface Section {
   order: number
   /** One-line "what this section gives you". */
   summary: string
-  /** The coach-guide/*.md (or HEADSTART) file this content derives from (drift control). */
+  /** The coach-guide/*.md file this content derives from (drift control). */
   source: string
   /** Ordered renderable content. MUST be non-empty. */
   blocks: ContentBlock[]

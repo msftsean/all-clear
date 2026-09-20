@@ -21,7 +21,7 @@ export interface SectionEntry {
 }
 
 /**
- * The ordered section registry. Order (1–6): prepare, timeline, framing, help,
+ * The ordered section registry. Order (1–6): prepare, timeline, framing, facilitate,
  * troubleshooting, assess. The default active section is `prepare`.
  */
 export const sectionEntries: SectionEntry[] = [

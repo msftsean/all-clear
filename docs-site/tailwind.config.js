@@ -7,13 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        'deep-space': '#171721',
-        'midnight-slate': '#1e1e2a',
-        'interactive': '#272735',
-        'starlight': '#ededf3',
-        'silver': '#c3c3cc',
-        'mercury-blue': '#5266eb',
-        'lead': '#70707d',
+        'deep-space': '#08131a',
+        'midnight-slate': '#0d2028',
+        'interactive': '#102a31',
+        'starlight': '#e8f1ed',
+        'silver': '#b6cbc5',
+        'mercury-blue': '#20c997',
+        'lead': '#55747a',
       },
       fontFamily: {
         sans: ['Manrope', 'system-ui', 'sans-serif'],

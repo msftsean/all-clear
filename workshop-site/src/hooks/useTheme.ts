@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 
-export type Theme = 'sequel' | 'saigon'
+export type Theme = 'day' | 'night'
 
 function readStoredTheme(): Theme {
   const stored = localStorage.getItem('workshop-theme')
-  return stored === 'saigon' || stored === 'sequel' ? stored : 'sequel'
+  return stored === 'day' || stored === 'night' ? stored : 'day'
 }
 
 export function useTheme() {
@@ -15,7 +15,7 @@ export function useTheme() {
     localStorage.setItem('workshop-theme', theme)
   }, [theme])
 
-  const toggleTheme = () => setTheme((current) => current === 'sequel' ? 'saigon' : 'sequel')
+  const toggleTheme = () => setTheme((current) => current === 'day' ? 'night' : 'day')
 
   return { theme, toggleTheme }
 }

@@ -127,7 +127,7 @@ class TestWebSocketRelay:
         ) as ws:
             tool_call_event = {
                 "call_id": "call-t018",
-                "tool_name": "analyze_and_route_query",
+                "tool_name": "analyze_and_route_signal",
                 "arguments": {"query": "I need help with my password"},
             }
             ws.send_json(tool_call_event)
@@ -188,7 +188,7 @@ class TestWebSocketRelay:
         ) as ws:
             ws.send_json({
                 "call_id": "call-t044",
-                "tool_name": "analyze_and_route_query",
+                "tool_name": "analyze_and_route_signal",
                 "arguments": {"query": "Please call me at 555-123-4567 about a refund"},
             })
             response = ws.receive_json()
@@ -229,7 +229,7 @@ class TestVoiceSharedSession:
         ) as ws:
             ws.send_json({
                 "call_id": "call-hybrid",
-                "tool_name": "analyze_and_route_query",
+                "tool_name": "analyze_and_route_signal",
                 "arguments": {"query": "reset my campus email password"},
             })
             assert ws.receive_json()["error"] is None
@@ -257,19 +257,19 @@ class TestVoiceEscalationTools:
         response = await service.execute_tool(
             "call-t034",
             "escalate_to_human",
-            {"reason": "student wants grade appeal", "priority": "medium"},
+            {"reason": "A statutory response clock is active", "severity": "SEV1"},
             "voice-escalation-session",
         )
         data = json.loads(response.result)
         assert response.error is None
         assert data["escalated"] is True
-        assert data["ticket_id"]
+        assert data["incident_id"]
 
     async def test_voice_crisis_escalates_intent_independent(self, service):
         """T006: A crisis utterance escalates urgently regardless of tool/intent."""
         response = await service.execute_tool(
             "call-crisis",
-            "analyze_and_route_query",
+            "analyze_and_route_signal",
             {"query": "I want to kill myself"},
             "voice-crisis-session",
         )
@@ -277,7 +277,7 @@ class TestVoiceEscalationTools:
         assert response.error is None
         assert data["escalated"] is True
         assert data["safety_override"] is True
-        assert data["priority"] == "urgent"
+        assert data["severity"] == "SEV1"
 
     async def test_voice_kb_tool_crisis_escalates(self, service):
         """T006b: search_knowledge_base must NOT answer a crisis with articles."""
@@ -311,7 +311,7 @@ class TestVoiceAuditAndSecurity:
         ) as ws:
             ws.send_json({
                 "call_id": "call-t037",
-                "tool_name": "analyze_and_route_query",
+                "tool_name": "analyze_and_route_signal",
                 "arguments": {"query": "Building on fire, people may be trapped upstairs"},
             })
             response = ws.receive_json()

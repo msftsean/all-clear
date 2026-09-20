@@ -3,7 +3,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Coach prep tokens
+        // Facilitator guide tokens
         night: '#172033',
         canvas: '#F4F8FF',
         paper: '#F4F8FF',

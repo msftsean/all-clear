@@ -2,7 +2,7 @@ export interface Card {
   letter: string;
   slug: string;
   title: string;
-  pill?: 'LIVE DEMO' | 'WARMUP';
+  pill?: 'P1' | 'P2' | 'P3';
   message: string;
   build: string;
   skill: string;
@@ -13,134 +13,99 @@ export interface Card {
 
 export const cards: Card[] = [
   {
-    letter: 'A',
-    slug: 'quiet-crisis',
-    title: 'The Quiet Crisis',
-    message:
-      "I haven't been to class in two weeks. I don't think I belong here. I've been crying at night. I don't know who to talk to.",
-    build:
-      'Recognize overlapping distress, route primarily to Student Wellness, surface the crisis line, and ALSO offer a chaplain conversation as a parallel path. No gating.',
-    skill: 'Whole-person overlap + safety escalation, no gating.',
+    letter: '01',
+    slug: 'credential-spray',
+    title: 'Credential spray',
+    pill: 'P1',
+    message: 'Authentication failures have climbed 18× across regions. Most attempts share a small rotating set of source networks.',
+    build: 'Group the repeated alerts into one security incident, preserve the raw signal count, and assign the Identity queue with a 15-minute acknowledgement SLA.',
+    skill: 'High-volume deduplication with an urgent ownership handoff.',
     doneWhen: [
-      'Routes primarily to Student Wellness (not Campus Ministry)',
-      'Surfaces the 24/7 crisis line and creates a wellness ticket',
-      'Offers a chaplain conversation in parallel — never as a gate in front of clinical care',
+      'Collapses matching signals into one incident without discarding evidence',
+      'Sets severity P1 and starts the acknowledgement clock',
+      'Creates a ClearBoard update naming the owner and next checkpoint',
     ],
-    routingKey:
-      'Primary student_wellness; overlap campus_ministry (offer only). Safety override: if harm signals appear, escalate=true, priority=urgent, surface 988, always create ticket. Rule: never gate clinical care behind a faith conversation.',
-    kb: [
-      'Booking a counseling intake',
-      'Same-day urgent appointments and after-hours crisis support',
-      'Talking to a chaplain — pastoral counseling vs. spiritual direction',
-    ],
+    routingKey: 'Fingerprint: auth failures + shared source pattern + 10-minute window. Queue: Identity Security. Severity: P1. SLA: acknowledge in 15 minutes; publish an initial sitrep in 30 minutes.',
+    kb: ['Credential attack containment checklist', 'Identity Security escalation roster', 'ClearBoard incident update format'],
   },
   {
-    letter: 'B',
-    slug: 'aid-cliff',
-    title: 'The Aid Cliff',
-    message:
-      "My mom lost her job last month. Can I get more aid? Also I'm thinking of dropping a class — does that hurt my package?",
-    build:
-      "Detect the financial_aid + registrar overlap, route correctly, and create a high-priority appeals ticket with the student's narrative attached.",
-    skill: 'Multi-intent overlap + autonomous high-priority ticket.',
+    letter: '02',
+    slug: 'checkout-latency',
+    title: 'Checkout latency',
+    pill: 'P2',
+    message: 'Synthetic checks and customer reports show checkout completing in 11–16 seconds after the latest payments deploy.',
+    build: 'Correlate the customer-impact and telemetry signals, open one incident for the regression, and route it to the Payments queue.',
+    skill: 'Cross-source correlation with a customer-impact assessment.',
     doneWhen: [
-      "Detects both intents and routes primarily to Financial Aid (the aid implication is the blocker)",
-      "Creates a high-priority appeals ticket carrying the student's narrative",
-      'Acknowledges the registrar/drop question',
+      'Links monitoring, support, and deploy signals to one incident timeline',
+      'Sets severity P2 with a one-hour mitigation target',
+      'Records the rollback decision and customer impact in the sitrep',
     ],
-    routingKey:
-      'Primary financial_aid; overlap registrar. "lost my job" → human-touch → priority=high, always create ticket. The drop-deadline part alone would be registrar, but aid is the blocker here.',
-    kb: [
-      'How federal aid is recalculated when you drop below full-time status',
-      'Appealing your financial aid award: the special-circumstances form',
-      'Add/drop, withdrawal, and the W vs. WF distinction',
-    ],
+    routingKey: 'Fingerprint: checkout latency + payments service + active release. Queue: Payments Reliability. Severity: P2. SLA: acknowledge in 30 minutes; mitigation target in 60 minutes.',
+    kb: ['Payments rollback playbook', 'Customer-impact sizing guide', 'P2 communications checklist'],
   },
   {
-    letter: 'C',
-    slug: 'discernment',
-    title: 'The Discernment',
-    message:
-      "I'm thinking about doing a year of service after graduation. I don't know if I should apply to JVC or take the consulting job. Can someone help me think through this?",
-    build:
-      'Route to Campus Ministry, surface discernment-group and 1:1 chaplain options, and do NOT auto-create a ticket — it offers.',
-    skill: 'Offer, don\'t auto-create — opt-in human handoff.',
+    letter: '03',
+    slug: 'possible-exposure',
+    title: 'Possible data exposure',
+    pill: 'P1',
+    message: 'A partner reports that a signed export link was forwarded outside the approved recipient list.',
+    build: 'Preserve the report as sensitive evidence, create a privacy incident, and prevent duplicate external reports from spawning separate cases.',
+    skill: 'Safety-first triage for a potentially sensitive incident.',
     doneWhen: [
-      'Routes to Campus Ministry',
-      'Surfaces discernment-group and 1:1 chaplain options',
-      'Offers to connect rather than auto-creating a ticket (pastoral relationships are opt-in)',
+      'Classifies the report as restricted and limits the incident audience',
+      'Routes to Privacy & Security with P1 handling',
+      'Uses ClearBoard only for approved, non-sensitive status language',
     ],
-    routingKey:
-      'Primary campus_ministry. Human-touch keywords (discernment, vocation) → priority=normal, always_create_ticket=False. The win is restraint: offer, don\'t book.',
-    kb: [
-      'Discernment groups for students considering religious or service vocations',
-      'Service & immersion programs and how to apply',
-      'Talking to a chaplain — pastoral counseling vs. spiritual direction',
-    ],
+    routingKey: 'Fingerprint: externally shared export link + partner report. Queue: Privacy & Security. Severity: P1. SLA: acknowledge in 15 minutes. Safety rule: never copy sensitive records into the public sitrep.',
+    kb: ['Privacy incident containment', 'Restricted incident communications', 'Evidence preservation guide'],
   },
   {
-    letter: 'D',
-    slug: 'phishing-storm',
-    title: 'The Phishing Storm',
-    pill: 'LIVE DEMO',
-    message:
-      "My password isn't working and I just got an email saying my account is locked. I clicked the link.",
-    build:
-      'Handle the IT routing AND trigger a security-incident workflow because of the click. Two tickets — one to IT support, one to the security team.',
-    skill: 'One message → two parallel actions (dual ticket).',
+    letter: '04',
+    slug: 'warehouse-offline',
+    title: 'Warehouse offline',
+    pill: 'P2',
+    message: 'Three fulfillment sites stopped sending scanner events within two minutes of a network policy rollout.',
+    build: 'Deduplicate location-specific alerts into an operations incident and establish a safe fallback while Network investigates.',
+    skill: 'Service restoration across a distributed operational queue.',
     doneWhen: [
-      'Routes to IT and offers a self-serve password reset',
-      'Detects the "I clicked the link" signal and fires a security-incident workflow',
-      'Produces two tickets from one message — IT support + security team',
+      'Groups the site alerts under a single parent incident',
+      'Assigns Network Operations and names the fulfillment liaison',
+      'Publishes a clear operational workaround and next update time',
     ],
-    routingKey:
-      'Primary it; second action = security incident triggered by the click. Two tickets. This is the on-stage live demo — the canonical "one message, two outcomes."',
-    kb: [
-      'Resetting your university password and enrolling in MFA',
-      'Reporting a phishing email',
-    ],
+    routingKey: 'Fingerprint: scanner telemetry gap + policy rollout + multiple sites. Queue: Network Operations. Severity: P2. SLA: acknowledge in 30 minutes; operational update in 45 minutes.',
+    kb: ['Fulfillment continuity playbook', 'Network change rollback procedure', 'Operations sitrep template'],
   },
   {
-    letter: 'E',
-    slug: 'holy-spirit',
-    title: 'Mass of the Holy Spirit',
-    pill: 'WARMUP',
-    message:
-      "When is the Mass of the Holy Spirit? Also, I'm not Catholic — am I welcome?",
-    build:
-      'The simplest case — Campus Ministry routing with an interfaith welcome paragraph baked into the response. Good warmup for newer teams.',
-    skill: 'Simplest A→B routing + inclusive welcome (warmup).',
+    letter: '05',
+    slug: 'unsafe-content-report',
+    title: 'Unsafe content report',
+    pill: 'P1',
+    message: 'Moderation reports flag a credible threat directed at a named location. The reporter may still be at risk.',
+    build: 'Prioritize immediate safety, route to the Safety Response queue, and keep identifying details out of broad updates.',
+    skill: 'Human-safety escalation with minimum necessary disclosure.',
     doneWhen: [
-      'Routes to Campus Ministry',
-      'Answers the schedule question from the KB',
-      'Includes an interfaith welcome line — does not assume Catholic identity',
+      'Marks the case urgent and assigns the on-call Safety Response lead',
+      'Separates restricted details from the visible incident summary',
+      'Provides a timed escalation checkpoint rather than speculative updates',
     ],
-    routingKey:
-      'Primary campus_ministry. Interfaith-respect rule applies: serve students of all faiths and none. No ticket needed.',
-    kb: [
-      'Mass schedule, reconciliation hours, and sacramental preparation',
-      'Interfaith programming, prayer spaces, and dietary observances',
-    ],
+    routingKey: 'Fingerprint: credible threat + named target + active risk. Queue: Safety Response. Severity: P1. SLA: acknowledge immediately; follow the emergency escalation protocol. Safety rule: restricted details stay in the protected case record.',
+    kb: ['Safety Response emergency protocol', 'Restricted-data handling', 'P1 leadership notification guide'],
   },
   {
-    letter: 'F',
-    slug: 'multilingual-family',
-    title: 'The Multilingual Family',
-    message:
-      'Mi mamá quiere saber cuándo es el día de orientación para padres.',
-    build:
-      'Detect Spanish, respond in Spanish, and route to General/Mission with a parent-orientation KB hit.',
-    skill: 'Language detection + multilingual response.',
+    letter: '06',
+    slug: 'api-error-noise',
+    title: 'API error noise',
+    pill: 'P3',
+    message: 'The same upstream timeout generated 240 alerts across seven services, but customer success metrics remain stable.',
+    build: 'Suppress duplicate alert noise, track the shared dependency, and avoid prematurely declaring a customer incident.',
+    skill: 'Noise reduction with proportionate severity and observation.',
     doneWhen: [
-      'Detects the message is in Spanish',
-      'Responds in Spanish',
-      'Routes to General/Mission and retrieves the parent-orientation article',
+      'Clusters duplicate alerts under an observation record',
+      'Routes the dependency issue to Platform Observability',
+      'Sets a re-evaluation trigger instead of opening a P1 incident',
     ],
-    routingKey:
-      'Primary general. Language detection drives a Spanish-language response; KB retrieval on parent orientation.',
-    kb: [
-      "First-year orientation: what's required vs. optional",
-      'What does Jesuit education actually mean?',
-    ],
+    routingKey: 'Fingerprint: shared upstream timeout + stable customer indicators. Queue: Platform Observability. Severity: P3. SLA: acknowledge in four hours. Re-evaluate if error budget or customer impact crosses threshold.',
+    kb: ['Alert deduplication policy', 'Dependency health investigation', 'Severity calibration guide'],
   },
 ];

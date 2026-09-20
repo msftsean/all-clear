@@ -17,7 +17,7 @@ export default {
         bg: '#F4F8FF',
         fg: '#172033',
         'dark-text': '#172033',
-        'iu-crimson': '#D62839',
+        'alert-red': '#D62839',
         'microsoft-blue': '#173B8F',
         'neutral-gray': '#F4F8FF',
       },

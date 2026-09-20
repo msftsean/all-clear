@@ -12,7 +12,9 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      # Build locally and push directly: ACR Tasks can remain queued on fresh
+      # registries, leaving azd up without actionable progress.
+      remoteBuild: false
 
   frontend:
     project: ./frontend
@@ -20,7 +22,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
 # Azure infrastructure
 infra:

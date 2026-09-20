@@ -1,21 +1,13 @@
-"""Runtime safety net shared by the text and voice pipelines.
-
-Wraps the hardened, intent-INDEPENDENT crisis detection in
-``app.agents.escalation_rules`` so a single source of truth forces human
-escalation on harm signals regardless of how the intent classifier labels a
-message. Returns app-native enum fields ready for ``ChatResponse``, ticket, and
-audit-log construction (no raw scenario strings leak into the runtime).
-"""
+"""Runtime safety net shared by the text and voice pipelines."""
 from __future__ import annotations
 
 from app.agents.escalation_rules import contains_harm_signal
-from app.models.enums import ActionStatus, Department, EscalationReason, Priority
+from app.agents.schemas import ActionStatus, EscalationReason, Queue, Severity
 
 CRISIS_MESSAGE = (
     "It sounds like you may be going through something serious, and you deserve "
-    "to talk to a real person right now. I'm connecting you with a counselor. "
-    "If you are in immediate danger, call 911 or campus safety. You can also "
-    "reach the 988 Suicide & Crisis Lifeline by calling or texting 988."
+    "immediate human support. If you are in immediate danger, call local "
+    "emergency services. In the U.S. or Canada, call or text 988 for crisis support."
 )
 
 
@@ -30,10 +22,10 @@ def apply_safety_override(message: str) -> dict | None:
     if not contains_harm_signal(message):
         return None
     return {
-        "department": Department.ESCALATE_TO_HUMAN,
+        "queue": Queue.ESCALATIONS,
         "status": ActionStatus.ESCALATED,
-        "escalation_reason": EscalationReason.SENSITIVE_TOPIC,
-        "priority": Priority.URGENT,
+        "escalation_reason": EscalationReason.SENTIMENT_SAFETY,
+        "severity": Severity.SEV1,
         "escalated": True,
         "safety_override": True,
         "message": CRISIS_MESSAGE,
@@ -63,12 +55,12 @@ def voice_crisis_result(arguments: dict) -> dict | None:
     if _any_string_has_harm(arguments):
         return {
             "intent": "human_escalation",
-            "department": "ESCALATE_TO_HUMAN",
+            "queue": Queue.ESCALATIONS.value,
             "confidence": 1.0,
             "requires_escalation": True,
             "escalated": True,
             "safety_override": True,
-            "priority": "urgent",
+            "severity": Severity.SEV1.value,
             "message": CRISIS_MESSAGE,
             "articles": [],
         }

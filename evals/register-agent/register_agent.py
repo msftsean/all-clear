@@ -22,8 +22,8 @@ higher-fidelity safety test that exercises those guardrails, keep using
 Usage (PowerShell)
 ------------------
     az login
-    $env:AZURE_AI_PROJECT_ENDPOINT = "https://allclear-foundry-kt5fw24guxoxy.services.ai.azure.com/api/projects/allclear-redteam"
-    python register_agent.py                       # create/update the agent version
+    $env:AZURE_AI_PROJECT_ENDPOINT = "https://<your-foundry-subdomain>.services.ai.azure.com/api/projects/<your-project-name>"
+    python register_agent.py --model "<your-model-deployment>"  # create/update the agent version
     python register_agent.py --list                # list versions
     python register_agent.py --model gpt-5.1 --name all-clear-triage
 
@@ -40,10 +40,6 @@ import sys
 from azure.identity import DefaultAzureCredential
 from azure.ai.projects import AIProjectClient
 from azure.ai.projects.models import PromptAgentDefinition
-
-DEFAULT_ENDPOINT = (
-    "https://allclear-foundry-kt5fw24guxoxy.services.ai.azure.com/api/projects/allclear-redteam"
-)
 
 # Reporter-facing incident-triage instructions, sourced from the live ActionAgent
 # system prompt (backend/app/agents/action_agent.py) and extended with the safety
@@ -115,10 +111,10 @@ def register(client: AIProjectClient, name: str, model: str, description: str) -
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Register All Clear as a Foundry prompt agent.")
     p.add_argument("--name", default="all-clear-triage", help="Agent name in the Foundry project.")
-    p.add_argument("--model", default="gpt-5.1", help="Model deployment name to back the agent.")
+    p.add_argument("--model", help="Your model deployment name to back the agent.")
     p.add_argument(
         "--description",
-        default="All Clear incident-triage assistant (model surface: gpt-5.1 + allclear-guardrails content filter).",
+        default="All Clear incident-triage assistant (model surface with the configured content filter).",
         help="Agent description shown in Foundry.",
     )
     p.add_argument("--list", action="store_true", help="List existing versions and exit.")
@@ -127,9 +123,19 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    endpoint = os.environ.get("AZURE_AI_PROJECT_ENDPOINT", DEFAULT_ENDPOINT)
-    if not endpoint:
-        print("ERROR: set AZURE_AI_PROJECT_ENDPOINT.", file=sys.stderr)
+    endpoint = os.environ.get("AZURE_AI_PROJECT_ENDPOINT", "").strip()
+    if not endpoint or "<" in endpoint or ">" in endpoint:
+        print(
+            "ERROR: set AZURE_AI_PROJECT_ENDPOINT to your Foundry project endpoint "
+            "(for example, https://<subdomain>.services.ai.azure.com/api/projects/<project>).",
+            file=sys.stderr,
+        )
+        return 2
+    if not endpoint.startswith(("https://", "http://")) or "/api/projects/" not in endpoint:
+        print(
+            "ERROR: AZURE_AI_PROJECT_ENDPOINT must be a Foundry project URL ending in /api/projects/<project>.",
+            file=sys.stderr,
+        )
         return 2
 
     print(f"Project : {endpoint}")
@@ -139,6 +145,12 @@ def main() -> int:
         list_versions(client, args.name)
         return 0
 
+    if not args.model or "<" in args.model or ">" in args.model:
+        print(
+            "ERROR: pass --model with the deployment name from your Azure OpenAI resource.",
+            file=sys.stderr,
+        )
+        return 2
     register(client, args.name, args.model, args.description)
     list_versions(client, args.name)
     return 0

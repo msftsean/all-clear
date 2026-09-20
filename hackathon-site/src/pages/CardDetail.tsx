@@ -23,7 +23,7 @@ export default function CardDetail() {
         <LetterBadge letter={card.letter} size="lg" />
         <div>
           <p className="text-sm font-mono text-ink/50 uppercase tracking-wider">
-            Card {card.letter} · <span className="text-gold">{card.slug}</span>
+            Incident {card.letter} · <span className="text-gold">{card.slug}</span>
           </p>
           {card.pill && (
             <div className="mt-1">
@@ -41,7 +41,7 @@ export default function CardDetail() {
       {/* 3. The Message */}
       <section className="mb-8">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-ink/50 mb-2">
-          The Message
+          Incoming signal
         </h2>
         <blockquote className="chat-bubble text-base leading-relaxed">
           "{card.message}"
@@ -51,7 +51,7 @@ export default function CardDetail() {
       {/* 4. Your Build */}
       <section className="mb-8">
         <h2 className="text-lg font-serif font-bold text-maroon mb-2">
-          Your Build
+          Triage objective
         </h2>
         <p className="text-ink/80 leading-relaxed">{card.build}</p>
       </section>
@@ -59,7 +59,7 @@ export default function CardDetail() {
       {/* 5. Skill */}
       <section className="mb-8">
         <h2 className="text-lg font-serif font-bold text-maroon mb-2">
-          The Skill You'll Practice
+          Capability under test
         </h2>
         <p className="font-mono text-sm bg-deep-cream rounded-lg px-4 py-2 inline-block">
           {card.skill}
@@ -69,7 +69,7 @@ export default function CardDetail() {
       {/* 6. Done When */}
       <section className="mb-8">
         <h2 className="text-lg font-serif font-bold text-maroon mb-2">
-          Done When
+          Complete when
         </h2>
         <ul className="space-y-2">
           {card.doneWhen.map((item, i) => (
@@ -85,7 +85,7 @@ export default function CardDetail() {
       <section className="mb-8">
         <details className="bg-deep-cream/50 rounded-xl p-4 border border-deep-cream">
           <summary className="font-serif font-bold text-maroon text-base">
-            Routing Answer Key
+            Triage reference
           </summary>
           <p className="mt-3 text-sm text-ink/70 leading-relaxed font-mono">
             {card.routingKey}
@@ -96,7 +96,7 @@ export default function CardDetail() {
       {/* 8. KB Articles */}
       <section className="mb-4">
         <h2 className="text-lg font-serif font-bold text-maroon mb-2">
-          KB You Can Retrieve Against
+          Reference material
         </h2>
         <ul className="space-y-1.5">
           {card.kb.map((article, i) => (

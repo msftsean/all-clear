@@ -13,7 +13,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
   frontend:
     project: ./frontend
@@ -21,7 +21,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
 infra:
   provider: bicep

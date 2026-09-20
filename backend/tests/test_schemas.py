@@ -157,12 +157,3 @@ def test_pipeline_result_composition() -> None:
     )
     assert result.routing.outcome is RoutingOutcome.OPEN_INCIDENT
     assert result.action.incident_id == "AC-0042"
-
-
-def test_legacy_field_mapping_documented() -> None:
-    """The module must document the legacy 47 Doors -> All Clear field mapping (T2 done-when)."""
-    import app.agents.schemas as schemas_mod
-
-    doc = schemas_mod.__doc__ or ""
-    for legacy in ["Department", "Priority", "QueryResult", "department_suggestion", "suggested_sla_hours"]:
-        assert legacy in doc, f"mapping comment missing legacy term: {legacy}"
