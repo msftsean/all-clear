@@ -92,3 +92,12 @@ defense.
 | `red_team_scan.py` | The scan. Configurable target, risk categories, strategies, objectives. |
 | `requirements.txt` | `azure-ai-evaluation[redteam]`, `azure-identity`, `httpx`. |
 | `redteam_results.json` | Local copy of the most recent scan result (also uploaded to Foundry). |
+
+## Prefer the portal UI over the CLI?
+
+Once a scan has uploaded, open your project at <https://ai.azure.com> → **Red teaming** to see
+the attack-success-rate scorecard per risk category/strategy, with the actual attack prompt and
+agent response available per row — a click-through path for anyone who'd rather review results in
+a dashboard than in `redteam_results.json`. See
+[`exercises/01-glass-box-audit.md` → "Viewing it in the Foundry portal — no code required"](../../exercises/01-glass-box-audit.md#viewing-it-in-the-foundry-portal--no-code-required)
+for the full walkthrough of that tab plus quality evals and model comparison.

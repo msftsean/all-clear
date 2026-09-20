@@ -11,11 +11,19 @@
   `/?page=audit`) with its front-to-back Pipeline map and Azure Portal deep
   links. Covers User Stories 1–3. Verified via `python -m unittest
   scripts/test_evaluator.py -v`, `npm run typecheck`, `npm run build`.
-- **Increment 2 (this update, planned/in progress)**: Deploy the same
-  browser control room to Azure via the existing `azd up` path, and add a
-  real Foundry evaluation suite so the guardrail claim is backed by an
-  uploaded, gate-able eval run instead of only a local `unittest` pass.
-  Covers User Story 4. See Phase 3 (Azure/Evals) in `tasks.md`.
+- **Increment 2 (shipped)**: Deployed the same browser control room to
+  Azure via the existing `azd up` path, and added a real Foundry evaluation
+  suite so the guardrail claim is backed by an uploaded, gate-able eval run
+  instead of only a local `unittest` pass. Covers User Story 4.
+- **Increment 3 (this update, docs-only)**: Added an explicit Foundry
+  **portal UI** walkthrough (no CLI) for viewing the glass-box guardrail
+  run, the quality-eval run, and the red-team run, plus the Model catalog
+  compare view — in `exercises/01-glass-box-audit.md`,
+  `specs/020-glass-box-audit/quickstart.md`, and the `evals/*/README.md`
+  files. No functional requirements changed: this documents the existing
+  Evaluations/Red teaming tab surfaces (FR-018/FR-019) as a first-class
+  click-through alternative to the CLI scripts, for facilitators/
+  participants who prefer a portal over code.
 
 ## Summary
 

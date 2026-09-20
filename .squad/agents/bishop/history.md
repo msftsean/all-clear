@@ -7,6 +7,18 @@ MARYLAND ADMIN 01.
 
 ## Learnings
 
+### 2026-09-20 — External coach guide wording vs live inbound phone
+
+The new ACS phone capability is a **real inbound-only communication channel**:
+the deployed app can answer a human caller on the provisioned number, but the
+current public claim about not sending outbound communications or dispatching
+responders is still technically true as written. That said, external coaches
+or judges could reasonably overread "does not send outbound communications" as
+"does not communicate live at all," so public-facing coach material should add
+one plain-language sentence clarifying that live voice demos may include the
+system answering an inbound call while all notification/dispatch/public-action
+authority remains human-held.
+
 ### 2026-09-20 — Event Readiness Review (facilitated, gate: PASS)
 
 Reviewed the squad's preserved event-readiness work (originally started under

@@ -46,4 +46,14 @@ signal set.
 
 The quality evaluators are prompt-based. Choose a judge deployment available in your own Azure
 OpenAI resource; a non-reasoning model is recommended because the evaluator prompts set a fixed
-temperature.
+temperature. Foundry's **Model catalog** (project home → **Model catalog**) lets you browse
+available judge/chat models and use its **Compare** view side by side before picking a
+`JUDGE_DEPLOYMENT` — useful if you'd rather evaluate options visually than read benchmark docs.
+
+## Prefer the portal UI over the CLI?
+
+Once a run has uploaded, open your project at <https://ai.azure.com> → **Evaluations** → the
+`quality-smoke` run to see per-query Relevance/Coherence/Fluency scores and the judge's reasoning
+for each, with no terminal required. See
+[`exercises/01-glass-box-audit.md` → "Viewing it in the Foundry portal — no code required"](../../exercises/01-glass-box-audit.md#viewing-it-in-the-foundry-portal--no-code-required)
+for the full walkthrough of that tab plus red-teaming and model comparison.
