@@ -3,8 +3,6 @@ import { useTranscriptStream } from "../hooks/useTranscriptStream";
 import type { TranscriptEvent } from "../types/demo";
 import { Waveform } from "./components";
 
-const PHONE_DISPLAY = "+1 (844) 207-0169";
-
 function clock(iso: string): string {
   try {
     return new Date(iso).toLocaleTimeString([], {
@@ -160,7 +158,7 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
           <span className="text-nline">|</span>
           <div className="flex items-center gap-2 text-ndim">
             <Waveform live={callState.status === "active"} />
-            <span className="font-mono text-[13px] text-nink">{PHONE_DISPLAY}</span>
+            <span className="font-mono text-[13px] text-nink">Caller line</span>
           </div>
         </div>
         <StatusBadge status={callState.status} durationSeconds={callState.durationSeconds} />
@@ -183,9 +181,7 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
               Pane of glass — waiting for a call
             </p>
             <p className="font-mono text-[13px] text-ndim/70">
-              dial{" "}
-              <span className="font-semibold text-nink">{PHONE_DISPLAY}</span> to watch
-              the conversation live
+              transcripts will appear here the moment a participant calls in
             </p>
           </div>
         ) : (

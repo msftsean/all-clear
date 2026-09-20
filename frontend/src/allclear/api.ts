@@ -1,7 +1,5 @@
 import type {
   AzureFootprint,
-  CapstoneLeadEntry,
-  CapstoneLeadPayload,
   DemoClearBoard,
   HealthStatus,
   ModelStatus,
@@ -91,11 +89,4 @@ export function listSessions(
   return req<ConversationSession[]>(
     `/sessions?student_id_hash=${encodeURIComponent(studentIdHash)}&limit=${limit}`,
   );
-}
-
-export function submitCapstoneLead(payload: CapstoneLeadPayload): Promise<{ entry: CapstoneLeadEntry; count: number }> {
-  return req<{ entry: CapstoneLeadEntry; count: number }>("/demo/capstone/entries", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
 }
