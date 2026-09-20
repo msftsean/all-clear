@@ -39,5 +39,5 @@ $env:ENVIRONMENT="test"; $env:MOCK_MODE="true"; $env:PYTHONPATH="."
 ```
 
 Card text is the build spec — keep behavior locked to `CONTEXT.md` and the
-Constitution (`shared/constitution.md`): bounded authority (Art. II), escalation
+Constitution (`.specify/memory/constitution.md`): bounded authority (Art. II), escalation
 safety (Art. III), and "no citation, no claim" (Art. IV).

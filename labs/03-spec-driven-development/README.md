@@ -18,7 +18,7 @@ Checkpoints:
 □ Step 2: Run the repo's Spec Kit workflow
 □ Step 3: Generate tasks and implementation guidance
 □ Produce a capability spec grounded in CONTEXT.md
-□ Check requirements against shared/constitution.md
+□ Check requirements against `.specify/memory/constitution.md`
 ```
 
 ---
@@ -34,7 +34,7 @@ In this lab, you will use `/speckit.constitution`, `/speckit.specify`, `/speckit
 By the end of this lab, you will be able to:
 
 1. 📋 **Create a Spec Kit feature spec** for an All Clear capability with requirements, constraints, and success criteria
-2. 🛡️ **Apply the All Clear constitution** from [`../../shared/constitution.md`](../../shared/constitution.md)
+2. 🛡️ **Apply the All Clear constitution** from [`../../.specify/memory/constitution.md`](../../.specify/memory/constitution.md)
 3. 🧭 **Ground every term** in [`../../CONTEXT.md`](../../CONTEXT.md), especially Signal, Incident, Queue, Sitrep, `QueryAgent`, `RouterExecutor`, and `ActionAgent`
 4. 💻 **Generate a plan and tasks** with the repo's Spec Kit commands before asking Copilot to implement
 
@@ -77,10 +77,10 @@ This lab contains two exercises:
 Open these files in VS Code so Copilot can use them as context:
 
 - [`../../CONTEXT.md`](../../CONTEXT.md) — canonical domain language for signals, incidents, queues, severity/SLA, and sitreps
-- [`../../shared/constitution.md`](../../shared/constitution.md) — non-negotiable All Clear engineering principles
+- [`../../.specify/memory/constitution.md`](../../.specify/memory/constitution.md) — non-negotiable All Clear engineering principles
 - `.github/prompts/speckit.*.prompt.md` and `.github/agents/speckit.*.agent.md` — the available Spec Kit commands/agents
 
-> Note: `.specify/memory/constitution.md` is a legacy template artifact. For this repo's All Clear work, use `shared/constitution.md` as the participant-facing constitution.
+> This is the canonical constitution for the current All Clear repository.
 
 ### 🔹 Step 2: Run the Spec Kit workflow (Exercise 03a - 25 minutes)
 
@@ -109,10 +109,10 @@ After `/speckit.specify` finishes, continue in Copilot Chat:
 
 Review the generated artifacts before implementation:
 
-1. 📄 Confirm the plan references `CONTEXT.md` and `shared/constitution.md`
+1. 📄 Confirm the plan references `CONTEXT.md` and `.specify/memory/constitution.md`
 2. 🧪 Confirm tasks include verifiers before implementation work
 3. ✅ Confirm no task asks `QueryAgent` to route or write records
-4. 🔄 If the artifacts drift into student-support terms or generic "department" language, rerun `/speckit.specify` with corrected All Clear wording
+4. 🔄 If the artifacts drift into non-All Clear terms or generic "department" language, rerun `/speckit.specify` with corrected All Clear wording
 
 ## ✅ Deliverables
 
@@ -156,7 +156,7 @@ By the end of this lab, you will have created:
 
 ### ❌ Spec Kit output doesn't match All Clear terminology
 
-- 📄 Open `CONTEXT.md` and `shared/constitution.md` in editor tabs
+- 📄 Open `CONTEXT.md` and `.specify/memory/constitution.md` in editor tabs
 - 💬 Rerun `/speckit.specify` with explicit corrections such as "use Queue, not department"
 - ✂️ Keep the feature focused on one incident-triage capability
 - 📝 Add acceptance criteria that mention Signal, Incident, Severity/SLA, and Sitrep where relevant
@@ -187,7 +187,7 @@ By the end of this lab, you will have created:
 - 📖 [Specification by Example](https://en.wikipedia.org/wiki/Specification_by_example) - Background on spec-driven approaches
 - 🤖 [GitHub Copilot Documentation](https://docs.github.com/en/copilot) - Official Copilot guides
 - 🧭 [`../../CONTEXT.md`](../../CONTEXT.md) - All Clear domain language
-- 🛡️ [`../../shared/constitution.md`](../../shared/constitution.md) - All Clear constitution: bounded authority, escalation safety, truth over fluency
+- 🛡️ [`../../.specify/memory/constitution.md`](../../.specify/memory/constitution.md) - All Clear constitution: bounded authority, escalation safety, grounded operational output
 
 ## ➡️ Next Steps
 
@@ -195,7 +195,7 @@ After completing this lab, proceed to:
 
 **[Lab 04 - Build RAG Pipeline](../04-build-rag-pipeline/README.md)** 🔍
 
-In Lab 04, you'll build production-ready AI agents with your specs.
+In Lab 04, you'll use the spec to guide a grounded retrieval change.
 
 ---
 

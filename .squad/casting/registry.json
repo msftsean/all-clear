@@ -1,0 +1,16 @@
+{
+  "agents": [
+    {"persistent_name":"Kranz","universe":"Apollo 13","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"retired"},
+    {"persistent_name":"Lovell","universe":"Apollo 13","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"retired"},
+    {"persistent_name":"Swigert","universe":"Apollo 13","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"retired"},
+    {"persistent_name":"Mattingly","universe":"Apollo 13","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"retired"},
+    {"persistent_name":"Haise","universe":"Apollo 13","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"retired"},
+    {"persistent_name":"Bishop","universe":"X-Men","created_at":"2026-09-20T15:31:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Storm","universe":"X-Men","created_at":"2026-09-20T15:31:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Forge","universe":"X-Men","created_at":"2026-09-20T15:31:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Beast","universe":"X-Men","created_at":"2026-09-20T15:31:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Kitty","universe":"X-Men","created_at":"2026-09-20T15:31:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Scribe","universe":"system","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"active"},
+    {"persistent_name":"Ralph","universe":"system","created_at":"2026-09-20T15:30:00Z","legacy_named":false,"status":"active"}
+  ]
+}
