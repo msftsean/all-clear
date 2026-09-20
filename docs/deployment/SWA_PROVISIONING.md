@@ -15,6 +15,11 @@ This repo deploys **four** independent Azure Static Web Apps (SWAs):
 > doing so deploys one site's content into another. Sites 2, 3 and 4 each use their
 > own secret name above, distinct from the hackathon site.
 
+> **Retired:** the coach prep companion (row 4, `coach-site/`) has been removed
+> from this repo. Coach-facing material now lives entirely in the separate
+> `Public-sector-hacks-Org/all-clear-coaches-runbook` repo/deployment. The rest
+> of this archived doc is left as historical reference for sites 1-3.
+
 ## Live deployment URLs
 
 | Site | Status | URL |

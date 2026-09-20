@@ -21,7 +21,9 @@ ActionAgent acts only through `create_incident`, `search_knowledge`, and
   `cd backend && PYTHONPATH=. python -m pytest tests/test_schemas.py tests/test_voice/test_safety_net.py tests/test_voice/test_endpoints.py -q`
 - Primary frontend: `cd frontend && npm run build`
 - Companion sites: run `npm run typecheck && npm run build` in `workshop-site/`,
-  `coach-site/`, `hackathon-site/`, or `docs-site/` as applicable.
+  `hackathon-site/`, or `docs-site/` as applicable. Coach-facing material lives
+  in the separate `Public-sector-hacks-Org/all-clear-coaches-runbook` repo, not
+  in this one.
 
 ## Non-Negotiables
 
