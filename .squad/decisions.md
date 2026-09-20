@@ -103,3 +103,52 @@ is deterministic and offline, checking PII redaction, prompt-injection
 resistance, and SEV1/SLA preservation against the Lab 07 server contract.
 Both are optional/take-home, not part of the required S0-S5 completion
 contract.
+
+## 2026-09-20 — Glass-Box Audit evaluator metric naming and builder strategy
+
+**By:** Forge (Platform)
+
+Chose the custom evaluator metric name `guardrail_passed` so the Foundry
+suite threshold in `.foundry/agent-metadata.yaml` reads truthfully against
+the uploaded metric key returned by `glass_box_eval.py`. Used minimal
+synthetic `TraceEvent` builders in `evals/glass-box-audit/glass_box_eval.py`
+instead of reusing the full `audit_simulation.py` trace-building path,
+because the delivery request explicitly scoped this eval to exercising
+`evaluate_trace()`'s combination logic rather than reproducing the fixed
+100-record simulation output.
+
+## 2026-09-20 — Increment 2 section in exercise guide: optional Azure framing
+
+**By:** Storm (Curriculum)
+
+Added "## Increment 2 — Azure deployment + evals (optional)" section to
+`exercises/01-glass-box-audit.md`.
+
+**Key framing choices:**
+1. **Loud optionality up front**: Section opens with a clear note that
+   Increment 1 (120-second demo, CLI, browser control room, guardrail tests)
+   runs entirely offline with no Azure credentials; Increment 2 is only for
+   facilitators who specifically want Azure hosting or Foundry eval visibility.
+2. **No new infrastructure**: Repeated core fact (with SC-006 reference) that
+   `azd up` reuses existing frontend Container App and requires zero new
+   Bicep or azure.yaml changes.
+3. **Two-mode evaluator**: Presented `--skip-upload` (local-only) and full
+   modes side by side so facilitators can test offline before trying Foundry
+   upload.
+4. **Scenario table for clarity**: Added table mapping 5 scenarios (clean,
+   fabrication_only, network_only, swarm_only, all_violations) to expected
+   outcomes (Pass/Blocked).
+5. **Voice alignment**: Used guide's casual, reassuring tone ("prepare, not
+   scare" philosophy).
+
+**Load-bearing facts preserved:**
+- `azd up` command and URL format (`/?page=audit`)
+- 5 scenarios with deterministic verdicts; only `clean` passes
+- `--skip-upload` flag for credential-free run
+- Reference to `evals/glass-box-audit/README.md` for full options
+- SC-006 and SC-007 compliance references
+
+**Non-goals:**
+- No changes to quickstart.md, specs/020-glass-box-audit/tasks.md, or infra
+- No new Bicep, azure.yaml, or evaluation scenario definitions
+- No modification to local-only Increment 1 behavior

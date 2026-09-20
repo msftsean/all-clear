@@ -39,3 +39,7 @@ starter + completion tests pass with and without the shortcut env var (the
 gate now requires the real extension). **Verdict: GO** — the accelerator is
 event-ready for the required S0-S5 spine; Labs 02/06/07/08, voice/phone, and
 Exercise 05y remain explicitly optional per the delivery plan.
+
+### 2026-09-20 — T031 Glass-Box Audit Correction Verification
+
+Coordinator corrected exercises/01-glass-box-audit.md (lines 331–335) to accurately state that `AZURE_AI_PROJECT_ENDPOINT` missing causes `glass_box_eval.py` to exit with code 2, not warn/fallback. Verified accuracy against `evals/glass-box-audit/glass_box_eval.py` lines 215–217: script returns 2 on missing env var. Marked T031 done and annotated with verification evidence.
