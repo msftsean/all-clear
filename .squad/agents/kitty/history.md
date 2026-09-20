@@ -28,3 +28,34 @@ event.
   changes**. Deployment: rebuild SPA bundle → push Docker image → deploy to
   existing app. The infrastructure is already shaped for arbitrary client-side
   SPA additions; Increment 2 is purely React component work.
+- 2026-09-20: Tried live `azd up` in subscription `a8a91d76-473f-49e2-ba21-1d394ba9a968`
+  (`CopilotLabs DS - 1009`) in `eastus2` using azd env `all-clear-demo` /
+  resource group `rg-all-clear-demo`. First run hung on the phone Event Grid
+  subscription because checked-in `infra/main.parameters.json` defaults
+  (`mockMode=false`, `deployRealtime=true`) overrode the azd env values, so the
+  placeholder backend never satisfied the incoming-call validation handshake.
+- 2026-09-20: Pre-fix retry failed with `ContainerAppSecretInvalid` because
+  backend secret `acs-connection-string` was empty in mock mode. After commit
+  `a0afed0`, `azd up --no-prompt` on the same `all-clear-demo` env succeeded
+  in `eastus2` and produced live URLs
+  `https://allclear-p74h22h3c2hqm-backend.agreeablegrass-0b5ab03b.eastus2.azurecontainerapps.io`
+  and
+  `https://allclear-p74h22h3c2hqm-frontend.agreeablegrass-0b5ab03b.eastus2.azurecontainerapps.io`;
+  `AZURE_AI_PROJECT_ENDPOINT` is still not provisioned by this stack.
+- 2026-09-20: Real ACS fallback can work without `az login`: an ACS-scoped
+  token from `azd auth token --scope https://communication.azure.com//.default`
+  was valid for the phone-numbers REST API. Purchased deployment-specific toll-
+  free number `+18333915639` for `allclear-p74h22h3c2hqm-acs` at **$2.00
+  USD/month** plus usage charges.
+- 2026-09-20: For live phone mode, `DEPLOY_REALTIME=true` is required in
+  addition to `MOCK_MODE=false` and `ACS_PHONE_NUMBER`, because
+  `AzurePhoneService` bridges calls through the Realtime WebSocket path using
+  `AZURE_OPENAI_REALTIME_DEPLOYMENT`.
+- 2026-09-20: `azd provision` updates the Container App template/infra but can
+  leave the previously deployed service revision or placeholder image serving
+  traffic; after changing live/mock phone settings, `azd deploy backend` and
+  `azd deploy frontend` were needed to move traffic onto ready All Clear
+  revisions. Final health checks: backend `/api/health` healthy with
+  `mock_mode=false`, `/api/phone/health` healthy with `phone_available=true`,
+  Event Grid `incoming-call` subscription `Succeeded`, but no real inbound PSTN
+  test call was placed from this environment.

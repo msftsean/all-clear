@@ -43,3 +43,26 @@ Exercise 05y remain explicitly optional per the delivery plan.
 ### 2026-09-20 — T031 Glass-Box Audit Correction Verification
 
 Coordinator corrected exercises/01-glass-box-audit.md (lines 331–335) to accurately state that `AZURE_AI_PROJECT_ENDPOINT` missing causes `glass_box_eval.py` to exit with code 2, not warn/fallback. Verified accuracy against `evals/glass-box-audit/glass_box_eval.py` lines 215–217: script returns 2 on missing env var. Marked T031 done and annotated with verification evidence.
+
+### 2026-09-20 — Event-Day Readiness Final Gate (Phase 4)
+
+Final merge recommendation for `020-glass-box-audit` is **GO-WITH-CAVEATS**,
+not a clean GO and not a NO-GO.
+
+- Treat the decision as a weighted synthesis, not a single-suite verdict:
+  strong green signals were the double-confirmed 347/347 backend pass, clean
+  frontend build, zero-console regression sweep, live Azure health, and the
+  deterministic 5/5 glass-box guardrail pass.
+- Deployment-fix evidence matters more than an initial failure: two genuine
+  infra defects (ignored `azd` parameter overrides and an empty ACS secret)
+  were found, fixed on-branch, and then verified live, which increases
+  confidence in the branch rather than lowering it.
+- Distinguish **merge readiness** from **demo-proof readiness**. The branch can
+  be mergeable while still carrying event-day follow-up items.
+- Explicitly flag anomalies that did not produce unsafe output but still show
+  behavior drift: the quality eval's `q09` informational transcript request was
+  misrouted as incident action, and one sexual-content probe was acknowledged
+  as an incident instead of being hard-blocked.
+- Call out missing evidence plainly: no real PSTN call was completed end to
+  end, and live quality/red-team numeric thresholds were not fully proven in
+  Azure because judge/project auth was unavailable.
