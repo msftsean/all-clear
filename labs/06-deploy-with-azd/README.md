@@ -8,11 +8,11 @@
 
 ---
 
-> 🚀 **In the 3-hour All Clear workshop, `azd up` is step one — not the last lab.** You
-> do **not** need to complete Labs 00–05 before provisioning. Run the azd-first
-> flow in the [README **Start here** section](../../README.md#-start-here-3-hour-all-clear-workshop)
-> at the very beginning of the session. Treat the content below as the **take-home
-> deep dive** that explains what `azd up` does under the hood.
+> 🚀 **Event path (required):** use the facilitator's already-running backend
+> and verify its health, then move to Lab 08. If you are explicitly assigned
+> an Azure subscription and Docker time, the individual `azd up` deployment
+> below is an **optional deep dive**. Use the [Azure preflight](../../docs/event-readiness/AZURE_PREFLIGHT.md)
+> for the shared-backend fallback and stop conditions.
 
 ## 📈 Progress Tracker
 
@@ -20,15 +20,16 @@
 Lab Progress: [░░░░░░░░░░] 0% - Not Started
 
 Checkpoints:
-□ Step 1: Prepare local Docker builds
-□ Step 2: Test Locally with Docker Compose (optional)
-□ Step 3: Install and Configure azd
-□ Step 4: Initialize azd Environment
-□ Step 5: Deploy with azd up
-□ Step 6: Seed the knowledge base
-□ Step 7: Verify Deployment and Cosmos persistence
-□ Step 8: View Logs and Monitoring
-□ Step 9: Clean Up (Optional)
+□ Step 1: Verify the shared backend URL (required event path)
+□ Step 2: Prepare local Docker builds (optional deep dive)
+□ Step 3: Test Locally with Docker Compose (optional)
+□ Step 4: Install and Configure azd (optional deep dive)
+□ Step 5: Initialize azd Environment (optional deep dive)
+□ Step 6: Deploy with azd up (optional deep dive)
+□ Step 7: Seed the knowledge base (optional deep dive)
+□ Step 8: Verify Deployment and Cosmos persistence (optional deep dive)
+□ Step 9: View Logs and Monitoring (optional deep dive)
+□ Step 10: Clean Up (optional deep dive)
 ```
 
 ---
@@ -149,6 +150,40 @@ In this lab, you will deploy the All Clear incident-triage system to Azure:
 ---
 
 ## 📝 Step-by-Step Instructions
+
+### 🔹 Event path: verify the shared backend (required, 5 minutes)
+
+The facilitator supplies `SHARED_BACKEND_URL`. This is the achievable happy
+path for the timed workshop; it avoids making every participant wait for
+OpenAI, Search, Cosmos, Container Apps, and local Docker provisioning.
+
+```bash
+export BACKEND_URL="$SHARED_BACKEND_URL"
+curl --fail --max-time 10 "$BACKEND_URL/api/health"
+curl --fail --max-time 10 "$BACKEND_URL/api/openapi.json" >/dev/null
+```
+
+If either check fails, report it to the facilitator and use the pre-created
+gateway or another shared backend. Do not begin an individual `azd up` attempt
+during the timed APIM stage.
+
+### 🔹 Eval-CI exercise: prove the quality gate (10 minutes, no Azure)
+
+The backend workflow runs the existing mock-mode classification verifier on
+every push, pull request, and manual dispatch. This is the credential-free
+deployment gate: it proves the evaluator is live before anyone spends time on
+Azure provisioning.
+
+Run the same check locally from `backend/`:
+
+```bash
+python scripts/check_eval.py --min-accuracy 0.90
+```
+
+✅ **Checkpoint:** the command reports `PASS` at or above 0.90 (the current
+fixture is expected to score 60/60). In GitHub Actions, the
+**Run classification eval checkpoint** step must be green in
+`.github/workflows/allclear-backend-ci.yml`.
 
 ### 🔹 Step 1: Prepare local Docker builds
 

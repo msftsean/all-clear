@@ -388,7 +388,12 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
         }
         {
           name: 'acs-connection-string'
-          value: mockMode ? '' : acs.listKeys().primaryConnectionString
+          // Container Apps rejects empty-string secret values (ContainerAppSecretInvalid);
+          // use the same 'mock' placeholder pattern as cosmos-db-key above. The app only
+          // ever reads this value through AzurePhoneService, which is never instantiated
+          // when mockMode/MOCK_MODE is true (see backend/app/core/dependencies.py), so the
+          // placeholder is never actually used.
+          value: mockMode ? 'mock' : acs.listKeys().primaryConnectionString
         }
       ]
       registries: [

@@ -331,4 +331,4 @@ Before moving on, verify you can:
 
 ## Next Steps
 
-Continue to [Exercise 01c: Agent Orchestration](./01c-agent-orchestration.md) to learn how to coordinate the bounded-authority pipeline.
+Continue to [Lab 05: Agent Orchestration](../../05-agent-orchestration/README.md) to learn how to coordinate the bounded-authority pipeline.

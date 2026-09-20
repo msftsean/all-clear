@@ -597,6 +597,7 @@ By the end of this lab, you should have:
 | 🧪 Test Results | Surge test passes; SEV1 always escalates |
 
 - **(Optional) Exercise 05x:** [Voice & Phone Extensions](exercises/05x-voice-phone-extensions.md) — See your pipeline respond to spoken queries and phone calls
+- **Exercise 05y:** [Model Continuity Under Failover](exercises/05y-model-continuity.md) — Prove typed classification and safety invariants survive a deployment outage
 
 ---
 

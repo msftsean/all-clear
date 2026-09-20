@@ -37,3 +37,6 @@ jobs:
 
       - name: Run backend tests
         run: .venv-ci/bin/python -m pytest -q
+
+      - name: Run classification eval checkpoint
+        run: .venv-ci/bin/python scripts/check_eval.py --min-accuracy 0.90

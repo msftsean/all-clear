@@ -72,9 +72,10 @@ Address these constraint categories:
 
 ### Part 2: Create Your Constitution (10 minutes)
 
-1. Create a new file called `your-constitution.md` in the lab directory
-2. Use the template from `templates/constitution-template.md` as your starting point
-3. Complete the following sections for the All Clear incident-triage context
+1. Read the canonical constitution at [`../../../.specify/memory/constitution.md`](../../../.specify/memory/constitution.md).
+2. Create `your-constitution.md` in the lab directory only if you need feature-specific guardrails.
+3. Use the template from `templates/constitution-template.md` as your starting point.
+4. Complete the following sections for the All Clear incident-triage context
 
 #### Required Sections
 
@@ -141,7 +142,7 @@ Before moving to Exercise 03b, verify your spec:
 - [ ] Constraints address privacy, audit, and accessibility
 - [ ] At least 2 concrete examples with inputs/outputs
 
-Verify your constitution:
+If you create `your-constitution.md`, verify it:
 
 - [ ] At least 3 core principles in precedence order
 - [ ] Agent boundaries clearly define permitted vs. prohibited actions
@@ -179,8 +180,10 @@ Try adding a "Voice Modality" section to your escalation capability spec that ad
 When complete, you should have:
 
 1. `your-spec.md` - Complete feature specification
-2. `your-constitution.md` - Complete agent constitution
+2. `your-constitution.md` - Optional feature-specific guardrails, if created
 
 ## Next Steps
 
-Once your spec and constitution are complete, proceed to [Exercise 03b: Generate from Spec](03b-generate-from-spec.md) to use Copilot to generate code from your specifications.
+Once your spec and any feature-specific guardrails are complete, proceed to
+[Exercise 03b: Generate from Spec](03b-generate-from-spec.md) to use Copilot to
+review an implementation slice against your specification.

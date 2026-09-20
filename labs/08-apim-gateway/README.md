@@ -9,10 +9,12 @@
 
 ---
 
-> 🛡️ **Stage 4 of the Day‑2 build lab.** You already have an agent (Stage 1),
-> retrieval (Stage 2), and a discoverable MCP server (Stage 3). Now you put a
-> **production AI gateway** in front of it: rate limits, token budgets, JWT
-> auth, and full observability — without changing a line of agent code.
+> 🛡️ **Stage 4 of the Day‑2 build lab.** The required timed path is
+> **Provision → Import → Call** (about 20 minutes) using either the shared
+> backend or your Lab 06 deployment. Rate limits, token budgets, JWT auth, and
+> Application Insights are **optional deep dives** after the gateway happy path
+> works. See the [Azure preflight](../../docs/event-readiness/AZURE_PREFLIGHT.md)
+> for permissions, fallback, and stop conditions.
 
 ## 🎯 Learning Objectives
 
@@ -20,10 +22,14 @@ By the end of this lab, you will be able to:
 
 1. 🚪 **Provision an APIM Consumption instance** and understand why Consumption is the right SKU for a class of 20 builders.
 2. 🔌 **Import the All Clear backend** into APIM and call your agent *through* the gateway.
-3. 🚦 **Throttle traffic** with `rate-limit-by-key` so one caller can't starve the rest.
-4. 🪙 **Cap LLM spend** with the `azure-openai-token-limit` policy (token budgets per caller).
-5. 🔐 **Require a JWT** with `validate-jwt` so only authorized callers reach the agent.
-6. 📊 **See everything** by wiring APIM diagnostics to Application Insights.
+3. 🚦 **(Optional) Throttle traffic** with `rate-limit-by-key` so one caller
+   can't starve the rest.
+4. 🪙 **(Optional) Cap LLM spend** with the `azure-openai-token-limit` policy
+   (token budgets per caller).
+5. 🔐 **(Optional) Require a JWT** with `validate-jwt` so only authorized
+   callers reach the agent.
+6. 📊 **(Optional) See everything** by wiring APIM diagnostics to Application
+   Insights.
 
 ---
 
@@ -54,16 +60,21 @@ Checkpoints:
 □ Step 1: Provision the APIM Consumption instance
 □ Step 2: Import the All Clear backend API
 □ Step 3: Call the agent through the gateway
-□ Step 4: Add rate-limit-by-key (traffic throttling)
-□ Step 5: Add azure-openai-token-limit (token budget)
-□ Step 6: Add validate-jwt (authentication)
-□ Step 7: Wire observability to Application Insights
+□ Step 4: Add rate-limit-by-key (optional deep dive)
+□ Step 5: Add azure-openai-token-limit (optional deep dive)
+□ Step 6: Add validate-jwt (optional deep dive)
+□ Step 7: Wire observability to Application Insights (optional deep dive)
 □ Step 8: Clean up
 ```
 
 ---
 
 ## 🚪 Step 1 — Provision the APIM Consumption instance
+
+**Required happy path:** use the participant-specific resource group and name
+assigned by the facilitator. If full Azure provisioning is not available, set
+`BACKEND_URL` to the facilitator's shared backend; APIM creation and the
+gateway call remain the learning checkpoint.
 
 Each builder creates **their own** Consumption gateway. Names are globally
 unique, so suffix yours (initials + a number).
@@ -132,7 +143,7 @@ directly — but now it flows through APIM.
 
 ---
 
-## 🚦 Step 4 — Throttle traffic (`rate-limit-by-key`)
+## 🚦 Optional deep dive A — Throttle traffic (`rate-limit-by-key`)
 
 Apply an inbound policy on the `allclear` API. In the portal **APIs → All Clear
 API → All operations → Inbound processing → Policy code editor**, or via REST,
@@ -151,7 +162,7 @@ add:
 
 ---
 
-## 🪙 Step 5 — Cap LLM spend (`azure-openai-token-limit`)
+## 🪙 Optional deep dive B — Cap LLM spend (`azure-openai-token-limit`)
 
 If All Clear's traffic to Azure OpenAI is fronted by this API, add a token
 budget so a single caller can't burn the shared model quota:
@@ -175,7 +186,7 @@ budget returns **429** with a `Retry-After`.
 
 ---
 
-## 🔐 Step 6 — Require a JWT (`validate-jwt`)
+## 🔐 Optional deep dive C — Require a JWT (`validate-jwt`)
 
 Lock the gateway to authorized callers (e.g. Entra ID tokens):
 
@@ -197,7 +208,7 @@ with a valid token succeeds.
 
 ---
 
-## 📊 Step 7 — Wire observability to Application Insights
+## 📊 Optional deep dive D — Wire observability to Application Insights
 
 ```bash
 AI_KEY=$(az monitor app-insights component show \
@@ -218,7 +229,7 @@ API → Settings → Diagnostics logs → Application Insights**) and set sampli
 
 ---
 
-## 🧹 Step 8 — Clean up
+## 🧹 Step 8 — Clean up (required)
 
 ```bash
 az apim delete -n "$APIM_NAME" -g "$RG" --yes --no-wait
@@ -230,10 +241,11 @@ az apim delete -n "$APIM_NAME" -g "$RG" --yes --no-wait
 
 - [ ] An APIM **Consumption** gateway in front of your All Clear backend.
 - [ ] A signal successfully triaged **through** the gateway.
-- [ ] `rate-limit-by-key` returning 429 past the threshold.
-- [ ] `azure-openai-token-limit` emitting remaining‑token headers / 429 on budget.
-- [ ] `validate-jwt` rejecting unauthenticated calls with 401.
-- [ ] APIM telemetry flowing into Application Insights.
+- [ ] (Optional) `rate-limit-by-key` returning 429 past the threshold.
+- [ ] (Optional) `azure-openai-token-limit` emitting remaining-token headers /
+      429 on budget.
+- [ ] (Optional) `validate-jwt` rejecting unauthenticated calls with 401.
+- [ ] (Optional) APIM telemetry flowing into Application Insights.
 
 ---
 

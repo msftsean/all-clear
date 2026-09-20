@@ -4,6 +4,7 @@
   "description": "All Clear incident-triage application and workshop materials",
   "private": true,
   "scripts": {
+    "curriculum:verify": "node scripts/curriculum-readiness.mjs",
     "smoke-test": "bash scripts/smoke-test.sh",
     "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
     "start:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000",

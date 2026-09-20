@@ -5,19 +5,16 @@ import {
   getDemoClearBoard,
   getHealth,
   getModelStatus,
-  submitCapstoneLead,
   submitSignal,
 } from "./api";
 import type {
   AzureFootprint,
-  CapstoneLeadPayload,
   DemoClearBoard,
   ModelStatus,
   PipelineResult,
 } from "./types";
 import { MonoPill, Waveform } from "./components";
 import { Canvas, DecisionReceipt } from "./Canvas";
-import LiveCalls from "./LiveCalls";
 import { HERO_DEMO_BOARD } from "./demo";
 import ConversationHistory from "./ConversationHistory";
 import { useStudentIdentity } from "./useStudentIdentity";
@@ -27,7 +24,6 @@ interface Msg {
   id: string;
   role: Role;
   text: string;
-  channel?: string;
   ts: number;
 }
 
@@ -100,13 +96,6 @@ const TRUST_CONTROLS = [
 ] as const;
 
 const SURGE_DURATION_MS = 7200;
-const CAPSTONE_INITIAL: CapstoneLeadPayload = {
-  name: "",
-  agency: "",
-  surge: "",
-  signal_flood: "",
-  incident_underneath: "",
-};
 
 // Muni Water surge: 40 utility signals with paraphrase variants. Near-duplicate
 // reports of the same event share a strong core phrase so the deterministic
@@ -179,7 +168,6 @@ export default function BriefingRoom() {
     },
   ]);
   const [input, setInput] = useState("");
-  const [channel, setChannel] = useState<"chat" | "phone">("chat");
   const [busy, setBusy] = useState(false);
   const [sessionId] = useState(() => `sess-${uid()}`);
   const [latest, setLatest] = useState<PipelineResult | null>(null);
@@ -188,10 +176,6 @@ export default function BriefingRoom() {
   const [health, setHealth] = useState<{ ok: boolean; live: boolean } | null>(null);
   const [modelStatus, setModelStatus] = useState<ModelStatus | null>(null);
   const [azureFootprint, setAzureFootprint] = useState<AzureFootprint | null>(null);
-  const [capstoneForm, setCapstoneForm] = useState<CapstoneLeadPayload>(CAPSTONE_INITIAL);
-  const [capstoneBusy, setCapstoneBusy] = useState(false);
-  const [capstoneSaved, setCapstoneSaved] = useState<string | null>(null);
-  const [liveOpen, setLiveOpen] = useState(false);
   const [demoMode, setDemoMode] = useState<"blank" | "loaded" | null>(() => initialDemoMode());
   const [demoBoard, setDemoBoard] = useState<DemoClearBoard | null>(
     () => (initialDemoMode() === "loaded" ? HERO_DEMO_BOARD : null),
@@ -206,7 +190,6 @@ export default function BriefingRoom() {
   >({});
   const [historyOpen, setHistoryOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
-  const [capstoneOpen, setCapstoneOpen] = useState(false);
   const [studentIdHash, setStudentIdHash] = useState<string | null>(null);
   const [dcwRunning, setDcwRunning] = useState(false);
   const [dcwProgress, setDcwProgress] = useState(0);
@@ -466,7 +449,7 @@ export default function BriefingRoom() {
     if (!trimmed || busy) return;
     setBusy(true);
     setInput("");
-    setMessages((m) => [...m, { id: uid(), role: "caller", text: trimmed, channel, ts: Date.now() }]);
+    setMessages((m) => [...m, { id: uid(), role: "caller", text: trimmed, ts: Date.now() }]);
     try {
       // Ensure we always have a hash before submitting — the async effect may not
       // have resolved yet if the user submits immediately after page load.
@@ -475,7 +458,7 @@ export default function BriefingRoom() {
         hash = await getHash();
         setStudentIdHash(hash);
       }
-      const r = await submitSignal(trimmed, sessionId, channel, hash);
+      const r = await submitSignal(trimmed, sessionId, "chat", hash);
       setLatest(r);
       updateClearBoard(r);
       setMessages((m) => [...m, { id: uid(), role: "agent", text: agentVoice(r), ts: Date.now() }]);
@@ -489,41 +472,6 @@ export default function BriefingRoom() {
       setMessages((m) => [...m, { id: uid(), role: "system", text: msg, ts: Date.now() }]);
     } finally {
       setBusy(false);
-    }
-  }
-
-  async function submitCapstone() {
-    if (capstoneBusy) return;
-    if (
-      !capstoneForm.name.trim() ||
-      !capstoneForm.agency.trim() ||
-      !capstoneForm.surge.trim() ||
-      !capstoneForm.signal_flood.trim() ||
-      !capstoneForm.incident_underneath.trim()
-    ) {
-      setCapstoneSaved("Please complete all capstone fields before submitting.");
-      return;
-    }
-    setCapstoneBusy(true);
-    setCapstoneSaved(null);
-    try {
-      const saved = await submitCapstoneLead({
-        name: capstoneForm.name.trim(),
-        agency: capstoneForm.agency.trim(),
-        surge: capstoneForm.surge.trim(),
-        signal_flood: capstoneForm.signal_flood.trim(),
-        incident_underneath: capstoneForm.incident_underneath.trim(),
-      });
-      setCapstoneSaved(`Saved ${saved.entry.entry_id}. Download CSV or JSON below.`);
-      setCapstoneForm(CAPSTONE_INITIAL);
-    } catch (e) {
-      setCapstoneSaved(
-        e instanceof ApiError
-          ? `Could not save capstone entry (${e.status}).`
-          : "Could not save capstone entry.",
-      );
-    } finally {
-      setCapstoneBusy(false);
     }
   }
 
@@ -546,15 +494,15 @@ export default function BriefingRoom() {
   return (
     <div className="flex h-full w-full flex-col bg-paper md:flex-row">
       {/* ---- Paper world: conversation column ---- */}
-      <div className="z-10 flex h-full w-full flex-col border-r border-paperline bg-paper2 shadow-[rgba(0,39,80,0.04)_1px_0_0_0] md:w-[430px] md:flex-none">
-        <header className="flex items-center justify-between border-b border-paperline px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <img src="/allclear-mark.svg" alt="" className="h-6 w-6 flex-none" />
-            <span className="font-display text-[21px] font-medium tracking-tight text-inkwarm">
-              All Clear
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
+      <div className="z-10 flex h-full w-full flex-col overflow-hidden border-r border-paperline bg-paper2 shadow-[rgba(0,39,80,0.04)_1px_0_0_0] md:w-[430px] md:flex-none">
+        <header className="flex flex-col gap-2 border-b border-paperline px-5 py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <img src="/allclear-mark.svg" alt="" className="h-6 w-6 flex-none" />
+              <span className="truncate font-display text-[21px] font-medium tracking-tight text-inkwarm">
+                All Clear
+              </span>
+            </div>
             {demoMode ? (
               <DemoToggle
                 mode={demoMode}
@@ -564,6 +512,8 @@ export default function BriefingRoom() {
                 totalSignals={demoBoard?.total_signals || HERO_DEMO_BOARD.total_signals}
               />
             ) : null}
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             <button
               data-testid="history-toggle"
               onClick={() => setHistoryOpen((v) => !v)}
@@ -582,23 +532,8 @@ export default function BriefingRoom() {
             >
               🛡 trust
             </button>
-            <button
-              data-testid="capstone-toggle"
-              onClick={() => setCapstoneOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
-              title="Make it yours: capstone lead capture"
-              aria-expanded={capstoneOpen}
-            >
-              🎓 capstone
-            </button>
-            <button
-              data-testid="live-calls-toggle"
-              onClick={() => setLiveOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
-              title="Watch live phone calls"
-            >
-              📞 live calls
-            </button>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-1.5">
             {health ? (
               <span
                 data-testid="health-pill"
@@ -614,7 +549,7 @@ export default function BriefingRoom() {
 
         {/* Live channel strip — voice orange, the only ambient motion */}
         <div className="flex items-center gap-3 border-b border-paperline/70 bg-paper px-5 py-3">
-          <Waveform live={channel === "phone"} />
+          <Waveform live={busy} />
           <button
             data-testid="dcwater-surge"
             onClick={runDcWaterSurge}
@@ -632,13 +567,6 @@ export default function BriefingRoom() {
             title="Clear the live ClearBoard"
           >
             clear board
-          </button>
-          <button
-            data-testid="channel-toggle"
-            onClick={() => setChannel((c) => (c === "phone" ? "chat" : "phone"))}
-            className="rounded-chip border border-paperline bg-paper2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft transition-colors hover:border-voice/50"
-          >
-            {channel === "phone" ? "● inbound · phone" : "chat"}
           </button>
         </div>
 
@@ -666,16 +594,6 @@ export default function BriefingRoom() {
 
         {trustOpen && (
           <TrustView azureFootprint={azureFootprint} onClose={() => setTrustOpen(false)} />
-        )}
-        {capstoneOpen && (
-          <CapstoneCapture
-            form={capstoneForm}
-            busy={capstoneBusy}
-            status={capstoneSaved}
-            onChange={(next) => setCapstoneForm(next)}
-            onSubmit={submitCapstone}
-            onClose={() => setCapstoneOpen(false)}
-          />
         )}
 
         <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-paper px-5 py-5">
@@ -778,9 +696,6 @@ export default function BriefingRoom() {
           onClose={() => setReceiptOpen(false)}
         />
       ) : null}
-
-      {liveOpen ? <LiveCalls onExit={() => setLiveOpen(false)} /> : null}
-
     </div>
   );
 }
@@ -805,7 +720,7 @@ function ModelStatusBadge({ status }: { status: ModelStatus }) {
     <span
       data-testid="model-status-badge"
       title={title}
-      className={`hidden items-center gap-1.5 rounded-chip border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft sm:inline-flex ${
+      className={`hidden items-center gap-1.5 whitespace-nowrap rounded-chip border px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft sm:inline-flex ${
         failoverActive
           ? "border-sev1/50 bg-sev1/10 text-sev1"
           : "border-paperline bg-paper text-midwarm"
@@ -897,9 +812,6 @@ function MessageBubble({ m }: { m: Msg }) {
         {m.text}
       </div>
       <div className="mt-0.5 flex items-center gap-1.5 px-1">
-        {m.channel === "phone" ? (
-          <span className="font-mono text-[9px] uppercase tracking-wider text-voice">phone</span>
-        ) : null}
         <span className="font-mono text-[9px] text-midwarm/70">{clock(m.ts)}</span>
       </div>
     </div>
@@ -1001,105 +913,3 @@ function TrustView({
   );
 }
 
-function CapstoneCapture({
-  form,
-  busy,
-  status,
-  onChange,
-  onSubmit,
-  onClose,
-}: {
-  form: CapstoneLeadPayload;
-  busy: boolean;
-  status: string | null;
-  onChange: (next: CapstoneLeadPayload) => void;
-  onSubmit: () => void;
-  onClose: () => void;
-}) {
-  return (
-    <section
-      data-testid="capstone-capture"
-      className="border-b border-paperline/70 bg-paper px-5 py-3"
-      aria-label="Capstone lead capture"
-    >
-      <div className="flex items-center justify-between">
-        <p className="font-mono text-[10px] uppercase tracking-wider text-midwarm">
-          make it yours · capstone lead capture
-        </p>
-        <button
-          data-testid="capstone-close"
-          onClick={onClose}
-          className="rounded-chip border border-paperline bg-paper2 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-midwarm transition-colors hover:border-inkwarm/30"
-          title="Close"
-        >
-          ✕
-        </button>
-      </div>
-      <div className="mt-2 grid gap-2">
-        <input
-          data-testid="capstone-name"
-          value={form.name}
-          onChange={(e) => onChange({ ...form, name: e.target.value })}
-          placeholder="Name"
-          className="rounded-chip border border-paperline bg-paper2 px-2.5 py-1.5 text-[12px] text-inkwarm"
-        />
-        <input
-          data-testid="capstone-agency"
-          value={form.agency}
-          onChange={(e) => onChange({ ...form, agency: e.target.value })}
-          placeholder="Agency"
-          className="rounded-chip border border-paperline bg-paper2 px-2.5 py-1.5 text-[12px] text-inkwarm"
-        />
-        <textarea
-          data-testid="capstone-surge"
-          value={form.surge}
-          onChange={(e) => onChange({ ...form, surge: e.target.value })}
-          placeholder="What's your surge?"
-          rows={2}
-          className="rounded-chip border border-paperline bg-paper2 px-2.5 py-1.5 text-[12px] text-inkwarm"
-        />
-        <textarea
-          data-testid="capstone-signals"
-          value={form.signal_flood}
-          onChange={(e) => onChange({ ...form, signal_flood: e.target.value })}
-          placeholder="What signals flood you?"
-          rows={2}
-          className="rounded-chip border border-paperline bg-paper2 px-2.5 py-1.5 text-[12px] text-inkwarm"
-        />
-        <textarea
-          data-testid="capstone-incident"
-          value={form.incident_underneath}
-          onChange={(e) => onChange({ ...form, incident_underneath: e.target.value })}
-          placeholder="What's the real incident underneath?"
-          rows={2}
-          className="rounded-chip border border-paperline bg-paper2 px-2.5 py-1.5 text-[12px] text-inkwarm"
-        />
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <button
-          data-testid="capstone-submit"
-          onClick={onSubmit}
-          disabled={busy}
-          className="rounded-chip border border-voice/60 bg-voice/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-voice disabled:opacity-50"
-        >
-          {busy ? "saving..." : "save capstone"}
-        </button>
-        <a
-          data-testid="capstone-export-csv"
-          href="/api/demo/capstone/export?format=csv"
-          className="font-mono text-[10px] uppercase tracking-wider text-voice underline underline-offset-2"
-        >
-          export csv
-        </a>
-        <a
-          data-testid="capstone-export-json"
-          href="/api/demo/capstone/export?format=json"
-          className="font-mono text-[10px] uppercase tracking-wider text-voice underline underline-offset-2"
-        >
-          export json
-        </a>
-      </div>
-      {status ? <p className="mt-1 text-[11px] text-midwarm">{status}</p> : null}
-    </section>
-  );
-}

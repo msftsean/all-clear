@@ -73,4 +73,8 @@ Ubiquitous language for All Clear. One canonical term per concept. Coding agents
 
 **Verifier.** A test, eval set, fixture, or checkpoint script with an executable command and exit code. Built before the implementation it grades (Loop Protocol, specs/001-maf-rehost/plan.md). Owned by Barton; never edited by implementers.
 
+**Smoke gate.** The offline CI path defined by `.github/workflows/smoke-test.yml`
+and `scripts/smoke-test.sh`: mock-mode backend pytest plus frontend unit tests,
+run on pushes, pull requests, and manual dispatch without Azure credentials.
+
 **Bounded authority.** Each agent can do only what its role permits, enforced by code structure (tools, interfaces) rather than prompt hope.

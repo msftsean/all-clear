@@ -107,18 +107,6 @@ export interface AzureFootprint {
   estimate: AzureFootprintEstimate;
 }
 
-export interface CapstoneLeadPayload {
-  name: string;
-  agency: string;
-  surge: string;
-  signal_flood: string;
-  incident_underneath: string;
-}
-
-export interface CapstoneLeadEntry extends CapstoneLeadPayload {
-  entry_id: string;
-  created_at: string;
-}
 
 export interface DemoClearBoardIncident {
   incident_id: string;

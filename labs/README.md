@@ -4,6 +4,12 @@
 > **Companion:** coaches/demo-runners should start with the
 > [Coach's Runbook](../coach-runbook/index.html) (capability exercises E1–E5).
 > This track is the **hands-on, code-level** version of that material.
+> **Facilitators running a timed event:** the labs below are the full
+> catalog. The authoritative, timed event path is
+> [`docs/event-readiness/DELIVERY_PLAN.md`](../docs/event-readiness/DELIVERY_PLAN.md)
+> (required S0–S5 spine plus optional/coach-led extensions), and the Azure
+> preflight checklist is
+> [`docs/event-readiness/AZURE_PREFLIGHT.md`](../docs/event-readiness/AZURE_PREFLIGHT.md).
 
 All Clear is an **incident-triage** system. Inbound **signals** (chat, voice,
 phone, submitted reports) are classified, deduplicated against open
@@ -13,7 +19,7 @@ hero scenario is a **surge**: a storm/outage/recall where most signals are
 duplicates of a few real incidents.
 
 Before you start, read [`../CONTEXT.md`](../CONTEXT.md) (the domain language)
-and [`../shared/constitution.md`](../shared/constitution.md) (the
+and [`../.specify/memory/constitution.md`](../.specify/memory/constitution.md) (the
 non-negotiable principles). The labs use those words exactly.
 
 ---
@@ -52,17 +58,17 @@ was built and how to extend it.
 | [00](00-setup/) | **Setup** | Get a working environment (Codespaces or `azd up`); run the full pipeline in **mock mode** offline | 30 min |
 | [01](01-understanding-agents/) | **Understanding agents** | Classify a raw signal into a typed `SignalClassification` (intent, entities, severity indicators, PII) | 45 min |
 | [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Wire Azure (OpenAI, AI Search, Container Apps) and drive it from your editor via MCP | 45 min |
-| [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to spec a new capability, then generate code from the spec | 60 min |
+| [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to specify a new capability, then review implementation guidance | 45 min |
 | [04](04-build-rag-pipeline/) | **RAG / knowledge** | Index incident runbooks & SOPs; build the `search_knowledge` tool with grounded **citations** | 60 min |
 | [05](05-agent-orchestration/) | **Orchestration** | Assemble the QueryAgent → RouterExecutor → ActionAgent workflow; run a **surge** and watch dedup attach reports | 90 min |
 | [06](06-deploy-with-azd/) | **Deploy** | `azd up` All Clear to Azure Container Apps with Bicep infra | 60 min |
 | [07](07-mcp-server/) | **MCP server** | Expose All Clear's tools (`create_incident`, `search_knowledge`, `generate_sitrep`) as an MCP server | 60 min |
 | [09](09-github-in-the-lab/) | **GitHub-in-the-lab path** | Fork + run `smoke-test.yml` + complete one bounded Copilot extension behind a red-to-green starter test | 45 min |
 
-**Recommended order:** 00 → 01 → 05 are the spine (signal in, classify,
-orchestrate). 02/03/04 deepen the platform. 06/07 ship and integrate. In the
-3-hour workshop, run `azd up` (Lab 06's happy path) first so everything is
-provisioned, then do 01 → 05 against the live backend.
+**Recommended order:** 00 → 01 → 03 → 04 → 05 is the participant spine
+(setup, classify, specify, ground, orchestrate). Lab 02 is optional Azure MCP
+setup; Labs 06–09 are optional extensions for a longer session. Use mock mode
+when Azure credentials or deployment time are not available.
 
 ---
 
@@ -109,7 +115,7 @@ pip install -r requirements.txt
 
 # run the entire pipeline offline (no Azure needed)
 $env:ENVIRONMENT="test"; $env:MOCK_MODE="true"
-python -m pytest -q          # 276 tests should pass
+python -m pytest -q
 ```
 
 Then open [Lab 00](00-setup/) and work forward. Each lab has a `README.md`

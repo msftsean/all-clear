@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    {
+      "assignment_id": "all-clear-event-readiness-2026-09-20",
+      "universe": "X-Men",
+      "created_at": "2026-09-20T15:31:00Z",
+      "members": ["Bishop", "Storm", "Forge", "Beast", "Kitty"]
+    }
+  ]
+}
