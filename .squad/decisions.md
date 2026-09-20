@@ -63,6 +63,35 @@ Lab 09's completion gate no longer trusts `ALL_CLEAR_LAB09_COMPLETE` alone;
 `test_extension.py`. Participant extensions must remain pure/bounded — no new
 incident authority, no bypass of routing or severity.
 
+## 2026-09-20 — Full eval/e2e validation pass, Azure pieces confirmed as facilitator-gated
+
+Ran every eval and e2e suite in the repository:
+
+- `backend/scripts/check_eval.py --min-accuracy 0.90`: 60/60 (100%).
+- Full backend suite: 347 passed. Focused reruns: `test_pipeline_e2e.py` (5),
+  `test_phone/eval_harness.py` (21), `test_azure_incident_store.py` (9, Cosmos
+  contract on mocks), safety/PII/escalation subset (59) — all pass.
+- Frontend Playwright e2e (`frontend/tests/e2e`): 25 passed (Chromium +
+  Firefox + WebKit + Mobile Chrome/Safari), 75 skipped by design
+  (accessibility suite scoped to desktop Chromium only), 0 failed.
+- `hackathon-site` e2e: 38 passed, 2 skipped. `coach-site` e2e: 34 passed.
+  `workshop-site` and `docs-site`: typecheck + build clean (no e2e suite
+  configured for these two).
+- Both `infra/main.bicep` and `labs/06-deploy-with-azd/infra/main.bicep`
+  compile via `az bicep build`; `azure.yaml` and both parameter JSON files are
+  valid.
+- **Confirmed by design, not a gap:** `evals/quality/quality_eval.py` and
+  `evals/red-team/red_team_scan.py` require a live deployed backend, a real
+  Azure AI Foundry project endpoint, and `az login` — none are available in
+  this sandbox (`az account show` fails; no `azd env`; no `AZURE_*`
+  credentials set). This matches `docs/event-readiness/AZURE_PREFLIGHT.md`,
+  which already treats live Azure validation (APIM rehearsal, quota checks,
+  quality eval, red-team scan) as a facilitator preflight step requiring real
+  subscription access, never something CI/sandbox can certify. The offline
+  equivalent (deterministic safety/PII/escalation tests, mock-mode pipeline
+  e2e, bicep compilation) is green; `evals/red-team/RESULTS.md` is correctly
+  labeled historical-reference-only and does not claim current-state proof.
+
 ## 2026-09-20 — Model-continuity and MCP red-team exercises stay bounded
 
 The model-continuity exercise (`labs/05-agent-orchestration/exercises/05y-model-continuity.md`
