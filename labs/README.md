@@ -4,6 +4,12 @@
 > **Companion:** coaches/demo-runners should start with the
 > [Coach's Runbook](../coach-runbook/index.html) (capability exercises E1–E5).
 > This track is the **hands-on, code-level** version of that material.
+> **Facilitators running a timed event:** the labs below are the full
+> catalog. The authoritative, timed event path is
+> [`docs/event-readiness/DELIVERY_PLAN.md`](../docs/event-readiness/DELIVERY_PLAN.md)
+> (required S0–S5 spine plus optional/coach-led extensions), and the Azure
+> preflight checklist is
+> [`docs/event-readiness/AZURE_PREFLIGHT.md`](../docs/event-readiness/AZURE_PREFLIGHT.md).
 
 All Clear is an **incident-triage** system. Inbound **signals** (chat, voice,
 phone, submitted reports) are classified, deduplicated against open
