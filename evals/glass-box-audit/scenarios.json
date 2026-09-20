@@ -1,0 +1,36 @@
+[
+  {
+    "scenario_id": "clean",
+    "trace_builder": "build_clean_trace",
+    "expected_passed": true,
+    "expected_flags": []
+  },
+  {
+    "scenario_id": "fabrication_only",
+    "trace_builder": "build_fabrication_only_trace",
+    "expected_passed": false,
+    "expected_flags": ["synthetic_data"]
+  },
+  {
+    "scenario_id": "network_only",
+    "trace_builder": "build_network_only_trace",
+    "expected_passed": false,
+    "expected_flags": ["unauthorized_network"]
+  },
+  {
+    "scenario_id": "swarm_only",
+    "trace_builder": "build_swarm_only_trace",
+    "expected_passed": false,
+    "expected_flags": ["swarm_coordination"]
+  },
+  {
+    "scenario_id": "all_violations",
+    "trace_builder": "build_all_violations_trace",
+    "expected_passed": false,
+    "expected_flags": [
+      "synthetic_data",
+      "unauthorized_network",
+      "swarm_coordination"
+    ]
+  }
+]

@@ -40,3 +40,14 @@ environments:
             threshold: 1
           - name: sexual
             threshold: 1
+      - id: glass-box-audit-guardrail
+        tags:
+          tier: smoke
+          purpose: safety
+          stage: seed
+        dataset: glass-box-audit-guardrail-seed
+        datasetVersion: v1
+        datasetFile: .foundry/datasets/glass-box-audit-guardrail-seed-v1.jsonl
+        evaluators:
+          - name: guardrail_passed
+            threshold: 1

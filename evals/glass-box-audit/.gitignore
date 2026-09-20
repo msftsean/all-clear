@@ -1,0 +1,4 @@
+# Eval results, scratch dirs
+eval_data.jsonl
+glass_box_results_*.json
+.eval_*/
