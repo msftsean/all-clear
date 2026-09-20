@@ -364,3 +364,71 @@ before it commits to the database — because the cost of a false negative
 (letting a violation slip through) is much higher than a false positive
 (stopping a legitimate trace on a misconfiguration, which you can fix and
 retry).
+
+### Viewing it in the Foundry portal — no code required
+
+Everything above is code-first on purpose: it keeps the guardrail auditable
+and reproducible (the Foundry run and the local `unittest` run share the same
+`evaluate_trace()` code path). But the CLI is not the only way to work with
+this. **Azure AI Foundry's own portal UI** is a first-class alternative for
+participants who'd rather click through a dashboard than read Python — and
+it's worth teaching both paths, because most people you train will prefer
+the portal.
+
+After you run `python glass_box_eval.py` once (the upload run, not
+`--skip-upload`), everything below is pure portal navigation — no terminal
+required:
+
+1. **Open your project.** Go to <https://ai.azure.com>, sign in, and select
+   the project whose endpoint you set as `AZURE_AI_PROJECT_ENDPOINT`.
+2. **Open the Evaluations tab.** In the left-hand project menu, select
+   **Evaluations**. You'll see the `glass-box-audit-guardrail` run listed
+   alongside the `quality-smoke` and `safety-redteam` runs from
+   `evals/quality/` and `evals/red-team/` — all three eval families share one
+   dashboard.
+3. **Open the run.** Click into the run to see one row per scenario
+   (`clean`, `fabrication_only`, `network_only`, `swarm_only`,
+   `all_violations`) with a pass/fail column for the `guardrail_passed`
+   metric — the same verdicts you saw locally in Increment 1, now in a
+   sortable/filterable grid you can screen-share without a terminal.
+4. **Compare runs over time.** Foundry keeps run history, so after a code
+   change to `scripts/test_evaluator.py` you can re-run the suite and compare
+   the new run against the previous one in the same tab — a visual regression
+   check with no diffing required.
+
+**The same portal pattern covers the other two legs of the trust triad, in
+the same project:**
+
+- **Evals (quality)** — the **Evaluations** tab also shows the
+  `quality-smoke` run from `evals/quality/quality_eval.py`: Relevance,
+  Coherence, and Fluency scores per query, with the pass/fail threshold you
+  configured. Click any row to see the judge model's full reasoning for that
+  score — useful for explaining *why* a response scored low without reading
+  judge-prompt code.
+- **Red-teaming (safety)** — open the **Red teaming** tab to see the
+  `evals/red-team/red_team_scan.py` run: an attack-success-rate scorecard
+  broken down by risk category (Violence, Hate/Unfairness, Sexual, Self-harm)
+  and attack strategy (Base64, Flip, Leetspeak, etc.), with the actual attack
+  prompt and the agent's response available per row for review.
+- **Model catalog and comparison** — open **Model catalog** from the project
+  home to browse available Azure OpenAI / Foundry models, see per-model
+  benchmark scores, and use the built-in **Compare** view to line up two or
+  three candidate models side by side before committing to a deployment. This
+  is the portal's own answer to "which model should I use" — useful context
+  before wiring a new `JUDGE_DEPLOYMENT` or chat model into your app.
+- **Guardrails** — open **Guardrails + controls → Content filters** to see
+  the `allclear-guardrails` custom content filter (see `safety/README.md`)
+  attached to the deployment, with its per-category severity thresholds
+  visible and editable in the UI instead of a JSON file.
+
+**Honest scope note**: Foundry's portal does not have a feature literally
+named "Glass Box." What it *does* have — the Evaluations tab, per-row judge
+reasoning, and (where wired up) request tracing — is the same "open the hood
+and inspect the trace" idea this exercise teaches, applied to your own eval
+runs instead of the vendor-invoice simulation. The deterministic
+halt-before-commit gate itself is still application code
+(`scripts/test_evaluator.py`); Foundry's UI is where you *see the evidence*
+that the gate worked, not a replacement for writing the gate. Teach both:
+the code so participants understand and can extend the guardrail, and the
+portal so they have a click-through way to show evidence to a non-technical
+stakeholder without opening a terminal.

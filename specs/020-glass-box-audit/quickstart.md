@@ -103,3 +103,15 @@ Expect 5 scenario rows (`clean`, `fabrication_only`, `network_only`,
 `evals/glass-box-audit/README.md` for the full option list, mirroring
 `evals/quality/README.md`.
 
+### Viewing results in the Foundry portal instead of the CLI
+
+Once the run above has uploaded, everything is also viewable by clicking
+through the portal at <https://ai.azure.com>: project → **Evaluations** →
+`glass-box-audit-guardrail`. This is documented as a first-class alternative
+(not a fallback) in `exercises/01-glass-box-audit.md` → "Viewing it in the
+Foundry portal — no code required," alongside the equivalent portal paths for
+`evals/quality` (Evaluations tab), `evals/red-team` (Red teaming tab), and
+Foundry's Model catalog compare view. Teach both the code and the portal:
+the code is what participants can extend; the portal is what they can screen
+share.
+

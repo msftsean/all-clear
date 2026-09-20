@@ -56,3 +56,13 @@ Foundry run and the local unittest run exercise the same code path with the
 same flag-detection logic. That keeps the guardrail evidence auditable and
 prevents eval drift between "what passed locally" and "what uploaded to
 Foundry."
+
+## Prefer the portal UI over the CLI?
+
+After the first upload run, everything is viewable by clicking, not coding:
+open your project at <https://ai.azure.com> → **Evaluations** → the
+`glass-box-audit-guardrail` run. See
+[`exercises/01-glass-box-audit.md` → "Viewing it in the Foundry portal — no
+code required"](../../exercises/01-glass-box-audit.md#viewing-it-in-the-foundry-portal--no-code-required)
+for a full click-path walkthrough, including how the same portal covers
+quality evals, red-teaming, and model comparison.
