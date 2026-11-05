@@ -1,137 +1,74 @@
-# 47 Doors Workshop Companion Site
+# All Clear Workshop Companion
 
-A visual, tab-based React + Tailwind CSS website serving as an executive briefing and workshop companion for the **Trustworthy Agentic AI in Higher Education** workshop.
+A tab-based React and Tailwind CSS companion for teaching the All Clear incident-triage contract.
 
-## Overview
+## Workshop Scope
 
-This site presents the 47 Doors architecture — a three-agent pipeline that transforms how universities handle student support queries. It demonstrates how trust is built architecturally, not just through policy.
+The site follows one signal from intake to resolution and explains:
 
-## Design Principles
-
-- **Microsoft Fluent 2 visual language**: Generous whitespace, calm typography, restrained color
-- **Primary palette**: Microsoft blue (#0078D4), neutral gray (#F3F2F1), dark text (#323130)
-- **Accent**: Indiana University crimson (#990000) used sparingly
-- **Text-light, visually rich**: Icons, diagrams, callout cards
-- **Accessible**: Keyboard navigable, semantic HTML, high contrast, WCAG AA compliant
+- **Signal, incident, report, and magnitude** as distinct domain objects
+- The **QueryAgent -> RouterExecutor -> ActionAgent** pipeline
+- Deterministic **dedup, SEV1-4, queue, SLA, and escalation** decisions
+- Surge behavior through `ATTACH_TO_INCIDENT` and `OPEN_INCIDENT`
+- **Bounded authority**, PII discipline, safety overrides, and cited situation reports
+- Browser voice and phone as transports into the same signal contract
+- **ClearBoard** as the live operating picture and all-clear terminal state
 
 ## Tech Stack
 
 - React 18 with TypeScript
-- Tailwind CSS 3.4+
-- Vite 5 as build tool
-- Heroicons for icons
-- No external component libraries
+- Vite 5
+- Tailwind CSS 3.4
+- Fluent UI and Heroicons
 
 ## Local Development
 
-### Prerequisites
-
-- Node.js 18+ and npm
-
-### Install Dependencies
+Requires Node.js 18 or newer.
 
 ```bash
 cd workshop-site
 npm install
-```
-
-### Run Development Server
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open `http://localhost:5173`.
 
-### Build for Production
+## Validation
 
 ```bash
+npm run typecheck
 npm run build
 ```
 
-The production build will be in the `dist/` directory.
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
+The production build is written to `dist/`.
 
 ## Structure
 
-```
+```text
 workshop-site/
+├── public/
+│   └── staticwebapp.config.json
 ├── src/
-│   ├── main.tsx              # Entry point
-│   ├── App.tsx               # Main app with tab navigation
-│   ├── index.css             # Global styles and Tailwind imports
-│   ├── components/           # Reusable components
-│   │   ├── TabNavigation.tsx
-│   │   ├── CollapsibleNotes.tsx
-│   │   ├── CalloutCard.tsx
-│   │   ├── DiagramSVG.tsx
-│   │   └── Footer.tsx
-│   └── tabs/                 # Tab content components
-│       ├── Overview.tsx
-│       ├── TheProblem.tsx
-│       ├── ChatbotsToAgents.tsx
-│       ├── TrustBoundaries.tsx
-│       ├── Architecture.tsx
-│       ├── VoiceAccessibility.tsx
-│       ├── DemoWalkthrough.tsx
-│       ├── ResponsibleAI.tsx
-│       ├── ReuseAcrossCampus.tsx
-│       └── YourFirstAgent.tsx
-└── public/                   # Static assets
+│   ├── components/
+│   ├── hooks/
+│   ├── tabs/
+│   ├── App.tsx
+│   ├── index.css
+│   └── main.tsx
+├── index.html
+├── package.json
+└── tailwind.config.js
 ```
 
-## Features
+## Navigation and Accessibility
 
-### 10 Workshop Tabs
-
-1. **Overview** — Introduction and workshop framing
-2. **The Problem (47 Front Doors)** — The student support routing problem
-3. **From Chatbots to Agents** — Distinguishing agentic AI from traditional chatbots
-4. **Trust & Boundaries** — Constitutional principles and governance
-5. **Architecture (Three-Agent Pattern)** — Technical architecture deep dive
-6. **Voice & Accessibility** — Real-time voice interaction via WebRTC
-7. **Live Demo Walkthrough** — Step-by-step voice demo flow
-8. **Responsible AI in Practice** — Concrete governance and audit trails
-9. **Reuse Across Campus** — Institutional customization and deployment
-10. **Your First Agent** — Interactive exercise for attendees
-
-### Keyboard Navigation
-
-- **Tab/Shift+Tab**: Navigate between tabs and interactive elements
-- **Arrow keys**: Move between tabs
-- **Enter/Space**: Activate tabs
-- **Escape**: Collapse expanded notes
-
-## Accessibility
-
-- Semantic HTML with proper ARIA labels
-- Keyboard navigable throughout
-- High contrast text (WCAG AA 4.5:1 ratio)
-- Screen reader friendly
-- Accessible diagrams with figure/figcaption
+- Tab and Shift+Tab move through interactive controls.
+- Left Arrow and Right Arrow move between workshop tabs.
+- Home and End jump to the first and last tab.
+- Every tab is connected to its panel with ARIA attributes.
+- Diagrams include accessible titles and descriptions.
+- The site honors reduced-motion preferences and includes a skip link.
 
 ## Deployment
 
-This site is published as its own Azure Static Web App (public, no auth gate) via
-the `deploy-workshop-swa.yml` GitHub Actions workflow:
-
-- **Trigger:** any push to `main` touching `workshop-site/**`, or **Run workflow**
-  (manual dispatch) from the Actions tab.
-- **Build:** the workflow runs Oryx against `app_location: workshop-site` and
-  publishes `output_location: dist`. `staticwebapp.config.json` lives in
-  `workshop-site/public/` so Vite copies it into `dist/`.
-- **Auth:** the deploy step uses the SWA deployment token stored in the repo secret
-  `AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP`. Each SWA has a unique token — never
-  reuse one across sites.
-
-To provision the Azure resource and capture the token, see
-[`docs/deployment/SWA_PROVISIONING.md`](../docs/deployment/SWA_PROVISIONING.md).
-
-## License
-
-Part of the 47 Doors project — Trustworthy Agentic AI for Higher Education.
+The site is built as a static Vite application. `public/staticwebapp.config.json` is copied into `dist/` for Azure Static Web Apps deployment.

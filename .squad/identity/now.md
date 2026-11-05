@@ -1,9 +1,5 @@
----
-updated_at: 2026-03-13T16:16:37.153Z
-focus_area: Initial setup
-active_issues: []
----
+# Current Focus
 
-# What We're Focused On
-
-Getting started. Updated by coordinator at session start.
+Make the participant-facing All Clear accelerator coherent, timed, verifiable,
+and ready for an event delivery decision. The active X-Men roster is led by
+Bishop.

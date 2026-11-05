@@ -1,7 +1,4 @@
-"""
-Pydantic schemas for the 47 Doors voice interaction feature.
-Matches the data model specification in specs/002-voice-interaction/data-model.md.
-"""
+"""Pydantic schemas for All Clear voice interaction."""
 
 from datetime import datetime
 from typing import Literal, Optional

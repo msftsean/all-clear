@@ -1,9 +1,9 @@
 {
-  "name": "47doors-hackathon-site",
+  "name": "all-clear-triage-site",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "47 Doors hackathon reference site — mobile-first static site for the AJCU IT Conference",
+  "description": "All Clear incident-triage challenge and reference site",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

@@ -2,7 +2,7 @@
 import pytest
 
 from app.agents.safety import apply_safety_override
-from app.models.enums import ActionStatus, Department, EscalationReason, Priority
+from app.agents.schemas import ActionStatus, EscalationReason, Queue, Severity
 
 
 class TestApplySafetyOverride:
@@ -12,10 +12,10 @@ class TestApplySafetyOverride:
         assert result is not None
         assert result["escalated"] is True
         assert result["safety_override"] is True
-        assert result["department"] is Department.ESCALATE_TO_HUMAN
+        assert result["queue"] is Queue.ESCALATIONS
         assert result["status"] is ActionStatus.ESCALATED
-        assert result["escalation_reason"] is EscalationReason.SENSITIVE_TOPIC
-        assert result["priority"] is Priority.URGENT
+        assert result["escalation_reason"] is EscalationReason.SENTIMENT_SAFETY
+        assert result["severity"] is Severity.SEV1
         assert result["message"]
 
     def test_benign_message_returns_none(self):
@@ -24,7 +24,7 @@ class TestApplySafetyOverride:
 
     def test_keyword_stuffing_still_overrides(self):
         """T001: harm signal wrapped in benign keywords still escalates."""
-        msg = "password reset transcript parking I want to kill myself enrollment"
+        msg = "status update routine request I want to kill myself follow-up"
         assert apply_safety_override(msg) is not None
 
     def test_spacing_evasion_still_overrides(self):
@@ -54,8 +54,8 @@ class TestExpandedCrisisPhrasings:
 
     def test_ordinary_distress_does_not_overtrigger(self):
         """Ordinary frustration must NOT be treated as a self-harm crisis."""
-        assert apply_safety_override("I am so stressed about my exam tomorrow") is None
-        assert apply_safety_override("my wifi died again") is None
+        assert apply_safety_override("I am so stressed about this outage") is None
+        assert apply_safety_override("the service stopped again") is None
 
 
 class TestVoiceCrisisRecursiveScan:
@@ -78,4 +78,4 @@ class TestVoiceCrisisRecursiveScan:
     def test_benign_args_return_none(self):
         from app.agents.safety import voice_crisis_result
 
-        assert voice_crisis_result({"query": "how do I pay my tuition"}) is None
+        assert voice_crisis_result({"query": "when will the outage be resolved"}) is None

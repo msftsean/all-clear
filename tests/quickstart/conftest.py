@@ -14,7 +14,7 @@ import pytest
 # Repo root = three levels up from this file: tests/quickstart/conftest.py
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Canonical seed corpus directory (six-intent AJCU corpus).
+# Canonical All Clear incident-response seed corpus directory.
 SEED_DIR = REPO_ROOT / "infra" / "ai-search" / "seed-articles"
 
 # The literal stdout contract marker for "scenario-ready" (contracts/quickstart-cli.md).

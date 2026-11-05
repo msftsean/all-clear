@@ -1,54 +1,39 @@
-# 47 Doors — Hackathon Reference Site
+# All Clear — Incident Triage Reference
 
-Mobile-first static reference site for the AJCU IT Conference AI hackathon at Fordham Lincoln Center.
+A static, mobile-first reference site for incident responders. It demonstrates how to turn surge signals into deduplicated incidents, route work to accountable queues, apply severity and SLA policy, publish safe sitreps, and keep ClearBoard current.
 
-## Quick Start
+## Quick start
 
 ```bash
 cd hackathon-site
 npm install
-npm run dev        # http://localhost:5173
+npm run dev
 ```
 
-## Build
+## Validate
 
 ```bash
-npm run build      # outputs to dist/
-npm run preview    # preview the build locally
+npm run typecheck
+npm run build
+npm run test:e2e
 ```
-
-## Tech Stack
-
-- **Vite** + **React 18** + **TypeScript 5** + **Tailwind CSS 3**
-- **React Router v6** for client-side SPA routing
-- Pure static output — no backend, no API, no database
-
-## Deploy to Azure Static Web Apps
-
-1. Create an Azure Static Web App resource in the Azure Portal
-2. Copy the deployment token
-3. Add it as a GitHub secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_HACKATHON_SITE`
-4. Push to `main` — the workflow at `.github/workflows/deploy-hackathon-swa.yml` handles CI/CD
-
-The `staticwebapp.config.json` provides a navigation fallback so deep links (e.g., `/cards/quiet-crisis`) resolve correctly.
 
 ## Routes
 
-| Path | Description |
-|------|-------------|
-| `/` | Landing — hero + card gallery + hub nav |
-| `/cards/:slug` | Card detail (6 cards: A–F) |
-| `/pattern` | The three-agent pattern |
-| `/intents` | The six doors (intent table) |
-| `/rules` | Escalation & routing rules |
-| `/run-of-show` | 1:00–4:00 timeline |
+| Path | Purpose |
+| --- | --- |
+| `/` | ClearBoard landing page and six incident scenarios |
+| `/incidents/:slug` | Scenario detail with triage references |
+| `/workflow` | Signal-to-response triage workflow |
+| `/queues` | Accountable response queues |
+| `/policy` | Severity, SLA, safety, and sitrep guardrails |
+| `/shift-plan` | First-response operational cadence |
+| `/runbook` | Operator triage runbook |
 
-## Design
+## Stack
 
-Jesuit Light Version palette: maroon headings, gold accents, cream backgrounds. Playfair Display serif headings, Inter sans body.
+Vite, React 18, TypeScript, Tailwind CSS, React Router, and Playwright. The application is a static SPA; `staticwebapp.config.json` provides the navigation fallback for deep links.
 
-## Card Data
+## Content model
 
-All six challenge cards are defined in `src/data/cards.ts`. Edit that single file to update card content across the gallery and detail pages.
-
-<!-- deploy trigger: 2026-05-31T06:27:07Z -->
+`src/data/cards.ts` contains the six scenarios. Each scenario includes its incoming signal, expected incident outcome, ownership, severity/SLA guidance, and reference material.

@@ -12,10 +12,10 @@ export default function CardNav({ prev, next }: CardNavProps) {
       <div>
         {prev ? (
           <Link
-            to={`/cards/${prev.slug}`}
+            to={`/incidents/${prev.slug}`}
             className="text-maroon hover:text-deep-maroon transition-colors font-medium"
           >
-            ← Card {prev.letter}: {prev.title}
+            ← Incident {prev.letter}: {prev.title}
           </Link>
         ) : (
           <span />
@@ -26,16 +26,16 @@ export default function CardNav({ prev, next }: CardNavProps) {
         to="/"
         className="px-4 py-2 rounded-lg bg-deep-cream text-maroon font-semibold text-sm hover:bg-deep-maroon hover:text-cream transition-colors"
       >
-        All Cards
+        All scenarios
       </Link>
 
       <div>
         {next ? (
           <Link
-            to={`/cards/${next.slug}`}
+            to={`/incidents/${next.slug}`}
             className="text-maroon hover:text-deep-maroon transition-colors font-medium"
           >
-            Card {next.letter}: {next.title} →
+            Incident {next.letter}: {next.title} →
           </Link>
         ) : (
           <span />

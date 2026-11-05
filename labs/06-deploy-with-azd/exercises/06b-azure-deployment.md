@@ -7,7 +7,7 @@
 
 ## Overview
 
-In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy All Clear with a single command. The repo's `azure.yaml` uses `remoteBuild: true`, so Azure Container Registry builds the container images remotely and you do not need local Docker for this deployment. By the end, your All Clear incident-triage pipeline will be running in Azure Container Apps.
+In this exercise, you will use Azure Developer CLI to provision Azure infrastructure and deploy All Clear with a single command. The repo's `azure.yaml` uses `remoteBuild: false`, so Docker builds the container images locally and azd pushes them directly to Azure Container Registry. By the end, your All Clear incident-triage pipeline will be running in Azure Container Apps.
 
 ---
 
@@ -17,6 +17,7 @@ In this exercise, you will use Azure Developer CLI to provision Azure infrastruc
 - [ ] Azure subscription with Contributor access
 - [ ] Azure CLI installed (`az --version`)
 - [ ] Azure Developer CLI installed (`azd version`)
+- [ ] Docker daemon running (`docker info`) — supplied by the Codespace/devcontainer
 
 ---
 
@@ -153,7 +154,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
   frontend:
     project: ./frontend
@@ -161,7 +162,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
 infra:
   provider: bicep
@@ -169,7 +170,7 @@ infra:
   module: main
 ```
 
-`remoteBuild: true` is important for the lab: `azd up` sends the build to Azure Container Registry instead of requiring Docker Desktop on your laptop or Codespace.
+`remoteBuild: false` is important for the lab: `azd up` builds locally and pushes directly to Azure Container Registry. This avoids ACR Tasks queues that can stall on fresh registries. Codespaces provides Docker; local users need Docker Desktop or an equivalent daemon.
 
 ### 3.2 Initialize azd (if needed)
 
@@ -211,7 +212,7 @@ Azure resource names must be globally unique. Set a unique prefix:
 azd env set AZURE_ENV_NAME allclear-<your-initials>
 ```
 
-### Voice & Phone Configuration (Optional)
+### Voice configuration (Optional)
 
 If your deployment includes voice or phone features, add these to your Container App configuration:
 
@@ -220,14 +221,9 @@ If your deployment includes voice or phone features, add these to your Container
 VOICE_ENABLED=true
 AZURE_OPENAI_REALTIME_DEPLOYMENT=gpt-realtime
 
-# Phone (requires ACS resource — coach will demo this)
-PHONE_ENABLED=true
-AZURE_ACS_ENDPOINT=https://your-acs.communication.azure.com
-ACS_PHONE_NUMBER=<instructor-provided-e164-number>
-PHONE_CALLBACK_BASE_URL=https://your-app.azurecontainerapps.io
 ```
 
-> **Note:** Phone requires a public HTTPS URL for Event Grid webhooks. Your Container App URL works for this. Voice works with the same Azure OpenAI endpoint—just needs the Realtime deployment.
+> **Phone is a stretch goal.** Do not configure inbound calling for the baseline hack. A team that elects to add it must purchase and configure its own ACS number; it must never reuse another deployment's number.
 
 **Checkpoint:** `azd env get-values` shows your configuration.
 
@@ -247,7 +243,7 @@ This shows the Bicep deployment plan without executing it.
 
 ### 4.2 Run azd up
 
-The `azd up` command provisions infrastructure AND deploys All Clear. Container images are built remotely in ACR because `azure.yaml` sets `remoteBuild: true`:
+The `azd up` command provisions infrastructure AND deploys All Clear. Container images are built locally and pushed to ACR because `azure.yaml` sets `remoteBuild: false`:
 
 ```bash
 azd up
@@ -284,7 +280,7 @@ Deploying services (azd deploy)
 SUCCESS: All Clear was provisioned and deployed to Azure.
 ```
 
-**Note:** This process takes 10-15 minutes on first run.
+**Note:** The first run builds both images locally; ensure Docker remains running until deployment completes.
 
 ### 4.4 Handle Provisioning Errors
 
@@ -415,17 +411,15 @@ curl.exe -X POST "$BACKEND_URL/api/chat" `
 
 **Expected:** JSON response with an All Clear incident, such as an `AC-####` incident id, severity/SLA routing, and a queue assignment. In live mode, this is the check that Cosmos DB writes are working; the health endpoint alone is not enough.
 
-### Verify Voice & Phone (Optional)
+### Verify voice (Optional)
 
 ```bash
 # Voice health
 curl https://your-app.azurecontainerapps.io/api/realtime/health
 
-# Phone health
-curl https://your-app.azurecontainerapps.io/api/phone/health
 ```
 
-Both should return `{"available": true}` when properly configured, or `{"available": true, "mock_mode": true}` if running in mock mode.
+Voice health reports availability when the realtime deployment is configured. Phone is an optional stretch goal and is intentionally not part of baseline verification.
 
 ### 6.5 Access Frontend (Optional)
 
@@ -443,10 +437,8 @@ Open the frontend URL from `azd show` or `azd env get-value AZURE_FRONTEND_URL`.
 
 - frontend Container App (optional)
 
-**Additional Resources for Voice/Phone (Optional):**
+**Additional Resources for Voice (Optional):**
 - Azure OpenAI: `gpt-realtime` deployment (for voice)
-- Azure Communication Services resource (for phone)
-- Event Grid system topic + webhook subscription pointing to `/api/phone/incoming`
 - Managed Identity: `Cognitive Services OpenAI User` role on the OpenAI resource
 
 **Checkpoint:** Health endpoint returns 200 with healthy status.
@@ -658,14 +650,15 @@ azd env set AZURE_LOCATION westus2
 azd up
 ```
 
-### Issue: Build fails in Azure Container Registry
+### Issue: Local Docker build or registry push fails
 
 ```bash
 # Verify Docker builds locally first
 docker compose build
 
-# Check ACR build logs
-az acr task logs --registry <acr-name>
+# Verify Docker can reach the daemon, then re-authenticate azd before retrying
+docker info
+azd auth login
 ```
 
 ### Issue: Environment variables not set in Container App

@@ -1,6 +1,4 @@
-"""
-FastAPI application entry point for the Front Door Support Agent.
-"""
+"""FastAPI application entry point for All Clear incident triage."""
 
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -9,7 +7,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import router
-from app.api.admin import router as admin_router
 from app.api.media_ws import router as media_ws_router
 from app.api.phone import router as phone_router
 from app.api.realtime import router as realtime_router
@@ -52,18 +49,18 @@ def create_app() -> FastAPI:
         title=settings.app_name,
         version=settings.app_version,
         description="""
-        Universal Front Door Support Agent API
+        All Clear Incident Triage API
 
-        A three-agent system that routes student support requests to appropriate
-        departments, creates tickets, and retrieves relevant knowledge base articles.
+        A three-agent system that classifies inbound signals, deduplicates them
+        into incidents, maps severity and SLA, and produces grounded sitreps.
 
         ## Features
 
-        - **Intent Detection**: Analyze natural language queries to detect intent
-        - **Smart Routing**: Route requests to the correct department
-        - **Ticket Creation**: Create support tickets automatically
-        - **Knowledge Base**: Retrieve relevant help articles
-        - **Human Escalation**: Escalate complex issues to human reviewers
+        - **Signal Classification**: Analyze inbound reports into typed signals
+        - **Deterministic Routing**: Deduplicate, assign severity, and select queues
+        - **Incident Management**: Open incidents or attach reports
+        - **Grounded Knowledge**: Retrieve cited operational guidance
+        - **Human Escalation**: Escalate safety and statutory-clock incidents
 
         ## Authentication
 
@@ -92,7 +89,6 @@ def create_app() -> FastAPI:
 
     # Include API routes
     app.include_router(router, prefix=settings.api_prefix)
-    app.include_router(admin_router, prefix=settings.api_prefix, tags=["Admin"])
     app.include_router(realtime_router, prefix=f"{settings.api_prefix}/realtime", tags=["Voice Realtime"])
     app.include_router(phone_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Call Automation"])
     app.include_router(transcripts_router, prefix=f"{settings.api_prefix}/phone", tags=["Phone Transcripts"])

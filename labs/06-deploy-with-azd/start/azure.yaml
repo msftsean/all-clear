@@ -25,7 +25,7 @@ services:
     #   host: containerapp
     #   docker:
     #     path: Dockerfile
-    #     remoteBuild: true
+    #     remoteBuild: false
 
   # Optional: Frontend service
   # frontend:
@@ -34,7 +34,7 @@ services:
   #   host: containerapp
   #   docker:
   #     path: Dockerfile
-  #     remoteBuild: true
+  #     remoteBuild: false
 
 # TODO: Configure infrastructure settings
 # Specify the IaC provider and path to templates

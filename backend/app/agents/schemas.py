@@ -1,47 +1,11 @@
 """
 All Clear agent-layer schemas (001-maf-rehost).
 
-Ported from app.models.schemas (47 Doors university domain) and renamed to the
-All Clear incident-triage domain defined in CONTEXT.md. Structured-output models
+Structured-output models for the All Clear incident-triage domain defined in
+CONTEXT.md.
 for the MAF pipeline: QueryAgent -> RouterExecutor -> ActionAgent.
 
-The legacy app.models.schemas / app.models.enums remain in place because the
-voice/phone paths still consume them (see spec.md Non-Goals). This module is the
-canonical schema surface for the rehosted agent pipeline.
-
-Field/term mapping (legacy 47 Doors -> All Clear):
-    Department (enum)            -> Queue (enum)
-    Priority (enum)              -> Severity (enum, SEV1..SEV4)
-    Ticket / ticket_id           -> Incident / incident_id (AC-####)
-    QueryResult                  -> SignalClassification
-        .department_suggestion   -> .target_queue
-        .intent                  -> .intent (unchanged)
-        .intent_category         -> .intent_category (SignalCategory taxonomy)
-        .entities                -> .entities (typed: location/system/severity_indicators)
-        .confidence              -> .confidence
-        .requires_escalation     -> .requires_escalation
-        .pii_detected/.pii_types -> .pii_detected/.pii_types
-        .sentiment               -> .sentiment
-        .urgency_indicators      -> .urgency_indicators
-        (new)                    -> .escalation_reason (pre-routing hint)
-    RoutingDecision (legacy)     -> RoutingDecision (All Clear)
-        .department              -> .target_queue
-        .priority                -> .severity
-        .escalate_to_human       -> .escalate
-        .escalation_reason       -> .escalation_reason
-        .suggested_sla_hours     -> .sla_minutes
-        .routing_rules_applied   -> .routing_rules_applied
-        (new)                    -> .outcome (ATTACH_TO_INCIDENT | OPEN_INCIDENT)
-        (new)                    -> .matched_incident_id, .dedup_similarity, .magnitude
-    ActionResult                 -> IncidentAction
-        .ticket_id/.ticket_url   -> .incident_id
-        .department              -> .queue
-        (new)                    -> .severity, .sitrep, .citations
-        .knowledge_articles      -> .knowledge_articles
-        .estimated_response_time -> .estimated_response_time
-        .escalated               -> .escalated
-        .user_message            -> .user_message
-    (new aggregate)              -> PipelineResult
+This module is the canonical schema surface for the incident pipeline.
 """
 
 from __future__ import annotations

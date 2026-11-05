@@ -1,80 +1,56 @@
 ---
-description: "Task list for 019-evolution-loop"
+description: "Completed task ledger for All Clear consolidation"
 ---
 
-# Tasks: Evolution Loop Initiative
+# Tasks: All Clear Consolidation
 
-**Input**: Design documents from `specs/019-evolution-loop/`  
-**Prerequisites**: `spec.md`, `plan.md`  
-**Tests**: Required. New work must preserve green baseline gates.
+**Input**: [spec.md](./spec.md), [plan.md](./plan.md), `CONTEXT.md`
+**Status**: Complete on 2026-09-20
+**Tests**: Required for behavioral changes.
 
-## Phase 0: Governance & Safety Gates
+## Phase 1: Retire University-Support Runtime
 
-- [x] T001 Confirm RouterExecutor boundary is unchanged and mark `app/agents/router_agent.py` out-of-scope in wave plans.
-- [x] T002 Confirm bounded authority and escalation/PII hard-stop criteria are explicit in each spec implementation brief.
-- [x] T003 Capture architecture decision summary in `.squad/decisions/inbox/tchalla-evolution-loop.md`.
-- [x] T004 Verification: run baseline backend suite (`cd backend && python -m pytest tests/ -q`) and record pass/fail status for comparison.
+- [x] T001 Remove the retired support classifier, dynamic branding, fixtures, and
+  related APIs from `backend/` and `frontend/`.
+- [x] T002 Preserve and rename neutral session, audit, voice, and safety data models
+  for the All Clear incident domain.
+- [x] T003 Update voice tool definitions and endpoint tests to use incident IDs,
+  queues, severity, and escalation controls.
+- [x] T004 Verify focused backend schema, safety, and voice endpoint tests.
 
----
+## Phase 2: Align Active All Clear Delivery
 
-## Wave 1 (Parallel): SPEC-4 + SPEC-3 + SPEC-6
+- [x] T101 Remove retired brand defaults and legacy UI components from the primary
+  frontend.
+- [x] T102 Replace retired support knowledge seeds with neutral operational
+  incident-response guidance.
+- [x] T103 Update scripts, package metadata, deployment guidance, and runtime copy
+  to use All Clear terminology.
+- [x] T104 Verify the primary frontend production build.
 
-### SPEC-4 Maryland scenario packs (4a/4b/4c/4d)
+## Phase 3: Rewrite Companion Materials
 
-- [x] T101 [P] Define pack metadata + load flags for SOC/Sentinel, 311/911, water utility, and traffic.
-- [x] T102 [P] Create seed knowledge/signal assets for each pack.
-- [x] T103 Implement pack loader wiring with deterministic mock-mode behavior.
-- [x] T104 [P] Add one dedup attach verification test per pack.
-- [x] T105 Verification: prove each pack loads independently and shows pin-merge behavior in ClearBoard.
+- [x] T201 Rewrite `workshop-site/` as an incident-triage workshop companion.
+- [x] T202 Rewrite `coach-guide/` and `coach-site/` as All Clear facilitator
+  materials.
+- [x] T203 Rewrite `hackathon-site/` as an All Clear scenario/reference site.
+- [x] T204 Rewrite `docs-site/` as an All Clear operations companion.
+- [x] T205 Typecheck and build every companion site.
 
-### SPEC-3 Responsible-AI control map
+## Phase 4: Prune and Synchronize Specification Records
 
-- [x] T111 Create `docs/responsible-ai.md` with policy-control mapping (SB 818 + DoIT concepts).
-- [x] T112 Add/update in-app Trust view content for required controls list.
-- [x] T113 Verification: confirm all required controls are present and README link resolves.
+- [x] T301 Delete obsolete support-domain scenarios, specifications, runbooks,
+  validation records, and workflow references.
+- [x] T302 Amend `.specify/memory/constitution.md` for the incident-only system.
+- [x] T303 Replace this spec, plan, and task ledger with the completed
+  consolidation record.
+- [x] T304 Update Spec Kit templates with current authority, escalation, PII,
+  mock-mode, and verification expectations.
+- [x] T305 Verify the tracked-content legacy-brand scan returns no matches.
 
-### SPEC-6 Lab-to-production leave-behind
+## Final Verification
 
-- [x] T121 Create `docs/lab-to-production.md` with architecture, footprint, RAI controls, and CTA.
-- [x] T122 Add links from README and capstone destination entry point.
-- [x] T123 Verification: validate links and confirm document is demo/mock compatible.
-
-### Wave 1 Gate
-
-- [x] T130 Run backend/frontend tests relevant to touched files and ensure `smoke-test.yml` is green before merge.
-
----
-
-## Wave 2: SPEC-2 + SPEC-1 (Shared UI Surfaces)
-
-### SPEC-2 Azure footprint & cost panel
-
-- [x] T201 Implement read-only `/api/health/azure-footprint` payload contract (service list + estimate object).
-- [x] T202 Add ClearBoard footprint/cost panel with “estimate” labeling.
-- [x] T203 [P] Add tests for service list completeness and estimate payload shape.
-- [x] T204 Verification: mock mode renders panel and endpoint returns expected object.
-
-### SPEC-1 Capstone + lead capture
-
-- [x] T211 Add capstone capture flow fields (name, agency, three reflection prompts).
-- [x] T212 Implement persistence + CSV/JSON export path for captured records.
-- [x] T213 [P] Add tests for capture persistence and export inclusion.
-- [x] T214 Verification: end-of-lab flow produces downloadable lead record in mock mode.
-
-### Wave 2 Gate
-
-- [x] T220 Re-run full backend tests, frontend tests, and `smoke-test.yml`; block merge on any regression.
-
----
-
-## Wave 3: SPEC-5 GitHub-in-the-lab Path
-
-- [x] T301 Author `labs/` workflow steps for fork → Actions run (`smoke-test.yml`) → Copilot extension exercise.
-- [x] T302 Add starter failing test for “add tool or add scenario pack” exercise.
-- [x] T303 Define pass criteria and facilitator verification notes.
-- [x] T304 Verification: starter test demonstrably fails before implementation and passes after exercise completion.
-
-### Final Gate
-
-- [x] T390 Full regression verification: backend mock suite green, `smoke-test.yml` green, frontend tests green where touched.
-- [x] T391 Lead review: confirm RouterExecutor untouched, authority boundaries intact, escalation/PII controls unchanged, mock-mode parity maintained.
+- [x] T390 Run focused backend schema, safety, and voice endpoint tests.
+- [x] T391 Build the primary frontend and all companion sites.
+- [x] T392 Confirm `CONTEXT.md`, the Constitution, this spec pack, and active
+  templates use the same incident-triage vocabulary.

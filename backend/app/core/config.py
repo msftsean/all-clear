@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # ==========================================================================
     # Application Settings
     # ==========================================================================
-    app_name: str = Field(default="Front Door Support Agent")
+    app_name: str = Field(default="All Clear")
     app_version: str = Field(default="1.0.0")
     environment: Literal["development", "staging", "production", "test"] = Field(
         default="development"
@@ -103,7 +103,7 @@ class Settings(BaseSettings):
         description="Azure Cosmos DB primary key"
     )
     cosmos_db_database: str = Field(
-        default="frontdoor",
+        default="allclear",
         validation_alias=AliasChoices(
             "cosmos_db_database", "azure_cosmos_database"
         ),

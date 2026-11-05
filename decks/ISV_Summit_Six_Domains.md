@@ -187,9 +187,9 @@ compliance officer, an auditor, and an attorney.
     *Case management for social workers, child welfare, and child support - sensitive family data
     tracked across years.*
     Demands → **Safety** · **Memory & State** (18-month case) · **Identity** · **Observability**
-  - **Higher Education - FERPA**
-    *Student information, advising, financial aid - leak a GPA or aid status to the wrong person and
-    it's a compliance event.*
+  - **Emergency Management - public records**
+    *Evacuation notices, shelter capacity, and incident updates need clear provenance and
+    appropriate access controls during a surge.*
     Demands → **Identity** · **Safety** · **Evals** · **Memory & State**
 - **Callout (bottom):** "Different agencies, same six domains in a different mix. For courts and
   e-discovery, add **chain of custody** - prove the agent didn't alter the evidence. And CJIS, HIPAA,

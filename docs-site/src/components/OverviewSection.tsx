@@ -1,22 +1,11 @@
 import SectionHeader from './SectionHeader'
-
 export default function OverviewSection() {
-  return (
-    <section id="overview" className="scroll-mt-24 reveal">
-      <SectionHeader icon="🎯" title="Demo Overview" id="overview-heading" />
-      <p className="text-silver text-lg leading-relaxed mb-6 max-w-3xl">
-        The <strong className="text-starlight font-semibold">47 Doors Universal Front Door Support Agent</strong> now speaks. Students can click a single microphone button and have a natural spoken conversation with the same AI pipeline that powers text chat — getting ticket confirmations, knowledge article summaries, and escalation notices, all by voice. This demo shows how a university can replace dozens of disconnected support portals with <strong className="text-starlight font-semibold">one trusted digital colleague</strong> that works whether you type or talk.
-      </p>
-      <div className="bg-midnight-slate border border-lead/50 rounded-2xl p-6 card-hover">
-        <pre className="text-mercury-blue/80 text-xs leading-relaxed overflow-x-auto">{`┌─────────────────────────────────────────────────────────────┐
-│  🎓 Student speaks  →  🧠 3-Agent Pipeline  →  🔊 AI replies │
+  return <section id="overview" className="scroll-mt-24 reveal"><SectionHeader icon="🎯" title="Demo Overview" id="overview-heading" /><p className="text-silver text-lg leading-relaxed mb-6 max-w-3xl"><strong className="text-starlight font-semibold">All Clear</strong> turns noisy operational signals into a calm, shared incident picture. This companion demonstrates the path from email, webhook, chat, and phone intake to deduplication, surge grouping, severity assignment, SLA-aware queues, and a safe handoff to responders. The point is not another alert console; it is a reliable operating rhythm that helps a team decide what matters next.</p><div className="bg-midnight-slate border border-lead/50 rounded-2xl p-6 card-hover"><pre className="text-mercury-blue/80 text-xs leading-relaxed overflow-x-auto">{`┌─────────────────────────────────────────────────────────────┐
+│  📡 Signals arrive  →  🧠 Triage pipeline  →  🧭 ClearBoard │
 │                                                             │
-│  QueryAgent ──► RouterAgent ──► ActionAgent                 │
+│  Normalize ──► Dedup + surge ──► Severity + queue          │
 │      │               │               │                      │
-│   🔍 Intent       🗺️ Route        🎫 Ticket                 │
-│   Detection      Selection        Creation                  │
-└─────────────────────────────────────────────────────────────┘`}</pre>
-      </div>
-    </section>
-  )
+│   🔍 Signal       🧱 Incident       ⏱️ SLA                   │
+│   Context        Grouping          Response                 │
+└─────────────────────────────────────────────────────────────┘`}</pre></div></section>
 }

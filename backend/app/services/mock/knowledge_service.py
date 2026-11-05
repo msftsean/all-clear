@@ -8,8 +8,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from app.models.enums import Department
-from app.models.schemas import KnowledgeArticle
+from app.agents.schemas import KnowledgeArticle
 from app.services.interfaces import KnowledgeServiceInterface
 
 
@@ -67,19 +66,13 @@ class MockKnowledgeService(KnowledgeServiceInterface):
     async def search(
         self,
         query: str,
-        department: Optional[Department] = None,
+        department: Optional[str] = None,
         limit: int = 3,
     ) -> list[KnowledgeArticle]:
         """Search articles using text matching."""
         results = []
 
         for article in self._articles:
-            # Filter by department if specified
-            if department:
-                article_dept = article.get("department")
-                if article_dept and article_dept != department.value:
-                    continue
-
             # Calculate relevance score
             score = self._calculate_relevance(query, article)
             if score > 0.1:  # Minimum threshold
@@ -98,7 +91,6 @@ class MockKnowledgeService(KnowledgeServiceInterface):
                     url=article["url"],
                     snippet=article.get("snippet"),
                     relevance_score=score,
-                    department=Department(article["department"]) if article.get("department") else None,
                 )
             )
 
@@ -107,19 +99,13 @@ class MockKnowledgeService(KnowledgeServiceInterface):
     async def search_with_content(
         self,
         query: str,
-        department: Optional[Department] = None,
+        department: Optional[str] = None,
         limit: int = 3,
     ) -> tuple[list[KnowledgeArticle], list[dict]]:
         """Search articles and return both metadata and full content."""
         results = []
 
         for article in self._articles:
-            # Filter by department if specified
-            if department:
-                article_dept = article.get("department")
-                if article_dept and article_dept != department.value:
-                    continue
-
             # Calculate relevance score
             score = self._calculate_relevance(query, article)
             if score > 0.1:  # Minimum threshold
@@ -139,7 +125,6 @@ class MockKnowledgeService(KnowledgeServiceInterface):
                     url=article["url"],
                     snippet=article.get("snippet"),
                     relevance_score=score,
-                    department=Department(article["department"]) if article.get("department") else None,
                 )
             )
             contents.append({
@@ -165,7 +150,6 @@ class MockKnowledgeService(KnowledgeServiceInterface):
                     url=article["url"],
                     snippet=article.get("snippet"),
                     relevance_score=1.0,
-                    department=Department(article["department"]) if article.get("department") else None,
                 )
         return None
 

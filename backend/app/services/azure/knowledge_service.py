@@ -14,8 +14,7 @@ from azure.search.documents import SearchClient
 from azure.search.documents.models import VectorizedQuery
 from openai import AzureOpenAI
 
-from app.models.enums import Department
-from app.models.schemas import KnowledgeArticle
+from app.agents.schemas import KnowledgeArticle
 from app.services.interfaces import KnowledgeServiceInterface
 
 logger = logging.getLogger(__name__)
@@ -69,16 +68,14 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
         )
         return response.data[0].embedding
 
-    def _build_filter(self, department: Optional[Department]) -> Optional[str]:
-        """Build OData filter for department.
-        Currently disabled: index department values don't match enum values.
-        Keyword + vector relevance provides sufficient filtering."""
+    def _build_filter(self, department: Optional[str]) -> Optional[str]:
+        """Build an optional All Clear queue filter for Azure AI Search."""
         return None
 
     async def search(
         self,
         query: str,
-        department: Optional[Department] = None,
+        department: Optional[str] = None,
         limit: int = 3,
     ) -> list[KnowledgeArticle]:
         """Hybrid search returning article metadata."""
@@ -88,7 +85,7 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
     async def search_with_content(
         self,
         query: str,
-        department: Optional[Department] = None,
+        department: Optional[str] = None,
         limit: int = 3,
     ) -> tuple[list[KnowledgeArticle], list[dict]]:
         """Hybrid search returning both metadata and full content.
@@ -127,16 +124,6 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
             contents = []
             for result in results:
                 score = result.get("@search.score", 0.0)
-                dept_val = result.get("department")
-
-                # Gracefully handle department values that don't match the enum
-                dept = None
-                if dept_val:
-                    try:
-                        dept = Department(dept_val)
-                    except ValueError:
-                        pass
-
                 articles.append(
                     KnowledgeArticle(
                         article_id=result["id"],
@@ -144,7 +131,6 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
                         url="",
                         snippet=result.get("snippet"),
                         relevance_score=min(1.0, score / 10.0),
-                        department=dept,
                     )
                 )
                 contents.append({
@@ -172,20 +158,12 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
                 self._search_client.get_document, key=article_id
             )
             if result:
-                dept_val = result.get("department")
-                dept = None
-                if dept_val:
-                    try:
-                        dept = Department(dept_val)
-                    except ValueError:
-                        pass
                 return KnowledgeArticle(
                     article_id=result["id"],
                     title=result.get("title", ""),
                     url="",
                     snippet=result.get("snippet"),
                     relevance_score=1.0,
-                    department=dept,
                 )
         except Exception as e:
             logger.error("Get article %s failed: %s", article_id, e)

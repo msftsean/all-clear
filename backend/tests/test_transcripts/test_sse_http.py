@@ -93,7 +93,7 @@ class TestSSEGeneratorIntegration:
         received: list[dict] = []
 
         test_events = [
-            {"type": "call_started", "call_id": "int-1", "phone_number": "+19132171946"},
+            {"type": "call_started", "call_id": "int-1", "phone_number": "+15551234567"},
             {"type": "user_speech", "text": "How do I register?", "call_id": "int-1"},
             {"type": "agent_speech", "text": "Visit the portal.", "call_id": "int-1"},
             {"type": "tool_call", "tool": "search_kb", "summary": "3 results", "call_id": "int-1"},

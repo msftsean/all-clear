@@ -128,7 +128,7 @@ async def test_sse_generator_all_event_types():
     mock_request.is_disconnected.return_value = False
 
     events_to_send = [
-        {"type": "call_started", "call_id": "m1", "phone_number": "+19132171946"},
+        {"type": "call_started", "call_id": "m1", "phone_number": "+15551234567"},
         {"type": "user_speech", "text": "password reset", "call_id": "m1"},
         {"type": "agent_speech", "text": "Sure thing", "call_id": "m1"},
         {"type": "tool_call", "tool": "search_kb", "summary": "3 results", "call_id": "m1"},

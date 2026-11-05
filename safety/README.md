@@ -6,9 +6,11 @@ portal." It has two parts:
 | Folder | What it provisions | Where you show it |
 | ------ | ------------------ | ----------------- |
 | `content-filter/` | A **custom content filter** (`allclear-guardrails`) attached to the `gpt-5.1` deployment | Foundry / Azure OpenAI -> **Guardrails + controls -> Content filters** |
-| `foundry-project/` | An **Azure AI Foundry project** (`allclear-redteam`) to host red-team runs + safety evals | Foundry portal -> project -> **Red teaming** |
+| `foundry-project/` | An **Azure AI Foundry project** (your project name) to host red-team runs + safety evals | Foundry portal -> project -> **Red teaming** |
 
 The red team scan that publishes into that project lives in [`../evals/red-team/`](../evals/red-team/).
+These scripts are fork-safe: they never select a maintainer's subscription, resource group,
+account, subdomain, or project endpoint.
 
 ## The honest before/after
 
@@ -44,20 +46,45 @@ So in `allclear-guardrails`:
 That is the demo narrative: **platform content filter + app guardrail working together**, tuned
 for the domain rather than blindly maxed.
 
-## Run order
+## Student setup and run order
+
+Use your own Azure subscription and resource names. Foundry red-teaming is supported in
+**East US 2, North Central US, France Central, Sweden Central, and Switzerland West**.
+The backend being evaluated may be hosted in another region.
+
+The project script requires **Contributor** on the target resource group and **User Access
+Administrator** (or equivalent permission to create role assignments). It grants the signed-in
+user **Azure AI User** on the new Foundry account. The content-filter script requires Contributor
+access to the Azure OpenAI account and its deployment.
 
 ```powershell
 az login
-.\foundry-project\create_foundry_project.ps1     # 1. project to host results (East US 2)
-.\content-filter\apply_content_filter.ps1         # 2. custom filter on the gpt-5.1 deployment
-# 3. then run the scan in ../evals/red-team/
+az account set --subscription "<your-subscription-id>"
+
+# 1. Create your own Foundry account and project. Subscription is derived from az account
+#    when omitted; resource group, account, and project are required.
+.\foundry-project\create_foundry_project.ps1 `
+  -ResourceGroup "<your-resource-group>" `
+  -Account "<your-foundry-account>" `
+  -Project "<your-project-name>" `
+  -Location "eastus2"
+
+# 2. Apply the filter to your own Azure OpenAI deployment.
+.\content-filter\apply_content_filter.ps1 `
+  -ResourceGroup "<your-resource-group>" `
+  -Account "<your-openai-account>" `
+  -DeploymentName "<your-model-deployment>"
+
+# 3. Register the agent, then run the quality and red-team evals.
+#    The registration command requires your model deployment:
+#    python evals/register-agent/register_agent.py --model "<your-model-deployment>"
 ```
 
-## What is live right now
-
-- Foundry project: `allclear-redteam` (account `allclear-foundry`, rg `rg-allclear`, **East US 2**)
-  - endpoint: `https://allclear-foundry-kt5fw24guxoxy.services.ai.azure.com/api/projects/allclear-redteam`
-- Custom content filter `allclear-guardrails` attached to `gpt-5.1` on `allclear-kt5fw24guxoxy-openai`.
+The script derives the Foundry custom subdomain from the account name when `-SubDomain` is
+omitted. Pass a globally unique `-SubDomain` explicitly if that derived value is unavailable.
+Copy `.foundry/agent-metadata.local.yaml.example` to
+`.foundry/agent-metadata.local.yaml` and replace its placeholders with the endpoint printed by
+the project script. The local override is ignored by Git.
 
 ## IaC note
 

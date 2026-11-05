@@ -15,6 +15,11 @@ This repo deploys **four** independent Azure Static Web Apps (SWAs):
 > doing so deploys one site's content into another. Sites 2, 3 and 4 each use their
 > own secret name above, distinct from the hackathon site.
 
+> **Retired:** the coach prep companion (row 4, `coach-site/`) has been removed
+> from this repo. Coach-facing material now lives entirely in the separate
+> `Public-sector-hacks-Org/all-clear-coaches-runbook` repo/deployment. The rest
+> of this archived doc is left as historical reference for sites 1-3.
+
 ## Live deployment URLs
 
 | Site | Status | URL |
@@ -48,9 +53,9 @@ publish, using the matching name + secret from this table:
 
 | Site | SWA resource name (suggested) | GitHub repo secret to set | Source folder |
 |------|-------------------------------|---------------------------|---------------|
-| Docs | `swa-47doors-docs` | `AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS` | `docs/` |
-| Workshop | `swa-47doors-workshop` | `AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP` | `workshop-site/` |
-| Coach | `swa-47doors-coach` | `AZURE_STATIC_WEB_APPS_API_TOKEN_COACH` | `coach-site/` |
+| Docs | `swa-allclear-docs` | `AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS` | `docs-site/` |
+| Workshop | `swa-allclear-workshop` | `AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP` | `workshop-site/` |
+| Coach | `swa-allclear-coach` | `AZURE_STATIC_WEB_APPS_API_TOKEN_COACH` | `coach-site/` |
 
 ### 1. Create the Static Web App
 
@@ -58,8 +63,8 @@ publish, using the matching name + secret from this table:
    **Create**.
 2. **Basics** tab:
    - **Subscription:** Cloudforce Sponsorship (`098ef2f6-cea4-4839-8093-ef90622e1b8c`).
-   - **Resource Group:** `rg-ajcu-hackathon` (same RG as the hackathon site).
-   - **Name:** the resource name from the table above (e.g. `swa-47doors-coach`).
+   - **Resource Group:** `rg-allclear` (or the existing All Clear resource group).
+   - **Name:** the resource name from the table above (e.g. `swa-allclear-coach`).
    - **Plan type:** **Free** is fine for the public **Workshop** and **Coach** sites.
      Choose **Standard** for **Docs** (it uses a custom Entra app registration — see
      §3 below).
@@ -78,7 +83,7 @@ publish, using the matching name + secret from this table:
    here (e.g. `https://nice-pebble-0abc123.azurestaticapps.net`) is the **site URL**.
 2. Left nav → **Settings → Configuration** (or **Overview → Manage deployment
    token**) → **Manage deployment token** → **Copy** the token value.
-3. In GitHub: **`EstablishedCorp/all-clear` → Settings → Secrets and variables →
+3. In GitHub: **`Public-sector-hacks-Org/all-clear` → Settings → Secrets and variables →
    Actions → New repository secret**.
    - **Name:** the exact secret from the table (e.g. `AZURE_STATIC_WEB_APPS_API_TOKEN_COACH`).
    - **Secret:** paste the token. **Add secret.**
@@ -126,7 +131,7 @@ The sections below do exactly the same thing from a shell with Azure access.
 ```bash
 az login
 az account set --subscription 098ef2f6-cea4-4839-8093-ef90622e1b8c   # Cloudforce Sponsorship
-RG=rg-ajcu-hackathon                                                  # same RG as the hackathon SWA
+RG=rg-allclear                                                        # existing All Clear resource group
 LOCATION=eastus2
 ```
 
@@ -141,7 +146,7 @@ GitHub UI: **Settings → Secrets and variables → Actions → New repository s
 
 ```bash
 az staticwebapp create \
-  --name swa-47doors-docs \
+  --name swa-allclear-docs \
   --resource-group "$RG" \
   --location "$LOCATION" \
   --sku Standard \
@@ -160,11 +165,11 @@ The printed `defaultHostname` (e.g. `something-12345.azurestaticapps.net`) is th
 
 ```bash
 TOKEN=$(az staticwebapp secrets list \
-  --name swa-47doors-docs --resource-group "$RG" \
+  --name swa-allclear-docs --resource-group "$RG" \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_DOCS --body "$TOKEN" \
-  --repo EstablishedCorp/all-clear
+  --repo Public-sector-hacks-Org/all-clear
 ```
 
 ### 3. (Docs only) Configure AAD app settings — REQUIRED or every visitor gets 401
@@ -174,7 +179,7 @@ custom app registration. Set its client id/secret as SWA application settings:
 
 ```bash
 az staticwebapp appsettings set \
-  --name swa-47doors-docs --resource-group "$RG" \
+  --name swa-allclear-docs --resource-group "$RG" \
   --setting-names \
     AZURE_CLIENT_ID="<entra-app-client-id>" \
     AZURE_CLIENT_SECRET="<entra-app-client-secret>"
@@ -193,7 +198,7 @@ registrations → New), add the SWA redirect URI
 
 ```bash
 # Trigger the workflow (any push touching docs/, or manually):
-gh workflow run deploy-docs-swa.yml --repo EstablishedCorp/all-clear
+gh workflow run deploy-docs-swa.yml --repo Public-sector-hacks-Org/all-clear
 ```
 
 ---
@@ -204,7 +209,7 @@ gh workflow run deploy-docs-swa.yml --repo EstablishedCorp/all-clear
 
 ```bash
 az staticwebapp create \
-  --name swa-47doors-workshop \
+  --name swa-allclear-workshop \
   --resource-group "$RG" \
   --location "$LOCATION" \
   --query "defaultHostname" -o tsv
@@ -216,17 +221,17 @@ The printed `defaultHostname` is the **workshop site URL** → `https://<default
 
 ```bash
 TOKEN=$(az staticwebapp secrets list \
-  --name swa-47doors-workshop --resource-group "$RG" \
+  --name swa-allclear-workshop --resource-group "$RG" \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_WORKSHOP --body "$TOKEN" \
-  --repo EstablishedCorp/all-clear
+  --repo Public-sector-hacks-Org/all-clear
 ```
 
 ### 3. Deploy
 
 ```bash
-gh workflow run deploy-workshop-swa.yml --repo EstablishedCorp/all-clear
+gh workflow run deploy-workshop-swa.yml --repo Public-sector-hacks-Org/all-clear
 ```
 
 The workshop workflow builds the Vite app (`app_location: workshop-site`,
@@ -245,7 +250,7 @@ token here — that would deploy one site's content into another.
 
 ```bash
 az staticwebapp create \
-  --name swa-47doors-coach \
+  --name swa-allclear-coach \
   --resource-group "$RG" \
   --location "$LOCATION" \
   --query "defaultHostname" -o tsv
@@ -257,17 +262,17 @@ The printed `defaultHostname` is the **coach site URL** → `https://<defaultHos
 
 ```bash
 TOKEN=$(az staticwebapp secrets list \
-  --name swa-47doors-coach --resource-group "$RG" \
+  --name swa-allclear-coach --resource-group "$RG" \
   --query "properties.apiKey" -o tsv)
 
 gh secret set AZURE_STATIC_WEB_APPS_API_TOKEN_COACH --body "$TOKEN" \
-  --repo EstablishedCorp/all-clear
+  --repo Public-sector-hacks-Org/all-clear
 ```
 
 ### 3. Deploy
 
 ```bash
-gh workflow run deploy-coach-swa.yml --repo EstablishedCorp/all-clear
+gh workflow run deploy-coach-swa.yml --repo Public-sector-hacks-Org/all-clear
 ```
 
 The coach workflow builds the Vite app (`app_location: coach-site`,

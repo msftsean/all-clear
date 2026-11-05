@@ -31,7 +31,18 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] Data flow identifies PII handling, retention, audit events, and any
+      embedding/external-service impact.
+- [ ] QueryAgent, RouterExecutor, and ActionAgent authority boundaries are
+      unchanged or explicitly justified and tested.
+- [ ] Severity, statutory-clock, safety, PII, and human-request escalation
+      behavior is preserved or expanded; no change weakens a trigger.
+- [ ] Mock mode validates the same authority boundaries without Azure credentials.
+- [ ] Sitreps or factual output identify their source-record/citation behavior.
+- [ ] Relevant backend tests and frontend/companion typecheck-build commands are
+      listed in the Verification Matrix.
+- [ ] The design uses the canonical terms in `CONTEXT.md` and introduces no
+      retired support-domain concepts.
 
 ## Project Structure
 

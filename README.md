@@ -18,8 +18,6 @@
 
 > **Collapse the surge.** When a storm, outage, or recall makes 40 people report the same thing, All Clear deduplicates those **signals** into a handful of real **incidents**, routes each by severity and SLA, and drives a live map that flips green when everything is resolved.
 
-> 🧬 **Heritage.** All Clear is the production pivot of [**47 Doors**](https://github.com/EstablishedCorp/47doors). The same three-agent shape — classify → route → act — is rebuilt on the **Microsoft Agent Framework (MAF)** for incident triage in public safety, customer comms, and regulated industries.
-
 ---
 
 ## 📖 Overview
@@ -54,7 +52,7 @@ One canonical term per concept (see [`CONTEXT.md`](./CONTEXT.md) — if code and
 | 🔥 **Incident** | The real-world event signals describe (`AC-####`). Has severity, queue, SLA clock, magnitude, status. |
 | 🔗 **Report** | The association of a signal to an incident; attaching one increments magnitude. |
 | 📊 **Magnitude** | Count of reports on an incident — a proxy for scale; drives ClearBoard weight. |
-| 🚪 **Queue** | Destination work stream (replaces 47 Doors' "department"). |
+| 🚪 **Queue** | Destination work stream for an incident. |
 | 📝 **Sitrep** | Citation-grounded situation report from `generate_sitrep`. |
 | ✅ **All clear** | Terminal state — every incident resolved, every SLA satisfied. Also the product name. |
 | 🌊 **Surge** | Inbound volume spike where most signals are duplicates. The hero scenario. |
@@ -182,12 +180,13 @@ azd up
 
 | Suite | Tests | Status |
 | ----- | ----: | ------ |
-| Backend (pytest, mock mode) | 348/348 | ✅ Passing |
-| Backend CI (clean venv) | `allclear-backend-ci.yml` | ✅ |
-| Smoke (agents · evals · models · spec) | `smoke-test.yml` | ✅ |
-| Frontend (vitest) | 24/24 | ✅ |
+| Backend (pytest, mock mode) | 347/347 | ✅ Passing |
+| Backend CI (clean venv) | `allclear-backend-ci.yml` | ℹ️ Workflow present; not re-verified in this pass |
+| Smoke (offline mock backend + frontend unit tests) | `smoke-test.yml` (`npm run smoke-test`) | ✅ Passing |
+| Frontend (vitest) | 4/4 | ✅ Passing |
 
 > Backend tests run with `ENVIRONMENT=test` and `MOCK_MODE=true` — no Azure credentials required.
+> Counts last verified 2026-09-20 by running `cd backend && ENVIRONMENT=test MOCK_MODE=true USE_MOCK_MODE=true PYTHONPATH=. python -m pytest -q` and `cd frontend && npm test -- --run`.
 
 ### 🔧 Backend
 
@@ -226,7 +225,8 @@ all-clear/
 └── 📄 azure.yaml            # azd deployment manifest
 ```
 
-> 🧹 Some directories (`coach-guide/`, `coach-site/`, `hackathon-site/`, `workshop-site/`, `labs/`, `allclear-dropin/`) are 47 Doors bootcamp leftovers retained during the rehost.
+> 🧭 The workshop, coach, hackathon, and lab materials demonstrate the All Clear
+> incident-triage workflow and use the same domain language as the application.
 
 ---
 

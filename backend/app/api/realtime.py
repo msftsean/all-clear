@@ -17,7 +17,8 @@ from app.core.dependencies import (
     get_session_store,
     get_settings,
 )
-from app.models.enums import Department, Sentiment
+from app.agents.schemas import Queue
+from app.models.enums import Sentiment
 from app.models.schemas import AuditLog, Session
 from app.models.voice_schemas import (
     RealtimeSessionRequest,
@@ -196,14 +197,11 @@ async def _log_voice_tool_call(
     except json.JSONDecodeError:
         result_data = {}
 
-    department_value = str(result_data.get("department") or "ESCALATE_TO_HUMAN")
+    queue_value = str(result_data.get("queue") or Queue.ESCALATIONS.value)
     try:
-        routed_department = Department(department_value)
+        routed_queue = Queue(queue_value)
     except ValueError:
-        try:
-            routed_department = Department(department_value.upper())
-        except ValueError:
-            routed_department = Department.ESCALATE_TO_HUMAN
+        routed_queue = Queue.ESCALATIONS
 
     escalated = bool(result_data.get("escalated") or result_data.get("requires_escalation"))
     audit_entry = AuditLog(
@@ -213,8 +211,8 @@ async def _log_voice_tool_call(
         session_id=session_uuid,
         detected_intent=str(result_data.get("intent") or tool_name),
         confidence_score=float(result_data.get("confidence") or 1.0),
-        routed_department=routed_department,
-        ticket_id=result_data.get("ticket_id"),
+        routed_queue=routed_queue,
+        incident_id=result_data.get("incident_id"),
         escalated=escalated,
         escalation_reason="voice_escalation" if escalated else None,
         pii_detected=False,

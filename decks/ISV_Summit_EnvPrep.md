@@ -84,7 +84,7 @@ Walk out of this room with a green checkmark on every prerequisite so Stage 0 st
 - **GitHub (✓ required):**
   - ✓ GitHub account
   - ✓ **Active GitHub Copilot** subscription
-  - ✓ Access to **`EstablishedCorp/all-clear`** repo
+  - ✓ Access to **`Public-sector-hacks-Org/all-clear`** repo
   - ✓ **Codespaces** enabled on your account
 - **Nice-to-Have (✗ not required tomorrow):**
   - ✗ `az` CLI + `azd` installed locally
@@ -121,7 +121,7 @@ Walk out of this room with a green checkmark on every prerequisite so Stage 0 st
 - **Layout:** **Six numbered steps**, **teal circles** (per the user's spec for this slide), connector
   line.
 - **Steps:**
-  1. **Launch** - go to `EstablishedCorp/all-clear` → green **Code** button → **Codespaces** tab →
+  1. **Launch** - go to `Public-sector-hacks-Org/all-clear` → green **Code** button → **Codespaces** tab →
      **Create codespace on main**
   2. **Wait for the prebuilt env** - Python 3.11+, Node 18+, all deps, Copilot extension, ready to go
   3. **Verify** - `python --version`, `node --version`; `pip list | grep fastapi`

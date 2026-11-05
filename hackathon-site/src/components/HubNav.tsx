@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 
 const links = [
-  { to: "/pattern", label: "The Pattern" },
-  { to: "/intents", label: "The Six Doors" },
-  { to: "/rules", label: "Rules" },
-  { to: "/run-of-show", label: "Run of Show" },
-  { to: "/runbook", label: "Student Runbook" },
+  { to: "/workflow", label: "Triage workflow" },
+  { to: "/queues", label: "Response queues" },
+  { to: "/policy", label: "Severity & safety" },
+  { to: "/shift-plan", label: "Shift plan" },
+  { to: "/runbook", label: "Operator runbook" },
 ];
 
 export default function HubNav() {

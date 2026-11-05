@@ -10,7 +10,7 @@ A cheat sheet of commonly used commands, file locations, and reference tables.
 
 ```bash
 # Clone the repository
-git clone https://github.com/EstablishedCorp/all-clear.git
+git clone https://github.com/Public-sector-hacks-Org/all-clear.git
 
 # Check status
 git status
@@ -162,7 +162,8 @@ curl http://localhost:8000/api/realtime/health
 curl http://localhost:8000/api/phone/health
 ```
 
-**Phone demos:** instructor-led only; use the number or ACS endpoint your instructor provides.
+**Phone demos:** optional stretch goal only. Use an ACS number purchased for your
+own deployment; never reuse another team's or instructor's number.
 
 ### Voice Environment Variables
 | Variable | Description | Default |
@@ -177,7 +178,7 @@ curl http://localhost:8000/api/phone/health
 |----------|-------------|----------|
 | `PHONE_ENABLED` | Enable phone integration | `true` |
 | `AZURE_ACS_ENDPOINT` | ACS resource endpoint | Yes (production) |
-| `ACS_PHONE_NUMBER` | E.164 phone number from your instructor | Yes (production) |
+| `ACS_PHONE_NUMBER` | E.164 phone number purchased for this deployment | Yes (phone stretch goal only) |
 | `PHONE_CALLBACK_BASE_URL` | Public HTTPS callback URL | Yes (production) |
 
 ### Key Voice/Phone URLs

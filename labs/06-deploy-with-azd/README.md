@@ -8,11 +8,11 @@
 
 ---
 
-> 🚀 **In the 3-hour All Clear workshop, `azd up` is step one — not the last lab.** You
-> do **not** need to complete Labs 00–05 before provisioning. Run the azd-first
-> flow in the [README **Start here** section](../../README.md#-start-here-3-hour-all-clear-workshop)
-> at the very beginning of the session. Treat the content below as the **take-home
-> deep dive** that explains what `azd up` does under the hood.
+> 🚀 **Event path (required):** use the facilitator's already-running backend
+> and verify its health, then move to Lab 08. If you are explicitly assigned
+> an Azure subscription and Docker time, the individual `azd up` deployment
+> below is an **optional deep dive**. Use the [Azure preflight](../../docs/event-readiness/AZURE_PREFLIGHT.md)
+> for the shared-backend fallback and stop conditions.
 
 ## 📈 Progress Tracker
 
@@ -20,15 +20,16 @@
 Lab Progress: [░░░░░░░░░░] 0% - Not Started
 
 Checkpoints:
-□ Step 1: Understand remote ACR builds
-□ Step 2: Test Locally with Docker Compose (optional)
-□ Step 3: Install and Configure azd
-□ Step 4: Initialize azd Environment
-□ Step 5: Deploy with azd up
-□ Step 6: Seed the knowledge base
-□ Step 7: Verify Deployment and Cosmos persistence
-□ Step 8: View Logs and Monitoring
-□ Step 9: Clean Up (Optional)
+□ Step 1: Verify the shared backend URL (required event path)
+□ Step 2: Prepare local Docker builds (optional deep dive)
+□ Step 3: Test Locally with Docker Compose (optional)
+□ Step 4: Install and Configure azd (optional deep dive)
+□ Step 5: Initialize azd Environment (optional deep dive)
+□ Step 6: Deploy with azd up (optional deep dive)
+□ Step 7: Seed the knowledge base (optional deep dive)
+□ Step 8: Verify Deployment and Cosmos persistence (optional deep dive)
+□ Step 9: View Logs and Monitoring (optional deep dive)
+□ Step 10: Clean Up (optional deep dive)
 ```
 
 ---
@@ -37,7 +38,7 @@ Checkpoints:
 
 By the end of this lab, you will be able to:
 
-1. 🐳 **Deploy containerized All Clear without local Docker** - Use `remoteBuild: true` so Azure Container Registry builds images in Azure
+1. 🐳 **Deploy containerized All Clear with local Docker** - Build locally and push directly to Azure Container Registry
 2. ☁️ **Deploy with azd up** - Use Azure Developer CLI to provision infrastructure and deploy All Clear in a single command
 3. 📊 **Configure monitoring and health checks** - Set up All Clear health monitoring and view logs in Azure
 
@@ -87,7 +88,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
   frontend:
     project: ./frontend
@@ -95,7 +96,7 @@ services:
     host: containerapp
     docker:
       path: Dockerfile
-      remoteBuild: true
+      remoteBuild: false
 
 infra:
   provider: bicep
@@ -109,7 +110,7 @@ This tells azd:
 - 🐍 What language/runtime each service uses
 - 🏠 How to host each service (backend and frontend on Azure Container Apps)
 - 🏗️ Where to find infrastructure definitions
-- 🏭 To use **ACR remote build** (`remoteBuild: true`), so participants do **not** need local Docker for the `azd up` path
+- 🏭 To build locally and push directly to Azure Container Registry (`remoteBuild: false`)
 
 ---
 
@@ -144,17 +145,51 @@ In this lab, you will deploy the All Clear incident-triage system to Azure:
 | 🔐 **Key Vault**                  | Stores Cosmos, Search, and ACS secrets |
 | 📞 **Azure Communication Services** | Optional voice/phone channel support |
 
-> ℹ️ **Lab note:** The real All Clear `azure.yaml` deploys both `backend` and `frontend` services to Azure Container Apps using remote Docker builds. `infra/main.bicep` names the backend Container App `${prefix}-backend` and frontend `${prefix}-frontend`, where `prefix` is derived from the `resourcePrefix` and deployment token.
+> ℹ️ **Lab note:** The real All Clear `azure.yaml` deploys both `backend` and `frontend` services to Azure Container Apps using local Docker builds and direct registry pushes. `infra/main.bicep` names the backend Container App `${prefix}-backend` and frontend `${prefix}-frontend`, where `prefix` is derived from the `resourcePrefix` and deployment token.
 
 ---
 
 ## 📝 Step-by-Step Instructions
 
-### 🔹 Step 1: Understand remote ACR builds
+### 🔹 Event path: verify the shared backend (required, 5 minutes)
 
-The workshop deployment lane does **not** require local Docker. The repo's `azure.yaml` sets `remoteBuild: true` for both backend and frontend services, so `azd up` uploads source to Azure Container Registry and ACR builds the images in Azure.
+The facilitator supplies `SHARED_BACKEND_URL`. This is the achievable happy
+path for the timed workshop; it avoids making every participant wait for
+OpenAI, Search, Cosmos, Container Apps, and local Docker provisioning.
 
-If you already have Docker Desktop and want a local container sanity check, use Step 2. If you are in Codespaces or on a Windows machine without Docker Desktop, skip Step 2 and continue with Step 3.
+```bash
+export BACKEND_URL="$SHARED_BACKEND_URL"
+curl --fail --max-time 10 "$BACKEND_URL/api/health"
+curl --fail --max-time 10 "$BACKEND_URL/api/openapi.json" >/dev/null
+```
+
+If either check fails, report it to the facilitator and use the pre-created
+gateway or another shared backend. Do not begin an individual `azd up` attempt
+during the timed APIM stage.
+
+### 🔹 Eval-CI exercise: prove the quality gate (10 minutes, no Azure)
+
+The backend workflow runs the existing mock-mode classification verifier on
+every push, pull request, and manual dispatch. This is the credential-free
+deployment gate: it proves the evaluator is live before anyone spends time on
+Azure provisioning.
+
+Run the same check locally from `backend/`:
+
+```bash
+python scripts/check_eval.py --min-accuracy 0.90
+```
+
+✅ **Checkpoint:** the command reports `PASS` at or above 0.90 (the current
+fixture is expected to score 60/60). In GitHub Actions, the
+**Run classification eval checkpoint** step must be green in
+`.github/workflows/allclear-backend-ci.yml`.
+
+### 🔹 Step 1: Prepare local Docker builds
+
+The workshop deployment lane **requires a working local Docker daemon**. The repo's `azure.yaml` sets `remoteBuild: false` for both services, so `azd up` builds images locally and pushes them directly to Azure Container Registry. The supplied Codespace/devcontainer includes Docker; local users must install and start Docker Desktop or an equivalent daemon.
+
+This avoids ACR Tasks queues, which can leave a fresh registry waiting for a remote build agent without useful progress. Use Step 2 for a local application sanity check before deployment.
 
 #### 1a: 🔍 Check Docker Installation
 
@@ -215,7 +250,7 @@ Key elements:
 
 ### 🔹 Step 2: Test Locally with Docker Compose (Optional)
 
-Build and run your containers locally only if Docker is already installed. This is optional because `azd up` uses ACR remote build.
+Build and run your containers locally as an optional application sanity check. Docker itself is required for `azd up`.
 
 #### 2a: 🔨 Build the Containers
 
@@ -347,7 +382,7 @@ azd up --no-prompt
 This single command:
 
 1. ☁️ Creates all Azure resources defined in your Bicep templates
-2. 🏭 Builds your Docker containers remotely in Azure Container Registry (`remoteBuild: true`)
+2. 🏭 Builds your Docker containers locally and pushes them to Azure Container Registry
 3. ⬆️ Pushes images to Azure Container Registry
 4. 🚀 Deploys containers to Azure Container Apps
 5. ⚙️ Configures networking and environment variables
@@ -501,7 +536,7 @@ By the end of this lab, you should have:
 
 | ❌ Error                    | ✅ Quick Fix                                 |
 | --------------------------- | -------------------------------------------- |
-| `docker: command not found` | OK for `azd up`; install/start Docker Desktop only for optional local compose |
+| `docker: command not found` | Install/start Docker Desktop locally, or use the supplied Codespace/devcontainer |
 | `azd: command not found`    | Restart terminal after installation          |
 | `UNAUTHORIZED` during push  | Run `azd auth login` again                   |
 | Container exits immediately | Check logs: `docker compose logs backend`    |
@@ -543,8 +578,8 @@ By the end of this lab, you should have:
 
 ### 📋 Debugging Checklist
 
-1. [ ] 🏭 `azure.yaml` uses `remoteBuild: true`; local Docker is optional
-2. [ ] 🔨 Optional: `docker compose build` completes without errors
+1. [ ] 🏭 Docker is running and `azure.yaml` uses `remoteBuild: false`
+2. [ ] 🔨 `docker compose build` completes without errors
 3. [ ] 🚀 Optional: `docker compose up` shows healthy containers
 4. [ ] 💚 Health endpoint returns 200 locally if you ran the optional local lane
 5. [ ] 🔐 `azd auth login` successful
@@ -569,7 +604,7 @@ By the end of this lab, you should have:
 
 In this lab, you learned how to:
 
-1. 🏭 **Use ACR remote build** - Deploy containers without local Docker
+1. 🏭 **Build and push locally** - Deploy without depending on ACR Tasks queues
 2. 📄 **Configure azure.yaml** - Define All Clear service structure for azd
 3. 🚀 **Deploy with azd up** - Provision infrastructure and deploy in one command
 4. ✅ **Verify deployment** - Seed `knowledge-base`, then test `/api/chat` incident persistence in Azure

@@ -1,21 +1,24 @@
-# Exercise 03b: Generate Code from Your Spec
+# Exercise 03b: Generate Implementation Guidance from Your Spec
 
 **Duration:** 20 minutes
 
 ## Overview
 
-In this exercise, you will use GitHub Copilot to generate code from the specification you wrote in Exercise 03a. You will learn techniques for providing specifications as context and iteratively refining generated code to match your requirements.
+In this exercise, you will use GitHub Copilot to turn the specification from
+Exercise 03a into implementation guidance. You will practice providing precise
+context, checking proposed code against the specification, and recording gaps.
+This exercise does not promise production-ready generated code.
 
 ## Learning Objectives
 
-- Use specifications as context for AI code generation
+- Use specifications as context for AI-assisted implementation
 - Apply strategic prompting techniques with Copilot
-- Validate generated code against specification criteria
-- Iterate on generated code to improve spec compliance
+- Validate a proposed implementation against specification criteria
+- Iterate on the proposal to improve spec compliance
 
 ## Prerequisites
 
-- Completed Exercise 03a (your-spec.md and your-constitution.md exist)
+- Completed Exercise 03a (`your-spec.md` exists; use `your-constitution.md` only if created)
 - GitHub Copilot extension active in VS Code
 - Copilot Chat panel accessible (Ctrl+Alt+I (Windows/Linux) or Cmd+Shift+I (macOS), or click the Copilot Chat icon in the sidebar)
 
@@ -29,13 +32,13 @@ Before generating code, set up your workspace to maximize Copilot's understandin
 
 Open these files in VS Code tabs:
 1. `your-spec.md` - Your feature specification
-2. `your-constitution.md` - Your agent constitution
+2. `your-constitution.md` - Your feature guardrails, if created
 
 **Why?** Copilot uses open files as context. Having your specs visible helps Copilot generate aligned code.
 
 #### Step 2: Create a Target File
 
-Create a new file for the generated code:
+Create a new file for the implementation slice you will review:
 
 ```
 generated/escalation_detector.py
@@ -49,7 +52,7 @@ All Clear Escalation Detector
 
 Implementation based on:
 - Specification: your-spec.md
-- Constitution: your-constitution.md
+- Constitution: `.specify/memory/constitution.md` (and `your-constitution.md`, if created)
 
 This module implements deterministic escalation detection
 as defined in the feature specification.
@@ -58,7 +61,7 @@ as defined in the feature specification.
 
 ### Part 2: Generate Initial Code (7 minutes)
 
-Use Copilot Chat to generate code from your specification.
+Use Copilot Chat to propose a small implementation slice from your specification.
 
 #### Step 1: Open Copilot Chat
 
@@ -69,17 +72,19 @@ Open the Copilot Chat panel (Ctrl+Alt+I (Windows/Linux) or Cmd+Shift+I (macOS), 
 Use the `Agent Mode` command to reference your specification:
 
 ```
-Agent Mode Based on the specification in your-spec.md, generate a Python class
+Agent Mode Based on the specification in your-spec.md, propose a Python class
 for the All Clear statutory-clock escalation detector. Include:
 1. The core detection method that analyzes signal text for escalation triggers
 2. Classification into the EscalationReason values defined in my spec
 3. Severity, target queue, and confidence scoring for detections
-Follow the constraints in your-constitution.md for what the agent must NOT do.
+Follow the constraints in `.specify/memory/constitution.md` and any
+`your-constitution.md` for what the agent must NOT do.
 ```
 
 #### Step 3: Review the Generated Code
 
-Copilot will generate an initial implementation. Before accepting, review:
+Copilot will propose an initial implementation. Before accepting or adapting it,
+review:
 
 - [ ] Does it address the core functional requirements?
 - [ ] Does it include the escalation reasons from your spec?
@@ -88,7 +93,8 @@ Copilot will generate an initial implementation. Before accepting, review:
 
 #### Step 4: Insert and Annotate
 
-Insert the generated code into your file. Add comments noting which spec requirements are addressed:
+Insert or adapt the proposed code in your file. Add comments noting which spec
+requirements are addressed:
 
 ```python
 def detect_escalation(self, signal_text: str) -> EscalationResult:
@@ -105,7 +111,8 @@ def detect_escalation(self, signal_text: str) -> EscalationResult:
 
 ### Part 3: Iterate and Refine (5 minutes)
 
-Generated code rarely matches specifications perfectly on the first try. Use iterative refinement to improve compliance.
+Proposed code rarely matches specifications perfectly on the first try. Use
+iterative refinement to improve compliance.
 
 #### Iteration 1: Add Missing Requirements
 
@@ -120,11 +127,11 @@ severity values SEV1-SEV4 and queue values from my specification.
 
 #### Iteration 2: Enforce Constitution Constraints
 
-Check if the generated code respects your constitution's prohibited actions:
+Check if the proposed code respects the canonical constitution's prohibited actions:
 
 ```
 Agent Mode Review escalation_detector.py against the prohibited actions in
-your-constitution.md. Add safeguards to ensure the detector cannot:
+.specify/memory/constitution.md. Add safeguards to ensure the detector cannot:
 1. Downgrade a statutory-clock or SEV1 signal
 2. Echo PII into user-facing responses
 Add validation or guards to prevent these actions.
@@ -142,7 +149,7 @@ user-facing message I specified and escalate when the system does not know.
 
 ### Part 4: Validate Against Success Criteria (3 minutes)
 
-Create a validation document to track spec compliance.
+Create a validation document to track spec compliance and unresolved gaps.
 
 #### Step 1: Create Validation Notes
 
@@ -188,11 +195,11 @@ Create a file `generated/validation_notes.md`:
 Count your criteria compliance:
 - Total success criteria: ___
 - Criteria met: ___
-- Compliance rate: ___% (target: 80%+)
+- Compliance rate: ___% (report the result; do not treat it as a release gate)
 
 ### Part 5: Final Refinement (Optional)
 
-If your compliance rate is below 80%, perform additional iterations:
+If important requirements remain partial, perform additional iterations:
 
 ```
 Agent Mode I need to improve spec compliance for escalation_detector.py.
@@ -250,7 +257,7 @@ If your spec is extensive:
 
 - Add explicit guards in follow-up prompts
 - Request that Copilot add validation checks
-- Review generated code before accepting
+- Review the proposed implementation before accepting or adapting it
 
 ## Deliverables
 
@@ -258,7 +265,7 @@ By the end of this exercise, you should have:
 
 ```
 generated/
-  |-- escalation_detector.py    # Your generated and refined code
+  |-- escalation_detector.py    # Your reviewed implementation slice
   |-- validation_notes.md       # Documentation of spec compliance
 ```
 
@@ -268,17 +275,17 @@ After completing this exercise, consider:
 
 1. What percentage of your spec was accurately captured in the first generation?
 2. Which types of requirements were easiest/hardest for Copilot to implement?
-3. How did having a constitution affect the generated code?
+3. How did having a constitution affect the proposed implementation?
 4. What would you do differently in your spec to improve generation quality?
 
 ## Completion Criteria
 
 You have successfully completed this exercise when:
 
-- [ ] Generated at least one Python file from your specification
+- [ ] Reviewed or adapted at least one Python implementation slice from your specification
 - [ ] Performed at least 2 iteration/refinement cycles
 - [ ] Created validation notes documenting spec compliance
-- [ ] Achieved at least 80% compliance with success criteria
+- [ ] Documented which success criteria are met, partial, or unverified
 - [ ] Documented any gaps between spec and implementation
 
 ## Summary
@@ -286,14 +293,17 @@ You have successfully completed this exercise when:
 In this lab, you have learned the spec-driven development workflow:
 
 1. **Write specifications** before code
-2. **Use specs as context** for AI code generation
-3. **Validate generated code** against specifications
+2. **Use specs as context** for AI-assisted implementation
+3. **Validate implementation proposals** against specifications
 4. **Iterate** to improve compliance
 
-This methodology produces more predictable, aligned AI-generated code and creates documentation that serves as both development guide and acceptance criteria.
+This methodology produces more predictable, aligned implementation work and
+creates documentation that serves as both development guide and acceptance
+criteria.
 
 ---
 
-**Congratulations!** You have completed Lab 03: Spec-Driven Development.
+**Completion note:** Lab 03 is complete when your spec, implementation slice,
+and validation notes agree about scope, authority, and verification.
 
 Return to the [Lab README](../README.md) to review completion criteria and prepare for the next lab.

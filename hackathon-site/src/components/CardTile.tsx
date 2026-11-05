@@ -10,7 +10,7 @@ interface CardTileProps {
 export default function CardTile({ card }: CardTileProps) {
   return (
     <Link
-      to={`/cards/${card.slug}`}
+      to={`/incidents/${card.slug}`}
       className="group block bg-white rounded-2xl shadow-sm hover:shadow-md border border-deep-cream/60 p-5 transition-all hover:-translate-y-0.5"
     >
       <div className="flex items-start gap-4">

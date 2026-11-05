@@ -7,7 +7,7 @@ import ChecklistSection from './components/ChecklistSection'
 import StartCommandsSection from './components/StartCommandsSection'
 import DemoSequenceSection from './components/DemoSequenceSection'
 import TroubleshootingSection from './components/TroubleshootingSection'
-import EduFramingSection from './components/EduFramingSection'
+import OperatingModelSection from './components/OperatingModelSection'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -39,7 +39,7 @@ export default function App() {
           <StartCommandsSection />
           <DemoSequenceSection />
           <TroubleshootingSection />
-          <EduFramingSection />
+          <OperatingModelSection />
         </div>
       </main>
       <Footer />

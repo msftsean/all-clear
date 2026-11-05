@@ -1,0 +1,40 @@
+{
+  "articles": [
+    {
+      "article_id": "kb-field-001",
+      "title": "Downed power line initial response",
+      "url": "https://example.invalid/allclear/downed-power-line",
+      "content": "Treat every downed or sparking line as a life-safety incident. Keep people clear, call emergency services where needed, capture the location, and route the incident to field operations with an immediate escalation.",
+      "snippet": "Keep people clear and escalate a downed or sparking line.",
+      "queue": "field-operations",
+      "tags": ["power", "downed line", "electric", "life safety"]
+    },
+    {
+      "article_id": "kb-comms-001",
+      "title": "Public update approval during an outage",
+      "url": "https://example.invalid/allclear/public-update",
+      "content": "Customer communications may prepare a plain-language outage update with the incident identifier, affected area, and next review time. A designated human approver must approve the statement before publication.",
+      "snippet": "Prepare updates, but require human approval before publication.",
+      "queue": "customer-comms",
+      "tags": ["outage", "public update", "approval", "communications"]
+    },
+    {
+      "article_id": "kb-engineering-001",
+      "title": "Telemetry anomaly triage",
+      "url": "https://example.invalid/allclear/telemetry-anomaly",
+      "content": "For a telemetry anomaly, preserve the source signal, identify the affected system and time window, compare it against open incidents, and route the event to engineering. Escalate when the anomaly affects a safety-critical system or service continuity.",
+      "snippet": "Preserve the signal and route system anomalies to engineering.",
+      "queue": "engineering",
+      "tags": ["telemetry", "system", "engineering", "anomaly"]
+    },
+    {
+      "article_id": "kb-compliance-001",
+      "title": "Statutory clock response",
+      "url": "https://example.invalid/allclear/statutory-clock",
+      "content": "A report that starts a statutory or regulatory clock is a SEV1 incident. Preserve the source record, record the clock, route to the compliance desk, and escalate immediately. Do not allow an automated response to downgrade the severity.",
+      "snippet": "Statutory clocks are SEV1 and always escalate.",
+      "queue": "compliance-desk",
+      "tags": ["compliance", "statutory clock", "SEV1", "escalation"]
+    }
+  ]
+}

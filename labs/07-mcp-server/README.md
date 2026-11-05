@@ -362,6 +362,30 @@ When you complete this lab, verify the following:
 - [ ] 💬 Copilot Agent Mode invokes your MCP tools correctly
 - [ ] ✅ All required tools are discoverable and functional
 
+## 🛡️ Red-Team Exercise: MCP Boundary Probes
+
+Run the deterministic probes from the repository root before treating the MCP
+server as complete:
+
+```bash
+PYTHONPATH=backend python labs/07-mcp-server/exercises/mcp_red_team_probe.py --server start
+```
+
+The probes check three failure modes that must remain blocked:
+
+- **PII leakage:** a labeled student ID and email are redacted and are not
+  echoed by classification output.
+- **Prompt injection:** "ignore previous instructions" cannot downgrade a
+  fire-with-trapped-people signal; the result must remain SEV1, escalated, with
+  a 15-minute SLA.
+- **Severity downgrade resistance:** the verifier checks concrete routing
+  fields rather than trusting a fluent response.
+
+Run against `--server solution` to compare with the reference implementation.
+If a probe fails, fix the bounded tool behavior rather than weakening the
+probe. Keep RouterExecutor deterministic and preserve the three ActionAgent
+tool boundary.
+
 ---
 
 ## 🔧 Troubleshooting

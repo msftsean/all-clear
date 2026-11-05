@@ -50,17 +50,17 @@ class MockRealtimeService(RealtimeServiceInterface):
         )
 
     async def get_tool_definitions(self) -> list[ToolDefinition]:
-        """Return the 4 pipeline tool definitions."""
+        """Return the incident-triage tool definitions."""
         return [
             ToolDefinition(
                 name="analyze_and_route_query",
-                description="Analyze a student support query, classify intent, and route to the appropriate department.",
+                description="Classify an inbound signal, deduplicate it, and open or attach an incident.",
                 parameters={
                     "type": "object",
                     "properties": {
                         "query": {
                             "type": "string",
-                            "description": "The user's support query",
+                            "description": "The caller's incident signal",
                         }
                     },
                     "required": ["query"],
@@ -68,13 +68,13 @@ class MockRealtimeService(RealtimeServiceInterface):
             ),
             ToolDefinition(
                 name="check_ticket_status",
-                description="Check the current status of a support ticket by its ID.",
+                description="Check the current status of an All Clear incident by its ID.",
                 parameters={
                     "type": "object",
                     "properties": {
                         "ticket_id": {
                             "type": "string",
-                            "description": "Ticket ID to check status for",
+                            "description": "All Clear incident ID to check",
                         }
                     },
                     "required": ["ticket_id"],
@@ -82,7 +82,7 @@ class MockRealtimeService(RealtimeServiceInterface):
             ),
             ToolDefinition(
                 name="search_knowledge_base",
-                description="Search the university knowledge base for articles related to a query.",
+                description="Search operational guidance for a signal or incident.",
                 parameters={
                     "type": "object",
                     "properties": {
@@ -97,11 +97,8 @@ class MockRealtimeService(RealtimeServiceInterface):
             ToolDefinition(
                 name="escalate_to_human",
                 description=(
-                    "Transfer the student to a human support agent. Use this when the student "
-                    "explicitly asks for a human, mentions policy-related topics (appeals, "
-                    "waivers, refunds, financial aid), or discusses sensitive topics (Title IX, "
-                    "mental health, discrimination, threats, safety). Provide the reason and set "
-                    "priority to 'urgent' for Title IX and mental health topics."
+                    "Escalate an incident to a human queue. Use this for life-safety, "
+                    "statutory-clock, public-risk, or explicit human-handoff requests."
                 ),
                 parameters={
                     "type": "object",
@@ -110,9 +107,9 @@ class MockRealtimeService(RealtimeServiceInterface):
                             "type": "string",
                             "description": "Reason for escalation",
                         },
-                        "department": {
+                        "queue": {
                             "type": "string",
-                            "description": "Target department",
+                            "description": "Target All Clear queue",
                         },
                     },
                     "required": ["reason"],
@@ -132,7 +129,7 @@ class MockRealtimeService(RealtimeServiceInterface):
         crisis = voice_crisis_result(arguments)
         if crisis is not None:
             return ToolCallResponse(call_id=call_id, result=json.dumps(crisis), error=None)
-        if tool_name == "analyze_and_route_query":
+        if tool_name in {"analyze_and_route_query", "analyze_and_route_signal"}:
             query = arguments.get("query", "")
             # Repointed at the All Clear pipeline adapter (001-maf-rehost, T10):
             # the voice tool now runs the real three-agent incident pipeline instead
@@ -157,29 +154,29 @@ class MockRealtimeService(RealtimeServiceInterface):
                 "estimated_response_time": outcome.action.estimated_response_time,
                 "message": outcome.action.user_message,
             })
-        elif tool_name == "check_ticket_status":
-            ticket_id = arguments.get("ticket_id", "TKT-MOCK-0001")
+        elif tool_name in {"check_ticket_status", "check_incident_status"}:
+            incident_id = arguments.get("incident_id", arguments.get("ticket_id", "AC-0001"))
             result = json.dumps({
-                "ticket_id": ticket_id,
-                "status": "in_progress",
-                "department": "IT",
+                "incident_id": incident_id,
+                "status": "open",
+                "queue": "field-operations",
                 "created_at": "2026-01-01T10:00:00Z",
-                "estimated_resolution": "2026-01-01T14:00:00Z",
-                "assigned_to": "Support Team",
+                "severity": "SEV3",
+                "estimated_response": "2026-01-01T14:00:00Z",
             })
         elif tool_name == "search_knowledge_base":
             result = json.dumps({
                 "articles": [
                     {
                         "article_id": "KB-001",
-                        "title": "How to Reset Your Password",
-                        "snippet": "Visit the IT portal at https://it.university.edu and click 'Forgot Password'.",
+                        "title": "Field response for a downed power line",
+                        "snippet": "Keep people clear of the area and dispatch field operations.",
                         "relevance_score": 0.92,
                     },
                     {
                         "article_id": "KB-002",
-                        "title": "VPN Setup Guide",
-                        "snippet": "Download the VPN client from the software portal and use your university credentials.",
+                        "title": "Public communications during an outage",
+                        "snippet": "Publish only human-approved updates with an incident reference.",
                         "relevance_score": 0.74,
                     },
                 ]
@@ -188,10 +185,10 @@ class MockRealtimeService(RealtimeServiceInterface):
             result = json.dumps({
                 "escalated": True,
                 "reason": arguments.get("reason", "User requested escalation"),
-                "department": arguments.get("department", "IT"),
-                "priority": arguments.get("priority", "urgent"),
-                "ticket_id": f"ESC-MOCK-{uuid4().hex[:8].upper()}",
-                "message": "A human agent will be with you shortly.",
+                "queue": arguments.get("queue", "escalations"),
+                "severity": arguments.get("severity", "SEV1"),
+                "incident_id": f"AC-{uuid4().hex[:4].upper()}",
+                "message": "The incident is queued for human response.",
             })
         else:
             return ToolCallResponse(

@@ -68,7 +68,7 @@
   function refreshCount() {
     var n = EXERCISES.filter(function (id) { return done[id]; }).length;
     var prog = document.getElementById('railProg');
-    if (prog) prog.innerHTML = '<b>' + n + '</b> / ' + EXERCISES.length + ' stages done';
+    if (prog) prog.innerHTML = '<b>' + n + '</b> / ' + EXERCISES.length + ' required blocks done';
   }
 
   EXERCISES.forEach(function (id) {

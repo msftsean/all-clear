@@ -81,6 +81,7 @@ docs/azure-support-ticket-*.md
 allclear-dropin.zip
 .venv-redteam/
 .scan_*/
+.foundry/agent-metadata.local.yaml
 
 # Hypothesis test database/cache
 .hypothesis/

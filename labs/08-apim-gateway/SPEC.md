@@ -20,11 +20,11 @@ observability** — without modifying agent code.
 - FR‑1 Provision a Consumption APIM instance per builder.
 - FR‑2 Import the All Clear backend via its OpenAPI document.
 - FR‑3 Prove a signal triages **through** the gateway.
-- FR‑4 `rate-limit-by-key` (per‑caller throttling → 429).
+- FR‑4 `rate-limit-by-key` (per‑caller throttling → 429), optional deep dive.
 - FR‑5 `azure-openai-token-limit` (per‑caller token budget; `llm-token-limit`
   for non‑AOAI backends).
-- FR‑6 `validate-jwt` (401 on missing/invalid bearer).
-- FR‑7 APIM diagnostics → Application Insights.
+- FR‑6 `validate-jwt` (401 on missing/invalid bearer), optional deep dive.
+- FR‑7 APIM diagnostics → Application Insights, optional deep dive.
 - FR‑8 Clean teardown.
 
 ## Scope (out)
@@ -39,10 +39,14 @@ observability** — without modifying agent code.
 - [ ] `provisioningState = Succeeded` for the builder's Consumption instance.
 - [ ] `All Clear API` imported; `POST /allclear/api/signals` returns a triage
       result through the gateway URL.
-- [ ] 429 returned past the `rate-limit-by-key` threshold.
-- [ ] `x-tokens-remaining` header present; 429 on token‑budget exhaustion.
-- [ ] 401 with no bearer; success with a valid token.
-- [ ] Requests visible in Application Insights (latency, codes, 429s).
+- [ ] Participant can stop here after the required Provision → Import → Call
+      path succeeds.
+- [ ] (Optional) 429 returned past the `rate-limit-by-key` threshold.
+- [ ] (Optional) `x-tokens-remaining` header present; 429 on token-budget
+      exhaustion.
+- [ ] (Optional) 401 with no bearer; success with a valid token.
+- [ ] (Optional) Requests visible in Application Insights (latency, codes,
+      429s).
 
 ## Mapping
 

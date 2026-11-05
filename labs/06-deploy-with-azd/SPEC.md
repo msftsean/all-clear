@@ -1,8 +1,22 @@
 # Lab 06 - Deploy with azd: Completion Specification
 
+> **Event completion path:** Lab 06 is complete for the timed workshop when
+> the participant verifies the facilitator-provided shared backend and passes
+> the offline eval checkpoint. A personal `azd up` deployment is an optional
+> deep dive for participants with an assigned subscription, Docker access, and
+> enough remaining time.
+
 ## What "Done" Looks Like
 
-Lab 06 is complete when your All Clear incident-triage application is successfully deployed to Azure using Azure Developer CLI (azd). You should be able to:
+The optional deployment lane is complete when your All Clear incident-triage
+application is successfully deployed to Azure using Azure Developer CLI (azd).
+The required event lane is complete when you can:
+
+1. Verify the facilitator's shared backend health and OpenAPI endpoints
+2. Pass the credential-free classification eval checkpoint
+3. Continue to Lab 08 using the shared backend URL
+
+For the optional deployment lane, you should be able to:
 
 1. Run All Clear locally using Docker Compose and verify all services are healthy
 2. Execute `azd up` to provision Azure infrastructure and deploy your containers
@@ -16,7 +30,20 @@ A successfully completed Lab 06 means the All Clear pipeline from Labs 04 and 05
 
 ## Checkable Deliverables
 
-### 1. All Clear Deployed to Azure
+### 1. Required event path: shared backend and eval gate
+
+**What it verifies:**
+- The shared backend is reachable before APIM work begins
+- The quality gate is executable without Azure credentials
+- Participants can continue even when personal provisioning is unavailable
+
+**Acceptance Criteria:**
+- [ ] `GET $SHARED_BACKEND_URL/api/health` returns HTTP 200
+- [ ] `GET $SHARED_BACKEND_URL/api/openapi.json` returns HTTP 200
+- [ ] `python scripts/check_eval.py --min-accuracy 0.90` reports `PASS`
+- [ ] The facilitator confirms the backend is read-only for participants
+
+### 2. Optional deep dive: All Clear deployed to Azure
 
 **What it verifies:**
 - Azure infrastructure is provisioned correctly
@@ -105,7 +132,7 @@ echo "=== Deployment Verified ==="
 
 ---
 
-### 2. Health Check Responds
+### 3. Optional deep dive: Health Check Responds
 
 **What it verifies:**
 - Application is running and responding to requests
@@ -207,7 +234,21 @@ if __name__ == "__main__":
 
 ## Verification Steps
 
-### Step 1: Local Docker Verification
+### Required event verification (5–10 minutes)
+
+```bash
+export BACKEND_URL="$SHARED_BACKEND_URL"
+curl --fail --max-time 10 "$BACKEND_URL/api/health"
+curl --fail --max-time 10 "$BACKEND_URL/api/openapi.json" >/dev/null
+cd backend
+python scripts/check_eval.py --min-accuracy 0.90
+```
+
+If a check fails, stop the personal deployment lane and report it to the
+facilitator. Use the pre-created backend or gateway fallback rather than
+debugging Azure provisioning during the APIM stage.
+
+### Optional deep dive Step 1: Local Docker Verification
 
 Before deploying to Azure, verify local Docker setup:
 
@@ -235,7 +276,7 @@ curl http://localhost:8000/api/health
 docker compose down
 ```
 
-### Step 2: azd Deployment Verification
+### Optional deep dive Step 2: azd Deployment Verification
 
 ```bash
 # Login to Azure
@@ -255,7 +296,7 @@ azd up
 # Backend URL: https://<prefix>-backend.<region>.azurecontainerapps.io
 ```
 
-### Step 3: Production Health Verification
+### Optional deep dive Step 3: Production Health Verification
 
 ```bash
 # Get the deployed URL
@@ -268,7 +309,7 @@ curl -s $BACKEND_URL/api/health | jq .
 # { "status": "healthy", "mock_mode": false, "domain": "all-clear-incident-triage" }
 ```
 
-### Step 4: Full Integration Verification
+### Optional deep dive Step 4: Full Integration Verification
 
 ```bash
 # Test the signals endpoint
@@ -324,7 +365,7 @@ curl -X POST $BACKEND_URL/api/signals \
 
 ## Common Failure Modes and Resolutions
 
-### Docker Build Fails
+### Docker Build Fails (optional deep dive)
 
 **Symptom:** `docker compose build` exits with error
 
@@ -345,7 +386,7 @@ ls -la backend/
 
 ---
 
-### azd up Fails with Permission Error
+### azd up Fails with Permission Error (optional deep dive)
 
 **Symptom:** "Authorization failed" or "Forbidden" during provisioning
 
@@ -366,7 +407,7 @@ azd env set AZURE_SUBSCRIPTION_ID <subscription-id>
 
 ---
 
-### Container Fails to Start in Azure
+### Container Fails to Start in Azure (optional deep dive)
 
 **Symptom:** Container App shows "Failed" or keeps restarting
 
@@ -392,7 +433,7 @@ az containerapp show \
 
 ---
 
-### Health Check Times Out
+### Health Check Times Out (optional deep dive)
 
 **Symptom:** Health probe fails; container marked unhealthy
 
@@ -460,22 +501,26 @@ az containerapp appsettings set \
 
 Before marking Lab 06 complete, verify all items:
 
-- [ ] Docker Compose builds without errors
-- [ ] All containers start and show healthy status
-- [ ] Local health endpoint returns HTTP 200
-- [ ] `azd auth login` succeeds
-- [ ] `azd up` completes without errors
-- [ ] Azure Container App shows "Running" status
-- [ ] Production health endpoint returns HTTP 200
-- [ ] Health response includes status, domain, and mock/live mode
-- [ ] Can view container logs in Azure
-- [ ] Can access the deployed frontend (if applicable)
+- [ ] Shared backend health endpoint returns HTTP 200
+- [ ] Shared backend OpenAPI endpoint returns HTTP 200
+- [ ] Offline classification eval reports `PASS`
+- [ ] (Optional) Docker Compose builds and starts successfully
+- [ ] (Optional) `azd auth login` succeeds
+- [ ] (Optional) `azd up` completes without errors
+- [ ] (Optional) Azure Container App shows "Running" status
+- [ ] (Optional) Production health endpoint returns HTTP 200
+- [ ] (Optional) Can view container logs in Azure
+- [ ] (Optional) Can access the deployed frontend
 
-**Estimated Time:** 90 minutes
+**Estimated Time:** 10 minutes required; 90 minutes optional deep dive
 
 **Points Possible:** 15 (Deployment)
 
-**Prerequisites:**
+**Required prerequisites:**
+- Facilitator-provided `SHARED_BACKEND_URL`
+- Python 3.11+ and backend dependencies installed
+
+**Optional deep-dive prerequisites:**
 - Lab 05 completed (working agent pipeline)
 - Docker Desktop installed and running
 - Azure subscription with Contributor access

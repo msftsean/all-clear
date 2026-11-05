@@ -17,36 +17,73 @@
   and protected material stay blocking. Platform filter + app guardrail working together.
 
 .PREREQS
-  az login;  contributor on rg-allclear in the Cloudforce subscription.
+  az login; Contributor on the user-supplied resource group and Azure OpenAI account.
 #>
 
 param(
-  [string]$Subscription = "098ef2f6-cea4-4839-8093-ef90622e1b8c",
-  [string]$ResourceGroup = "rg-allclear",
-  [string]$Account = "allclear-kt5fw24guxoxy-openai",
+  [string]$Subscription,
+  [Parameter(Mandatory = $true)][string]$ResourceGroup,
+  [Parameter(Mandatory = $true)][string]$Account,
   [string]$PolicyName = "allclear-guardrails",
-  [string]$DeploymentName = "gpt-5.1",
+  [Parameter(Mandatory = $true)][string]$DeploymentName,
   [string]$ApiVersion = "2024-10-01"
 )
 
 $ErrorActionPreference = "Stop"
+
+function Assert-NonPlaceholder([string]$Value, [string]$Name) {
+  if ([string]::IsNullOrWhiteSpace($Value) -or $Value -match "<[^>]+>|YOUR_|REPLACE_ME") {
+    throw "$Name is required and must be a real value. See -? for examples."
+  }
+}
+
+if (-not (Get-Command az -ErrorAction SilentlyContinue)) {
+  throw "Azure CLI (az) is required. Install it, then run 'az login' before retrying."
+}
+$accountContextJson = az account show -o json 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "No Azure CLI session is active. Run 'az login' and select the subscription you will use."
+}
+$accountContext = $accountContextJson | ConvertFrom-Json
+if ([string]::IsNullOrWhiteSpace($Subscription)) {
+  $Subscription = $accountContext.id
+  Write-Host "Subscription not supplied; using the current Azure CLI subscription '$Subscription'."
+}
+Assert-NonPlaceholder $Subscription "Subscription"
+Assert-NonPlaceholder $ResourceGroup "ResourceGroup"
+Assert-NonPlaceholder $Account "Account"
+
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
-$policyBody = Get-Content (Join-Path $here "allclear-guardrails.rai.json") -Raw
+$policyPath = Join-Path $here "allclear-guardrails.rai.json"
+if (-not (Test-Path $policyPath)) {
+  throw "Policy definition not found at '$policyPath'. Run this script from the repository checkout."
+}
+$policyBody = Get-Content $policyPath -Raw
 
 $base = "https://management.azure.com/subscriptions/$Subscription/resourceGroups/$ResourceGroup/providers/Microsoft.CognitiveServices/accounts/$Account"
 
 Write-Host "1/3  Creating custom content filter '$PolicyName' on $Account ..."
 $tmp = New-TemporaryFile
-$policyBody | Out-File -FilePath $tmp -Encoding utf8
-$raiUrl = "$base/raiPolicies/$PolicyName" + "?api-version=$ApiVersion"
-az rest --method put `
-  --url $raiUrl `
-  --body "@$($tmp.FullName)" `
-  --headers "Content-Type=application/json" | Out-Null
-Remove-Item $tmp
+try {
+  $policyBody | Out-File -FilePath $tmp -Encoding utf8
+  $raiUrl = "$base/raiPolicies/$PolicyName" + "?api-version=$ApiVersion"
+  az rest --method put `
+    --url $raiUrl `
+    --body "@$($tmp.FullName)" `
+    --headers "Content-Type=application/json" | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "The content-filter request failed. Confirm Contributor access to account '$Account'."
+  }
+} finally {
+  Remove-Item $tmp -ErrorAction SilentlyContinue
+}
 
 Write-Host "2/3  Attaching '$PolicyName' to deployment '$DeploymentName' ..."
-$dep = az cognitiveservices account deployment show -g $ResourceGroup -n $Account --deployment-name $DeploymentName --subscription $Subscription -o json | ConvertFrom-Json
+$depJson = az cognitiveservices account deployment show -g $ResourceGroup -n $Account --deployment-name $DeploymentName --subscription $Subscription -o json 2>&1
+if ($LASTEXITCODE -ne 0) {
+  throw "Deployment '$DeploymentName' was not found on account '$Account'. Pass the deployment name with -DeploymentName."
+}
+$dep = $depJson | ConvertFrom-Json
 $model = $dep.properties.model.name
 $ver = $dep.properties.model.version
 $skuName = $dep.sku.name
@@ -59,13 +96,19 @@ $patch = @{
   sku = @{ name = $skuName; capacity = $skuCap }
 } | ConvertTo-Json -Depth 6
 $tmp2 = New-TemporaryFile
-$patch | Out-File -FilePath $tmp2 -Encoding utf8
-$depUrl = "$base/deployments/$DeploymentName" + "?api-version=$ApiVersion"
-az rest --method put `
-  --url $depUrl `
-  --body "@$($tmp2.FullName)" `
-  --headers "Content-Type=application/json" | Out-Null
-Remove-Item $tmp2
+try {
+  $patch | Out-File -FilePath $tmp2 -Encoding utf8
+  $depUrl = "$base/deployments/$DeploymentName" + "?api-version=$ApiVersion"
+  az rest --method put `
+    --url $depUrl `
+    --body "@$($tmp2.FullName)" `
+    --headers "Content-Type=application/json" | Out-Null
+  if ($LASTEXITCODE -ne 0) {
+    throw "Attaching the content filter failed. Confirm deployment write access on account '$Account'."
+  }
+} finally {
+  Remove-Item $tmp2 -ErrorAction SilentlyContinue
+}
 
 Write-Host "3/3  Verifying ..."
 az cognitiveservices account deployment show -g $ResourceGroup -n $Account --deployment-name $DeploymentName --subscription $Subscription `

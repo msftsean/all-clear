@@ -47,7 +47,7 @@
   @apply border-b-2 border-gold pb-2 mb-6;
 }
 
-/* Chat bubble for student messages */
+/* Incoming signal excerpt */
 .chat-bubble {
   @apply bg-deep-cream border border-maroon/20 border-t-gold/50 rounded-lg p-4 italic text-ink/90;
 }
