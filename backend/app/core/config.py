@@ -320,6 +320,24 @@ class Settings(BaseSettings):
         default=True,
         description="Enable Maryland traffic/transportation demo pack"
     )
+    # ==========================================================================
+    # Room Surge (024-room-surge)
+    # ==========================================================================
+    surge_coach_key: str = Field(
+        default="",
+        description=(
+            "Shared key for /api/surge/control (open/close/reset). Empty in live "
+            "mode disables control (fail closed); mock mode allows control without it."
+        ),
+    )
+    surge_reports_per_window: int = Field(
+        default=3, ge=1, le=50,
+        description="Max audience reports per device per surge rate-limit window",
+    )
+    surge_window_seconds: int = Field(
+        default=60, ge=5, le=3600,
+        description="Per-device rate-limit window for audience reports, in seconds",
+    )
     azure_footprint_estimate_multiplier: float = Field(
         default=1.0,
         ge=0.1,

@@ -139,6 +139,7 @@ def clear_service_caches() -> None:
     get_embedding_fn.cache_clear()
     get_incident_store.cache_clear()
     get_pipeline.cache_clear()
+    get_surge_room.cache_clear()
 
 
 # =============================================================================
@@ -361,3 +362,18 @@ def get_loadtest_coordinator():  # type: ignore[no-untyped-def]
 
     store = get_incident_store()
     return LoadTestCoordinator(container=getattr(store, "_container", None))
+
+
+@lru_cache
+def get_surge_room():  # type: ignore[no-untyped-def]
+    """Return the singleton room-surge tally (024-room-surge).
+
+    In-process by design: pin the backend to one replica for the event.
+    """
+    from app.services.surge_room import SurgeRoom
+
+    settings = get_settings()
+    return SurgeRoom(
+        reports_per_window=settings.surge_reports_per_window,
+        window_seconds=float(settings.surge_window_seconds),
+    )
