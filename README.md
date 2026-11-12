@@ -18,6 +18,8 @@
 
 > **Collapse the surge.** When a storm, outage, or recall makes 40 people report the same thing, All Clear deduplicates those **signals** into a handful of real **incidents**, routes each by severity and SLA, and drives a live map that flips green when everything is resolved.
 
+This repository is the pro-dev track for developers and architects; business roles are in a separate no-code track run by a partner.
+
 ---
 
 ## 📖 Overview

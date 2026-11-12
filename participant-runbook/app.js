@@ -58,7 +58,7 @@
   }
 
   /* ---- Stage checklist (per-stage "mark done", persisted) ---- */
-  var EXERCISES = ['stage0', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5'];
+  var EXERCISES = ['stage0', 'stage1', 'stage2', 'stage3', 'stage4', 'stage5', 'stage6'];
   var DONE_KEY = 'allclear-participant-done';
   var done = {};
   try { done = JSON.parse(localStorage.getItem(DONE_KEY) || '{}') || {}; } catch (e) { done = {}; }

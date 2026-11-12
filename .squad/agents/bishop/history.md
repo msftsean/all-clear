@@ -25,10 +25,10 @@ Reviewed the squad's preserved event-readiness work (originally started under
 the retired Apollo-cast roster, carried forward without rework) plus new
 verifier findings:
 
-- **Event path (Storm/Forge):** `docs/event-readiness/DELIVERY_PLAN.md` locks
-  a 390-minute S0-S5 spine with executable completion evidence per stage and
-  an explicit optional/cut list. Confirmed against `labs/README.md` and each
-  lab's own stated duration/prerequisites.
+- **Event path (Storm/Forge):** `docs/event-readiness/DELIVERY_PLAN.md` now
+  locks the Arlington Day 2, 465-minute S0-S6 path with executable completion
+  evidence per stage and an explicit optional/cut list. Confirmed against
+  `labs/README.md` and each lab's self-paced duration/prerequisites.
 - **Azure preflight (Kitty):** `docs/event-readiness/AZURE_PREFLIGHT.md`
   covers RBAC, provider registration, quota/capacity, naming, JWT/App
   Insights readiness, shared-backend fallback, and a 20-participant dress
@@ -49,7 +49,7 @@ README) — now exits 0. Backend `tests/test_failover` (22 passed),
 `tests/test_schemas.py`, and `verify_model_continuity.py` all pass. Lab 09
 starter + completion tests pass with and without the shortcut env var (the
 gate now requires the real extension). **Verdict: GO** — the accelerator is
-event-ready for the required S0-S5 spine; Labs 02/06/07/08, voice/phone, and
+event-ready for the required S0-S6 path; Labs 02/06/07/08, voice/phone, and
 Exercise 05y remain explicitly optional per the delivery plan.
 
 ### 2026-09-20 — T031 Glass-Box Audit Correction Verification
