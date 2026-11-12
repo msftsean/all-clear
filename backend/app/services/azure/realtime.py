@@ -134,7 +134,7 @@ class AzureRealtimeService(RealtimeServiceInterface):
             "session": {
                 "type": "realtime",
                 "model": self.deployment,
-                "instructions": instructions or VOICE_SYSTEM_PROMPT,
+                "instructions": VOICE_SYSTEM_PROMPT,
                 "audio": {
                     "input": {
                         "transcription": {

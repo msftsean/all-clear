@@ -49,7 +49,10 @@ class RealtimeSessionRequest(BaseModel):
 
     session_id: Optional[str] = Field(
         default=None,
-        description="Existing session ID. Auto-generated (UUID) if not provided."
+        description=(
+            "Deprecated compatibility field. Caller-supplied IDs are ignored; "
+            "the server always generates a new session ID."
+        )
     )
     voice: str = Field(
         default="alloy",
@@ -58,7 +61,10 @@ class RealtimeSessionRequest(BaseModel):
     instructions: Optional[str] = Field(
         default=None,
         max_length=2000,
-        description="System prompt override. Uses default agent instructions if omitted."
+        description=(
+            "Deprecated compatibility field. Client instructions are ignored; "
+            "the server always applies its fixed safety prompt."
+        ),
     )
 
 
@@ -67,7 +73,7 @@ class RealtimeSessionResponse(BaseModel):
 
     session_id: str = Field(
         ...,
-        description="Session identifier (matches request or newly generated)"
+        description="Server-generated session identifier"
     )
     token: str = Field(
         ...,

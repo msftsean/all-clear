@@ -47,7 +47,7 @@ function StatusBadge({
   return (
     <span className="inline-flex items-center gap-2 rounded-tag border border-nline/70 bg-panel/70 px-2.5 py-1 font-mono text-[11px] text-ndim">
       <span className="h-1.5 w-1.5 animate-blink rounded-full bg-voice/70" />
-      standing by
+      access pending
     </span>
   );
 }
@@ -125,10 +125,13 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
   }, [onExit]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({
-      top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
-    });
+    const scrollElement = scrollRef.current;
+    if (scrollElement && typeof scrollElement.scrollTo === "function") {
+      scrollElement.scrollTo({
+        top: scrollElement.scrollHeight,
+        behavior: "smooth",
+      });
+    }
   }, [callState.events]);
 
   return (
@@ -178,10 +181,10 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
               <Waveform live={false} />
             </div>
             <p className="mb-2 font-display text-2xl font-light text-ndim">
-              Pane of glass — waiting for a call
+              Phone transcript feed unavailable
             </p>
             <p className="font-mono text-[13px] text-ndim/70">
-              transcripts will appear here the moment a participant calls in
+              Live transcripts are unavailable until authenticated call ownership is configured.
             </p>
           </div>
         ) : (
@@ -194,7 +197,7 @@ export default function LiveCalls({ onExit }: { onExit: () => void }) {
       {/* footer */}
       <div className="relative z-10 flex-shrink-0 border-t border-nline/50 bg-night/30 px-6 py-2">
         <p className="text-center font-mono text-[10px] text-ndim/60">
-          All Clear — live phone triage monitor · transcripts stream in real time
+          Live transcripts are disabled until authenticated call ownership is configured.
         </p>
       </div>
     </div>

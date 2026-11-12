@@ -40,6 +40,35 @@ async def test_bus_publish_to_multiple_subscribers():
 
 
 @pytest.mark.asyncio
+async def test_bus_scopes_call_subscribers():
+    bus = TranscriptBus()
+    async with bus.subscribe(call_id="call-1") as q:
+        await bus.publish({"type": "user_speech", "text": "other", "call_id": "call-2"})
+        await bus.publish({"type": "user_speech", "text": "mine", "call_id": "call-1"})
+        event = q.get_nowait()
+
+        assert event["call_id"] == "call-1"
+        assert event["text"] == "mine"
+        assert q.empty()
+
+
+@pytest.mark.asyncio
+async def test_bus_redacts_pii_before_delivery():
+    bus = TranscriptBus()
+    async with bus.subscribe(call_id="call-1") as q:
+        await bus.publish({
+            "type": "user_speech",
+            "text": "Email student@example.edu, SSN 123-45-6789",
+            "call_id": "call-1",
+        })
+        event = q.get_nowait()
+
+        assert "student@example.edu" not in event["text"]
+        assert "123-45-6789" not in event["text"]
+        assert "[REDACTED]" in event["text"]
+
+
+@pytest.mark.asyncio
 async def test_bus_subscriber_removed_after_context_exit():
     bus = TranscriptBus()
     async with bus.subscribe():
@@ -89,7 +118,7 @@ async def test_sse_generator_yields_published_events():
     mock_request = AsyncMock()
     mock_request.is_disconnected.return_value = False
 
-    gen = _event_generator(mock_request)
+    gen = _event_generator(mock_request, call_id="test-123")
     received: list[dict] = []
 
     async def _read():
@@ -136,7 +165,7 @@ async def test_sse_generator_all_event_types():
     ]
     received_types: list[str] = []
 
-    gen = _event_generator(mock_request)
+    gen = _event_generator(mock_request, call_id="m1")
 
     async def _read():
         async for chunk in gen:

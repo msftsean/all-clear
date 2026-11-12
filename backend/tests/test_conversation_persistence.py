@@ -257,26 +257,8 @@ def api_client() -> TestClient:
     return TestClient(test_app)
 
 
-def test_get_session_not_found(api_client: TestClient) -> None:
-    missing_id = str(uuid.uuid4())
-    resp = api_client.get(f"/api/sessions/{missing_id}")
-    assert resp.status_code == 404
-
-
-def test_list_sessions_missing_hash(api_client: TestClient) -> None:
-    resp = api_client.get("/api/sessions")
-    assert resp.status_code == 422  # missing required query param
-
-
-def test_list_sessions_empty(api_client: TestClient) -> None:
-    student_hash = _hash("nobody")
-    resp = api_client.get(f"/api/sessions?student_id_hash={student_hash}")
-    assert resp.status_code == 200
-    assert resp.json() == []
-
-
-def test_get_session_roundtrip(api_client: TestClient) -> None:
-    """Create a session via MockSessionStore, retrieve it via the API."""
+def test_get_session_fails_closed_without_authenticated_owner(api_client: TestClient) -> None:
+    """A session UUID alone cannot authorize access to conversation history."""
     from app.core.dependencies import get_session_store
 
     store = get_session_store()
@@ -286,13 +268,12 @@ def test_get_session_roundtrip(api_client: TestClient) -> None:
     asyncio.run(store.create_session(session))
 
     resp = api_client.get(f"/api/sessions/{session.session_id}")
-    assert resp.status_code == 200
-    data = resp.json()
-    assert data["session_id"] == str(session.session_id)
-    assert data["student_id_hash"] == session.student_id_hash
+    assert resp.status_code == 503
+    assert "authenticated ownership" in resp.json()["detail"]
 
 
-def test_list_sessions_returns_correct_student(api_client: TestClient) -> None:
+def test_list_sessions_fails_closed_for_caller_supplied_hash(api_client: TestClient) -> None:
+    """A caller-provided student hash is not an authenticated principal."""
     from app.core.dependencies import get_session_store
 
     store = get_session_store()
@@ -307,12 +288,9 @@ def test_list_sessions_returns_correct_student(api_client: TestClient) -> None:
     asyncio.run(store.create_session(other))
 
     resp = api_client.get(f"/api/sessions?student_id_hash={student_hash}")
-    assert resp.status_code == 200
-    data = resp.json()
-    returned_ids = {d["session_id"] for d in data}
-    assert str(s1.session_id) in returned_ids
-    assert str(s2.session_id) in returned_ids
-    assert str(other.session_id) not in returned_ids
+    assert resp.status_code == 503
+    assert "authenticated ownership" in resp.json()["detail"]
+    assert api_client.get("/api/sessions").status_code == 503
 
 
 # =============================================================================

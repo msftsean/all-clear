@@ -62,10 +62,12 @@ def create_app() -> FastAPI:
         - **Grounded Knowledge**: Retrieve cited operational guidance
         - **Human Escalation**: Escalate safety and statutory-clock incidents
 
-        ## Authentication
+        ## Authentication status
 
-        Most endpoints require a Bearer JWT token from university SSO.
-        The `/api/knowledge/search` and `/api/health` endpoints are public.
+        This application does not currently configure end-user authentication.
+        Conversation-history and phone-transcript retrieval fail closed until the
+        backend can verify record ownership. Caller-supplied identifiers are not
+        authorization.
         """,
         openapi_url=f"{settings.api_prefix}/openapi.json",
         docs_url=f"{settings.api_prefix}/docs",
