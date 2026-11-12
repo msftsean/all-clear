@@ -28,6 +28,10 @@ A successfully completed Lab 07 demonstrates:
 - [ ] Server exports `list_tools()` handler returning the ActionAgent tools
 - [ ] Server exports `call_tool()` handler that invokes tool logic
 - [ ] Server preserves the QueryAgent → RouterExecutor → ActionAgent authority boundary
+- [ ] Both lab variants redact inbound PII before model calls, logging, or storage,
+  and pass trusted pre-redaction `pii_detected` metadata to deterministic routing
+- [ ] An otherwise benign PII-bearing request escalates even if QueryAgent returns
+  `pii_detected=false`; a literal `[REDACTED]` marker alone does not force escalation
 
 ### Deliverable 2: Required MCP Tools
 

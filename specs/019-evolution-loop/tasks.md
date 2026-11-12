@@ -54,3 +54,24 @@ description: "Completed task ledger for All Clear consolidation"
 - [x] T391 Build the primary frontend and all companion sites.
 - [x] T392 Confirm `CONTEXT.md`, the Constitution, this spec pack, and active
   templates use the same incident-triage vocabulary.
+
+## Post-Consolidation Privacy Hardening (2026-11-12)
+
+- [x] T401 Fail closed on session-history retrieval until a verified
+  server-side owner contract exists; remove caller-hash history fetches from the
+  frontend.
+- [x] T402 Scope internal transcript subscriptions by call, redact published
+  transcript data, and reject public SSE/ACS media access until ownership and
+  ingress identity can be verified.
+- [x] T403 Keep realtime safety instructions server-controlled and generate
+  server-owned session IDs instead of trusting caller-selected IDs.
+- [x] T404 Fix Lab 07 MCP pipeline invocation and make both offline probe modes
+  fail on tool error responses.
+- [x] T405 Run focused backend privacy/realtime tests, frontend build, and both
+  offline Lab 07 MCP probes.
+- [x] T406 Preserve trusted pre-redaction PII metadata in both Lab 07 variants
+  and the Lab 05 solution pipeline using a typed keyword-only flag and a frozen
+  classification replacement; keep caller-selected sessions disabled.
+- [x] T407 Add offline MCP regressions for PII redaction and benign-request
+  escalation despite model denial, plus literal-marker and fallback cases;
+  run focused Lab 05/07 tests and both offline runtime probes.
