@@ -37,6 +37,13 @@ param realtimeLocation string = 'swedencentral'
 @description('Deploy the realtime (voice) OpenAI account and model. Disable when gpt-realtime quota is unavailable.')
 param deployRealtime bool = true
 
+@description('Deploy optional ACS phone resources and IncomingCall event routing')
+param deployPhone bool = true
+
+@secure()
+@description('Audience board coach key. Empty disables protected live board controls.')
+param surgeCoachKey string = ''
+
 @description('Enable mock mode (no external service connections)')
 param mockMode bool = false
 
@@ -256,7 +263,7 @@ resource searchService 'Microsoft.Search/searchServices@2023-11-01' = {
 // ============================================================================
 // Azure Communication Services
 // ============================================================================
-resource acs 'Microsoft.Communication/communicationServices@2023-04-01' = {
+resource acs 'Microsoft.Communication/communicationServices@2023-04-01' = if (deployPhone) {
   name: '${prefix}-acs'
   location: 'global' // ACS is a global resource
   tags: tags
@@ -330,11 +337,11 @@ resource searchKeySecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   }
 }
 
-resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
+resource acsConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = if (deployPhone) {
   parent: keyVault
   name: 'acs-connection-string'
   properties: {
-    value: acs.listKeys().primaryConnectionString
+    value: deployPhone ? acs!.listKeys().primaryConnectionString : ''
   }
 }
 
@@ -373,7 +380,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
         targetPort: 8000
         transport: 'auto'
       }
-      secrets: [
+      secrets: concat([
         {
           name: 'acr-password'
           value: containerRegistry.listCredentials().passwords[0].value
@@ -386,6 +393,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
           name: 'search-api-key'
           value: searchService.listAdminKeys().primaryKey
         }
+      ], deployPhone ? [
         {
           name: 'acs-connection-string'
           // Container Apps rejects empty-string secret values (ContainerAppSecretInvalid);
@@ -393,9 +401,14 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
           // ever reads this value through AzurePhoneService, which is never instantiated
           // when mockMode/MOCK_MODE is true (see backend/app/core/dependencies.py), so the
           // placeholder is never actually used.
-          value: mockMode ? 'mock' : acs.listKeys().primaryConnectionString
+          value: !deployPhone || mockMode ? 'mock' : acs!.listKeys().primaryConnectionString
         }
-      ]
+      ] : [], empty(surgeCoachKey) ? [] : [
+        {
+          name: 'surge-coach-key'
+          value: surgeCoachKey
+        }
+      ])
       registries: [
         {
           server: containerRegistry.properties.loginServer
@@ -409,7 +422,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
         {
           name: 'backend'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
-          env: [
+          env: concat([
             {
               name: 'MOCK_MODE'
               value: string(mockMode)
@@ -465,9 +478,17 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               name: 'AZURE_SEARCH_INDEX'
               value: 'knowledge-base'
             }
+            union({
+              name: 'SURGE_COACH_KEY'
+            }, empty(surgeCoachKey) ? {
+              value: ''
+            } : {
+              secretRef: 'surge-coach-key'
+            })
+          ], deployPhone ? [
             {
               name: 'AZURE_ACS_ENDPOINT'
-              value: mockMode ? '' : 'https://${acs.properties.hostName}'
+              value: !deployPhone || mockMode ? '' : 'https://${acs!.properties.hostName}'
             }
             {
               name: 'AZURE_ACS_CONNECTION_STRING'
@@ -482,7 +503,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
               name: 'ACS_PHONE_NUMBER'
               value: acsPhoneNumber
             }
-          ]
+          ] : [])
           resources: {
             cpu: json('0.5')
             memory: '1Gi'
@@ -535,7 +556,7 @@ resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssign
 
 // Grant backend container app Contributor access to ACS via managed identity
 var acsContributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployPhone) {
   name: guid(acs.id, backendContainerApp.id, acsContributorRoleId)
   scope: acs
   properties: {
@@ -548,7 +569,7 @@ resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-
 // ============================================================================
 // ACS → Event Grid → Backend: route IncomingCall events to the phone webhook
 // ============================================================================
-resource acsSystemTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = if (!mockMode) {
+resource acsSystemTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = if (deployPhone && !mockMode) {
   name: '${prefix}-acs-events'
   location: 'global'
   tags: tags
@@ -558,7 +579,7 @@ resource acsSystemTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = if (!moc
   }
 }
 
-resource acsIncomingCallSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = if (!mockMode) {
+resource acsIncomingCallSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = if (deployPhone && !mockMode) {
   name: 'incoming-call'
   parent: acsSystemTopic
   properties: {
@@ -652,5 +673,5 @@ output AZURE_CONTAINERAPP_URL string = 'https://${backendContainerApp.properties
 output AZURE_FRONTEND_URL string = 'https://${frontendContainerApp.properties.configuration.ingress.fqdn}'
 output AZURE_RESOURCE_GROUP string = resourceGroup().name
 output AZURE_KEY_VAULT_NAME string = keyVault.name
-output AZURE_ACS_ENDPOINT string = mockMode ? '' : 'https://${acs.properties.hostName}'
+output AZURE_ACS_ENDPOINT string = !deployPhone || mockMode ? '' : 'https://${acs!.properties.hostName}'
 output MOCK_MODE bool = mockMode

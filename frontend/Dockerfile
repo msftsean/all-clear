@@ -1,6 +1,6 @@
 # Frontend Dockerfile for Front Door Support Agent
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 

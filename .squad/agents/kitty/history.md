@@ -59,3 +59,13 @@ event.
   `mock_mode=false`, `/api/phone/health` healthy with `phone_available=true`,
   Event Grid `incoming-call` subscription `Succeeded`, but no real inbound PSTN
   test call was placed from this environment.
+
+- 2026-11-17: Room Surge live rehearsal is authorized but blocked pending human restoration of the correct tenant access, confirmation of the audience Container Apps, safe mode/replica/revision checks, and coach-key reference verification. Do not reuse the private redteam adapter, retry the expired TAP auth, or provision blindly; see private session report for the status-only runbook.
+
+- 2026-11-17: User selected MCAPS-2026 audience subscription and authorized a separate app/new app-scoped secrets. Read-only group inventory was blocked by chained Azure credential failure (AADSTS50020/AADSTS130504); do not retry auth or alter defaults. Existing private redteam adapter remains no-touch. Docker CLI present, Linux engine unavailable; local builds blocked under remoteBuild=false. Root deployment plan status remains planning/not ready; private report has corrected tenant ID and evidence.
+
+- 2026-11-17: Docker Desktop Linux engine verified ready (29.9.3); local build path unblocked, keep remoteBuild=false. Added the exact proposed isolated audience RG/resource topology and deployment order to .azure/deployment-plan.md. Cloud inventory remains blocked by known corporate-tenant auth failure; no retry or Azure write. Wait for Forge's focused verifier/key-entry tests before exposure.
+
+- 2026-11-17: Parent verified Docker Linux daemon ready; updated plan to use local build (remoteBuild:false). Final isolated resource topology/regions and proposed RG recorded; actual resource/model quota inventory remains blocked by known MCAPS credential mismatch. Forge verifier and safe key-entry tests are release gates.
+
+- 2026-11-17: Correction: direct Azure CLI selected-subscription metadata identifies MCAPS-2026-segayle, tenant 16b3c013-d300-468d-ac64-7eda0820b6d3. Target inventory found AOAI quota headroom but no suitable reusable endpoint, no Search, and only redteam ACA/ACR; new audience stack is isolated. Plan advanced to Ready for Validation only; RBAC and Communication registration/phone gate remain preflight items.

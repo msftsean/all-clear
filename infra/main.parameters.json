@@ -12,6 +12,8 @@
     "embeddingModelVersion": { "value": "1" },
     "mockMode": { "value": "${MOCK_MODE=true}" },
     "acsPhoneNumber": { "value": "${ACS_PHONE_NUMBER=}" },
+    "deployPhone": { "value": "${DEPLOY_PHONE=true}" },
+    "surgeCoachKey": { "value": "${SURGE_COACH_KEY=}" },
     "realtimeLocation": { "value": "eastus2" },
     "realtimeModel": { "value": "gpt-realtime-mini" },
     "realtimeModelVersion": { "value": "2025-12-15" },
