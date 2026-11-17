@@ -1,14 +1,114 @@
 # Room Surge Azure preflight
 
-**Revision:** 2026-11-17 / 04
+**Revision:** 2026-11-17 / 07
 
-**Status:** 🟨 MOCK FALLBACK VERIFIED | ⛔ LIVE AI NO-GO
+**Status:** 🟨 MOCK FALLBACK VERIFIED | ⛔ LIVE SHOWCASE NO-GO | 🧪 HYBRID ACCEPTANCE FAILED
 
 **Branch:** `event/arlington-2026-11-18`
 
 **Target:** MCAPS-2026-segayle, `rg-allclear-surge-20261117`, East US 2
 
 **Scope:** New audience resources only. Private red-team and other applications untouched.
+
+## Current checkpoint — R9 verification
+
+The third real-AI canary **failed the unchanged acceptance gates**. All 45
+requests completed this time, but semantic grouping and latency still fail.
+The audience backend remains on the working mock; there was no cutover.
+
+| Gate | Actual R9 evidence |
+|---|---|
+| Regression fixes | Shared async Azure credential removes synchronous token acquisition from the async model path; embedding runs before the dedup lock, while routing/persistence remain atomic. Reset-generation guards retain and acknowledge late accepted reports with `room_counted=false`, without changing the new room's counters. Late blocks/errors are also isolated. |
+| Release verification | All **390 tests passed in the actual Linux backend image**, with repository-documentation fixtures mounted read-only. Frontend: 14 UI tests and Node 22 production build passed. No threshold, taxonomy, fixture, safety, escalation, role, secret or network changes. |
+| Actual candidate | `--hybridr9`, immutable backend digest `sha256:318a475c91f3e21bb7b605052eb586a2a8c01192076a5dc71575961c0d36795a`, Healthy/Provisioned, one replica; real-AI/temporary-memory health and keyless control HTTP 403 verified. |
+| Complete original rehearsal | Untouched 45-report fixture, concurrency 40: **43 accepted Signals → 36 Incidents**, two safety blocks, zero errors/room failures, all 45 HTTP responses completed in 19.7s. Complete accounting PASS. |
+| Semantic grouping | A/B/C/D produced **10/7/6/10 distinct Incidents**, 33 A-D total: **SC-001 FAIL** against the unchanged four-to-six requirement. E remained three separate Incidents, disjoint from A-D: PASS. |
+| End-to-end latency | All 45/45 responses included: median **16.32s**, p95 **17.97s**: **SC-002 FAIL** against eight seconds. No timeout occurred in this run; that does not prove the earlier long-tail cause is eliminated. |
+| Cleanup / audience | Candidate reset CLOSED/zero in `finally` after all responses settled. Public room was not reset or replaced; named `--mockfallback` remains 100%. No more paid repetition without a meaningful semantic/performance solution. |
+| Hosted frontend | New backward-compatible reset receipt UI is deployed as `--hybridr9`; hosted `index-CXbXlhpf.js` SHA256 `46F1130F6BF45E9F70B4809149F51169B1CDDD100ED8B6263679CF5A63927412` exactly matches the tested package. Public proxied health still truthfully reports mock. |
+
+**Remaining blockers:** free-worded semantic grouping and end-to-end latency
+need a real design/calibration solution, not weakened thresholds or card-based
+grouping. Durable private Azure still requires investigation/support; the
+support packet exists but no ticket was submitted. Hybrid browser acceptance
+was not run after failed load/semantic gates. A physical phone/cellular QR scan
+remains unconfirmed.
+
+Safe R9 logs contain all 43 pipeline and 45 report-completion rows, with no
+429 retry rows. Classification median/p95/max was 7978.2/8198.8/9942.9ms,
+embedding 790.4/1887.2/2001.5ms, knowledge 3734.7/4292.4/4593.1ms, and
+dedup-lock wait zero. Later candidate state remained CLOSED/zero. All 54
+backend runtime Python files byte-match the verified immutable image.
+
+**Tooling caveat:** whole-file lint/type checks are not green at committed HEAD:
+Ruff diagnostics, 30 strict mypy errors, two Fast Refresh export warnings, and
+Black debt in 12 existing changed files are pre-existing. Ruff was compared
+against HEAD diagnostics; mypy was rerun with exact HEAD shadow files and
+reported the same 30 errors. No new diagnostic was identified. The two new
+test-formatting regressions were fixed; their 14 focused backend cases passed
+again, and the three new test files pass Ruff/Black. Runtime source was not
+changed by this final formatting cleanup.
+
+## Earlier R8 checkpoint — 14:24 ET
+
+The second real-AI canary **also failed acceptance**; public traffic has not been
+switched. The actual Azure Search SDK vector-query parameter was corrected, and
+knowledge/sitrep completion was moved outside the atomic dedup decision/persist
+window. All 384 backend checks passed: 380 runtime/backend tests in the Linux
+release image and four repository-documentation checks with their actual
+read-only fixtures. This does not establish semantic or latency acceptance.
+
+- New candidate `--hybridr8`, image digest
+  `sha256:0c755cd5a5dbb15ac5d7f1e93c2f9b94d10c0a1dc47e4590c64773f96afe7d7b`,
+  is Healthy with one replica and actual real-AI/temporary-memory health.
+- Untouched 45-report fixture, concurrency 40: **41 accepted HTTP receipts →
+  34 Incidents, two safety blocks, two client timeouts** (B and C), wall 60.2s.
+  A–D formed 31 distinct Incidents; E remained three separate Incidents.
+  Successful-response median 16.46s/p95 18.22s covers only 43/45 requests and
+  is **not complete acceptance evidence**. Both success criteria failed.
+- Safe diagnostics subsequently showed all 43 non-blocked pipelines completed;
+  two classifications took about 82 seconds. No report text or credentials were
+  logged. Median classification/embedding/knowledge durations were
+  6124.8/1410.8/3785.5ms; median and p95 dedup-lock wait were zero. Forge is
+  checking synchronous I/O/event-loop blocking rather than assuming an Azure
+  quota explanation.
+- Diagnostics show real cosine comparisons: many OPEN decisions had best
+  similarity 0.67–0.82; observed ATTACH decisions were at least 0.8308. No
+  threshold, category, fixture or card-grouping change has been made. Semantic
+  normalization/calibration is not silently claimed solved.
+- **Reset race reproduced:** initial `finally` reset returned CLOSED/zero, but
+  the two late completions then produced CLOSED/two Signals/two Incidents/zero
+  devices. Generation-aware tally handling is being fixed without dropping
+  domain reports or audit. A second cleanup of only the quiescent candidate
+  completed at 14:24 ET, restoring CLOSED/zero after all requests settled.
+  The user's stable room was read-only, not reset.
+- Stable public mock remains pinned 100%; verified CLOSED/zero at 14:24 ET.
+  The new frontend remains the verified `index-CNv7Cu5d.js` bundle. Hybrid
+  browser rehearsal has been authored but not executed because semantic/load
+  acceptance failed. Physical cellular QR testing has been requested from the
+  user but not confirmed. Durable Azure remains blocked as recorded below.
+
+## Earlier R7 checkpoint — 13:47 ET
+
+**Real Azure AI now processes reports on an isolated canary, but the live
+showcase is not ready.** The working public room remains explicitly pinned to
+the verified mock revision; it was not switched to the failed canary.
+
+| Track / gate | Actual evidence |
+|---|---|
+| Approved temporary alternative | `SURGE_DEMO_MEMORY_STORAGE=true` with `MOCK_MODE=false` selects cached in-memory incident/session stores while chat, embeddings and knowledge stay live. The flag defaults false. Reports and audit records disappear on restart; source UI and printable cards disclose this. No fixture, threshold, routing, safety or escalation change. |
+| Source/image checks | Forge: 382 backend and 14 Surge UI tests, Node 22.23.5 typecheck/build and targeted ESLint passed. Actual Linux/Python 3.12.16 backend image: 33 focused Surge tests passed; startup without Cosmos returned healthy, `mock_mode=false`, `storage_mode=memory`. |
+| App-only release | Required prepare/validate/deploy flow completed. Read-only resource-level network what-if: 0 Create / 0 Delete / 3 Modify / 3 NoChange / 13 Ignore; no infrastructure graph applied. Cosmos public access remains Disabled and local auth disabled. Existing identity, roles, secrets, location and SKUs unchanged. |
+| Candidate runtime | Original public backend revision `--hybrid1340`: Healthy, Provisioned, RunningAtMaxScale, one replica; actual revision endpoint reports real AI/memory. Keyless control returned 403. Zero normal traffic. |
+| Untouched original rehearsal | Concurrency 40, all 45 requests accounted for: **43 accepted Signals → 34 Incidents, two safety blocks, zero failures**. A/B/C/D formed 10/7/6/8 distinct Incidents: **31 A–D Incidents, disjoint but SC-001 FAIL**. E formed three separate Incidents and did not merge with A–D: PASS. |
+| Latency / outcome | All 45 HTTP responses counted; median 15.67s, **p95 16.81s**, wall 17.7s. **SC-002 FAIL**. This is actual end-to-end live evidence, not the earlier model-only smoke. Canary reset CLOSED/zero in `finally`; no cutover. Forge is diagnosing the actual semantic/performance failure without weakening acceptance. |
+| Stable audience surface | Backend `--mockfallback` remains 100% pinned, mock, CLOSED and zero at 13:47 ET. New frontend `--hybrid1340` is Healthy and serves `index-CNv7Cu5d.js`; hosted SHA256 `F6DE2F7EC4E13344855ED90380CB0C0FE130A692A61EBC477F8952B4398F1F73` exactly matches the tested packaged bundle. It continues to disclose mock while mock serves traffic. |
+| Durable Azure path | Fresh read-only check: private backend provisioning Failed, no revision and no FQDN. Retry activity has Started/Accepted only, correlation `7e874bef-d9eb-411f-a25f-58cdb40b66d1`. Root cause remains unknown. Kitty prepared a support packet; **no support ticket submitted** (entitlement/contact/severity approval still required). |
+
+Public board: <https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge>.
+Refresh existing tabs to load the new mode-aware bundle. Physical-phone cellular
+QR testing remains unverified. The sections below preserve earlier chronological
+preflight and fallback evidence; they do not supersede this checkpoint.
 
 ## Summary
 

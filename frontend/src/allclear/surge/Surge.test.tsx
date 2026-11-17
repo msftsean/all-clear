@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import QRCode from "qrcode";
 import SurgeBoard, { EMPTY_STATE, SurgeBoardView, prettyCategory } from "./SurgeBoard";
@@ -125,7 +125,10 @@ describe("Surge processing-mode disclosure", () => {
     try {
       render(<SurgeReport />);
       expect(await screen.findByText(/MOCK REHEARSAL/)).toBeInTheDocument();
-      expect(fetchMock).toHaveBeenCalledWith("https://api.example.test/api/health");
+      expect(fetchMock).toHaveBeenCalledWith(
+        "https://api.example.test/api/health",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
     } finally {
       vi.unstubAllEnvs();
     }
@@ -155,6 +158,51 @@ describe("Surge processing-mode disclosure", () => {
     expect(screen.queryByRole("button", { name: "Use sample report" })).not.toBeInTheDocument();
   });
 
+  it("discloses live AI with temporary storage and keeps live instructions", async () => {
+    window.history.replaceState(null, "", "/report?card=A");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: false, storage_mode: "memory" }),
+    }));
+    render(<SurgeReport />);
+    expect(await screen.findByText("LIVE AZURE AI - TEMPORARY DEMO STORAGE")).toBeInTheDocument();
+    expect(screen.getByText(/Reports and audit records are held in memory and will be lost on restart/))
+      .toBeInTheDocument();
+    expect(screen.getByText(/Don't copy the card/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Use sample report" })).not.toBeInTheDocument();
+  });
+
+  it("refreshes mode after the backend changes while the page stays open", async () => {
+    vi.useFakeTimers();
+    window.history.replaceState(null, "", "/report?card=A");
+    let checks = 0;
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(() => {
+      checks += 1;
+      return Promise.resolve({
+        ok: true,
+        json: async () => checks === 1
+          ? { mock_mode: true }
+          : { mock_mode: false, storage_mode: "memory" },
+      });
+    }));
+    try {
+      render(<SurgeReport />);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(screen.getByText(/MOCK REHEARSAL/)).toBeInTheDocument();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(10_000);
+      });
+      expect(screen.getByText("LIVE AZURE AI - TEMPORARY DEMO STORAGE")).toBeInTheDocument();
+      expect(screen.getByText(/Don't copy the card/)).toBeInTheDocument();
+      expect(screen.queryByText(/MOCK REHEARSAL/)).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("surfaces an unverified mode instead of claiming live AI", async () => {
     window.history.replaceState(null, "", "/report?card=A");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
@@ -179,6 +227,18 @@ describe("Surge processing-mode disclosure", () => {
     expect(screen.getAllByText(/Use sample report/)).toHaveLength(4);
     expect(screen.queryByText(/Don't copy this card/)).not.toBeInTheDocument();
   });
+
+  it("prints the temporary-storage disclosure and own-word instructions", async () => {
+    window.history.replaceState(null, "", "/surge/cards?only=A");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: false, storage_mode: "memory" }),
+    }));
+    render(<SurgeCards />);
+    expect(await screen.findByText("LIVE AZURE AI - TEMPORARY DEMO STORAGE")).toBeInTheDocument();
+    expect(screen.getByText(/audit records are lost on restart/)).toBeInTheDocument();
+    expect(screen.getByText(/Don't copy this card/)).toBeInTheDocument();
+    expect(screen.queryByText(/Use sample report/)).not.toBeInTheDocument();
+  });
 });
 
 describe("Room surge helpers", () => {
@@ -199,5 +259,11 @@ describe("Room surge helpers", () => {
     expect(resultDetail(joined)).toMatch(/12 people in this room/);
     const blocked = { accepted: false, outcome: "blocked" as const, message: "Blocked by the safety filter." };
     expect(resultHeadline(blocked)).toBe("Blocked by the safety filter");
+    const late = {
+      ...joined,
+      room_counted: false,
+      message: "Your report was recorded. The room was reset while it was processing.",
+    };
+    expect(resultDetail(late)).toContain("room was reset");
   });
 });

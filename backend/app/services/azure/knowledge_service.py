@@ -95,30 +95,46 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
 
             # Try hybrid search with embeddings first
             vector_queries = []
+            embedding_ms = 0.0
             try:
+                embedding_started = time.perf_counter()
                 embedding = await asyncio.to_thread(self._get_embedding, query)
+                embedding_ms = (time.perf_counter() - embedding_started) * 1000
                 vector_queries = [
                     VectorizedQuery(
                         vector=embedding,
-                        k_nearest_neighbors=limit * 3,
+                        k=limit * 3,
                         fields="content_vector",
                     )
                 ]
             except Exception as embed_err:
-                logger.warning("Embedding failed, falling back to keyword search: %s", embed_err)
+                logger.warning(
+                    "Search-query embedding failed; using keyword search (error_type=%s)",
+                    type(embed_err).__name__,
+                )
 
             # Execute search (hybrid if embedding succeeded, keyword-only otherwise)
+            search_started = time.perf_counter()
             results = await asyncio.to_thread(
                 lambda: list(
                     self._search_client.search(
                         search_text=query,
                         vector_queries=vector_queries if vector_queries else None,
                         filter=filter_expr,
-                        select=["id", "title", "content", "snippet", "department", "category", "tags"],
+                        select=[
+                            "id",
+                            "title",
+                            "content",
+                            "snippet",
+                            "department",
+                            "category",
+                            "tags",
+                        ],
                         top=limit,
                     )
                 )
             )
+            search_ms = (time.perf_counter() - search_started) * 1000
 
             articles = []
             contents = []
@@ -141,11 +157,16 @@ class AzureSearchKnowledgeService(KnowledgeServiceInterface):
                     "tags": result.get("tags", []),
                 })
 
-            logger.info("Search '%s' returned %d results", query[:50], len(articles))
+            print(
+                f"azure_search_phases embedding_ms={embedding_ms:.1f} "
+                f"search_ms={search_ms:.1f} results={len(articles)} "
+                f"vector_query={bool(vector_queries)}",
+                flush=True,
+            )
             return articles, contents
 
-        except Exception as e:
-            logger.error("Search failed: %s", e)
+        except Exception as exc:
+            logger.error("Search failed (error_type=%s)", type(exc).__name__)
             return [], []
 
     async def get_article(

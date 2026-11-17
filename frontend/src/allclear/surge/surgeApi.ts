@@ -37,6 +37,7 @@ export interface SurgeReportResult {
   outcome: SurgeOutcome;
   incident_id?: string | null;
   room_reports?: number;
+  room_counted?: boolean;
   severity?: string;
   message: string;
 }

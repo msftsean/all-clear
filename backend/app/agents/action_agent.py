@@ -21,6 +21,7 @@ Two surfaces are provided:
 
 from __future__ import annotations
 
+import time
 from datetime import datetime, timezone
 
 from agent_framework import Agent, BaseChatClient, Executor, WorkflowContext, handler
@@ -201,8 +202,11 @@ class ActionExecutor(Executor):
             return await self._handle_attach(routed)
         return await self._handle_open(routed)
 
-    async def _handle_open(self, routed: RoutedSignal) -> IncidentAction:
+    async def create_open_incident(self, routed: RoutedSignal) -> IncidentRecord:
+        """Persist an OPEN decision without waiting for knowledge search or sitrep work."""
         decision: RoutingDecision = routed.routing
+        if decision.outcome is not RoutingOutcome.OPEN_INCIDENT:
+            raise ValueError("create_open_incident requires an OPEN_INCIDENT decision")
         incident_id = await self._store.next_incident_id()
         record = IncidentRecord(
             incident_id=incident_id,
@@ -217,15 +221,32 @@ class ActionExecutor(Executor):
             escalated=decision.escalate,
         )
         await self._tools.create_incident(record, routed.embedding)
+        return record
 
+    async def complete_open_incident(
+        self,
+        routed: RoutedSignal,
+        record: IncidentRecord,
+        phase_timings: dict[str, float] | None = None,
+    ) -> IncidentAction:
+        """Finish an already-persisted OPEN path with grounded guidance and sitrep."""
+        decision = routed.routing
+        if decision.outcome is not RoutingOutcome.OPEN_INCIDENT:
+            raise ValueError("complete_open_incident requires an OPEN_INCIDENT decision")
+        search_started = time.perf_counter()
         # Knowledge search + sitrep happen ONLY on the OPEN path (spec clarification #3).
         articles = await self._tools.search_knowledge(routed.signal_text)
+        if phase_timings is not None:
+            phase_timings["knowledge_ms"] = (time.perf_counter() - search_started) * 1000
+        sitrep_started = time.perf_counter()
         sitrep = await self._tools.generate_sitrep(record, articles)
+        if phase_timings is not None:
+            phase_timings["sitrep_ms"] = (time.perf_counter() - sitrep_started) * 1000
 
         eta = _sla_phrase(decision.sla_minutes)
         status = ActionStatus.ESCALATED if decision.escalate else ActionStatus.OPENED
         message = (
-            f"Logged incident {incident_id} ({decision.severity.value}) on the "
+            f"Logged incident {record.incident_id} ({decision.severity.value}) on the "
             f"{decision.target_queue.value} queue; target response {eta}."
         )
         if decision.escalate:
@@ -237,7 +258,7 @@ class ActionExecutor(Executor):
             )
         return IncidentAction(
             status=status,
-            incident_id=incident_id,
+            incident_id=record.incident_id,
             queue=decision.target_queue,
             severity=decision.severity,
             knowledge_articles=articles,
@@ -247,6 +268,10 @@ class ActionExecutor(Executor):
             escalated=decision.escalate,
             user_message=message,
         )
+
+    async def _handle_open(self, routed: RoutedSignal) -> IncidentAction:
+        record = await self.create_open_incident(routed)
+        return await self.complete_open_incident(routed, record)
 
     async def _handle_attach(self, routed: RoutedSignal) -> IncidentAction:
         decision = routed.routing

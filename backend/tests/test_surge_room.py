@@ -117,3 +117,24 @@ def test_reset_clears_tally_and_closes() -> None:
     assert snap["open"] is False
     assert snap["signals"] == snap["incidents"] == snap["blocked"] == snap["devices"] == 0
     assert snap["tiles"] == []
+
+
+def test_reset_ignores_late_results_blocks_and_failures() -> None:
+    room = SurgeRoom()
+    room.open()
+    stale_generation = room.generation
+    room.reset()
+    room.open()
+
+    result = room.record_result(
+        "A",
+        _result("AC-0001", "ATTACH_TO_INCIDENT"),
+        generation=stale_generation,
+    )
+    assert result["room_counted"] is False
+    assert result["room_reports"] == 0
+    assert room.record_blocked("R", generation=stale_generation) is False
+    assert room.record_failed(generation=stale_generation) is False
+    snapshot = room.snapshot()
+    assert snapshot["signals"] == snapshot["incidents"] == 0
+    assert snapshot["blocked"] == snapshot["failed"] == snapshot["devices"] == 0

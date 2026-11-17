@@ -15,10 +15,12 @@ exponential backoff, honoring the server ``Retry-After`` header when present.
 from __future__ import annotations
 
 import asyncio
+import logging
 import random
 from typing import Awaitable, Callable, TypeVar
 
 T = TypeVar("T")
+logger = logging.getLogger(__name__)
 
 _MAX_RATE_LIMIT_RETRIES = 5
 _BACKOFF_BASE_S = 0.5
@@ -64,6 +66,7 @@ async def with_rate_limit_retry(
     op: Callable[[], Awaitable[T]],
     *,
     max_retries: int = _MAX_RATE_LIMIT_RETRIES,
+    operation: str = "azure_openai",
 ) -> T:
     """Await ``op()``; on a 429, back off and retry up to ``max_retries`` times.
 
@@ -84,5 +87,14 @@ async def with_rate_limit_retry(
             else:
                 ceiling = min(_BACKOFF_CAP_S, _BACKOFF_BASE_S * (2 ** attempt))
                 delay = random.uniform(0.0, ceiling)
+            logger.warning(
+                "azure_openai_rate_limit_retry operation=%s retry=%d "
+                "delay_ms=%.1f retry_after_present=%s error_type=%s",
+                operation,
+                attempt + 1,
+                delay * 1000,
+                hinted is not None,
+                type(exc).__name__,
+            )
             await asyncio.sleep(delay)
             attempt += 1

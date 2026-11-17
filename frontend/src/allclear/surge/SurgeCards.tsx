@@ -23,7 +23,7 @@ export default function SurgeCards() {
         ?origin=https://your-host if you're printing from another environment.
       </p>
       <div className="grid grid-cols-2 gap-4">
-        {(mode === "mock" || mode === "live") && sheet.map(({ card, n }) => (
+        {(mode === "mock" || mode === "live" || mode === "live-demo") && sheet.map(({ card, n }) => (
           <section
             key={`${card.id}-${n}`}
             data-testid="surge-print-card"
@@ -42,7 +42,9 @@ export default function SurgeCards() {
                 ? card.tone === "event"
                   ? "Mock rehearsal: select Use sample report on your phone. Matching wording illustrates grouping without live AI."
                   : "Mock rehearsal: follow this scenario to exercise offline processing, not live AI."
-                : `${card.prompt} Don't copy this card. Say it your way.`}
+                : mode === "live-demo"
+                  ? `LIVE AZURE AI - TEMPORARY DEMO STORAGE. Reports and audit records are lost on restart. ${card.prompt} Don't copy this card. Say it your way.`
+                  : `${card.prompt} Don't copy this card. Say it your way.`}
             </p>
             <div className="mt-auto flex items-end justify-between gap-3">
               <span className="text-sm">

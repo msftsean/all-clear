@@ -1,7 +1,7 @@
 # Tasks: Room Surge recovery
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
-**Deadline**: **2026-11-17 13:00 Eastern** | **Progress**: `████░░░░░` **4/9 primary-live gates**
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R9, 2026-11-17 15:00 ET
+**Original deadline**: **2026-11-17 13:00 Eastern** elapsed | **Progress**: `████░░░░░` **4/9 baseline primary-live gates**; hybrid release/acceptance pending
 **Sources**: [spec](spec.md), [plan/evidence/gates](plan.md), user live-test
 authorization; patch `e1eca20` on `7bed125`.
 
@@ -18,6 +18,143 @@ frontend-only authorized fallback. Live tasks remain unchecked, not “passed by
 **12:42 update**: fallback deployment/browser/40-report mock flow now **PASS**;
 T047–T049 complete. Physical cellular scan and primary live acceptance remain
 unchecked. Final protected CLOSED/zero cleanup confirmed.
+
+## R9 current boundary — observed FINAL NO-GO; no more paid load
+
+- [x] **T066** Integration reviewed: async Azure credential, embedding before
+  lock, **atomic decision + persistence retained**, reset generation guards.
+  Late success remains domain-persisted/accepted with optional
+  **`room_counted=false`** and explicit reset notice; late blocks/errors cannot
+  pollute new room. Frontend receipt field backwards compatible.
+  Built Linux backend
+  **sha256:318a475c91f3e21bb7b605052eb586a2a8c01192076a5dc71575961c0d36795a**
+  passed **all390 tests in one run**, read-only README/docs/frontend-source
+  fixtures. Source frontend **14 tests / Node22 build PASS**.
+  Frontend **sha256:b6711361acd28fe5ce6121312bbe871b8d4a2f49ad6531efb685c6f354ecf606**;
+  bundle **index-CXbXlhpf.js**, hash
+  **46F1130F6BF45E9F70B4809149F51169B1CDDD100ED8B6263679CF5A63927412**.
+  This is source/image proof, not semantic acceptance. **Depends: T062**.
+- [x] **T067** Actual **--hybridr9 Healthy/one replica**, backend digest above
+  verified; health **false/memory**, keyless controls **403**. R9 frontend
+  **Healthy Single/latest**, actual hosted **index-CXbXlhpf.js** and hash above
+  exact match; public health **mock=true**. Initial transient old HTML preceded
+  readiness+hosted-hash confirmation. Candidate finally reset **CLOSED/zero**;
+  no cutover, public mock named **100% untouched**. This does not certify
+  overlapping reset behavior or demo acceptance. **Depends: T066**.
+- [x] **T068** Record actual untouched45/concurrency40 **FAILED**:
+  **45/45 HTTP200**, **43 accepted signals→36 incidents**, **2 safety blocks**,
+  **0 errors/failed/escalated**, wall **19.7s**. A/B/C/D distinct
+  **10/7/6/10 =33** disjoint **FAIL4–6**; E3distinct/disjoint **PASS**.
+  Complete/error-free accounting **PASS**. Full45 median **16.32s**,
+  p95 **17.97s FAIL<8s**. **FINAL NO-GO; no more paid load**.
+  Semantic calibration/design **and latency need actual solutions**; async/reset
+  fixes are not full demo acceptance. Durable blocked, no support case or
+  physical-phone confirmation. T054/T055/T065 remain open. **Depends: T067**.
+
+**Historical R8**: --hybridr8 Healthy/false-memory/1replica/zero normal traffic,
+but actual45 fixture failed two client timeouts, A–D31 grouping and latency;
+late completions then polluted candidate reset. At14:24 ET all45 settled;
+second reset of only quiescent --hybridr8 restored CLOSED/zero. Stable public
+mock read-only CLOSED/zero, not reset. Public mock100%/frontendf688/index-CNv7Cu5d.js unchanged; source
+sync-I/O/epoch fixes underway. Earlier mock/R7 cleanup is historical evidence.
+
+## R8 failure ledger and corrective gate — source now tested, runtime pending
+
+- [x] **T060** Reviewed source Search SDK `k` fix, knowledge/sitrep outside
+  atomic dedup section, privacy-safe phase instrumentation. **Linux380 backend/
+  runtime checks PASS +4 repo-doc checks separately PASS** with read-only
+  fixtures; Forge source384PASS. **36 actual Azure Search rows**, all
+  **`vector_query=True` / results3**, verify live knowledge SDK fix, not
+  semantic/performance or future-fix acceptance.
+- [x] **T061** Actual R8 image
+  **sha256:0c755cd5a5dbb15ac5d7f1e93c2f9b94d10c0a1dc47e4590c64773f96afe7d7b**,
+  --hybridr8 Healthy/1replica/false-memory/zero normal traffic. Untouched45/
+  concurrency40 **FAILED**: HTTP41accepted→34incidents +2blocks +2client
+  timeouts(B,C); A–D31/E3disjoint, wall60.2s/median16.46s/p9518.22s from43/45
+  HTTPsuccesses, **invalid complete acceptance**. Logs prove43pipeline+2block
+  completion, timed-out2 around82s; test still fails. This task records attempt,
+  not passing T054/T055.
+- [x] **T062** R9 integration/source correction reviewed and built Linux image
+  passed all390 tests in one run; async credential, pre-lock embedding and
+  reset generation guards, with atomic decision+persistence retained.
+  Initial R8 resetCLOSED/zero was
+  polluted to **CLOSED/2signals/2incidents/devices0** by late completions.
+  Guard tally generations without canceling/dropping domain reports/audit.
+  No threshold/taxonomy/fixture/card-routing changes. **Runtime/performance/
+  semantic acceptance remains pending**, not implied by source completion.
+  **Depends: T061**.
+- [x] **T063** At **14:24 ET**, all45 requests had settled; second reset of
+  **only quiescent --hybridr8 tally** restored **CLOSED/zero**, never deleting
+  domain records. Stable public mock read-only verified **CLOSED/zero**, **not
+  reset**. This cleanup does not prove epoch isolation or live acceptance.
+  **Depends: T061**; source epoch guards now tested in T062, runtime proof pending.
+- [ ] **T064** Diagnose semantic evidence: OPENmostly0.67–0.82 vs observed
+  ATTACH≥0.8308, categories/similarity and phase timing. Scores are not a new
+  configured threshold or proof of resolution. Correct/retest one evidenced
+  cause; no weaker gates. **Depends: T061**.
+- [ ] **T065** Verify corrected source/tests, release guarded candidate and
+  rerun untouched45/concurrency40 with zero client/network/server errors,
+  complete coverage/disjoint grouping and unchanged full-response latency
+  population. Timeouts fail even if server eventually completes. Promote only
+  after full pass and stable cleanup; old mock remains100%. **Depends: T062,
+  T063, T064**. R9 actual run recorded in T068 **failed** grouping/latency;
+  **ON HOLD: no more paid load**. Needs actual semantic/design and latency
+  solutions, not another blind run or weaker acceptance.
+
+## R7 — approved parallel recovery; deployed hybrid canary FAILED acceptance
+
+Historical R7 attempt follows; R8 attempt/reset defect above is newer.
+
+- [x] **T050** User approved parallel temporary-memory demo and durable recovery:
+  “can you do both in parallel.” Document default-false
+  `SURGE_DEMO_MEMORY_STORAGE`, explicit restart-loss tradeoff and no durable GO.
+- [x] **T051** Implemented explicit opt-in: with MOCK_MODE=false, cached memory
+  incident **and session** stores while Azure chat/embeddings/knowledge and
+  zero-LLM router/PII/safety/escalation/audit calls remain unchanged. Health adds
+  independent storage_mode memory/cosmos. UI health poll10s; false/memory label
+  **LIVE AZURE AI - TEMPORARY DEMO STORAGE**, own-word instructions/no mock samples.
+  Reports/session/audit records lost on restart; reset still tally-only.
+  **Depends: T050**.
+- [x] **T052** Implementation tests only: **382 backend /14 UI PASS**, real
+  Linux backend-image **33 focused PASS**, local startup **false/memory PASS**.
+  No deployed hybrid/model-call/semantic/load success inferred. **Depends: T051**.
+- [x] **T053** App-only candidate **`--hybrid1340`** on original public backend
+  deployed **Healthy/Running/1replica**, actual health **false/memory**, keyless
+  control403. Mode-aware frontend **`--hybrid1340`** Healthy, served bundle
+  **`index-CNv7Cu5d.js`**. This records deployment/runtime evidence, not full UI/
+  audit/semantic certification. Stable backend **`--mockfallback`100%**;
+  no cutover or existing-secret/private-redteam change. **Depends: T052**.
+- [ ] **T054** Run **untouched45-request fixture /concurrency40** on hybrid
+  canary: all original coverage, disjoint A–D/E grouping, actual safe R outcomes,
+  zero HTTP/network/server errors and full-denominator p95<8s. Record actual
+  counts/latency/model/storage/revision evidence only after observed.
+  Original45/43 failures and mock40→4 remain distinct. **Depends: T053**.
+  **ACTUAL ATTEMPT FAILED**:43accepted signals→34incidents,2safety blocks,
+ 0errors/failed/rate limits, complete accounting PASS. A10/B7/C6/D8 distinct
+  IDs =31disjoint A–D incidents: **SC-001 FAIL** (needs4–6); E3distinct PASS.
+  Median15.67s/p9516.81s/wall17.7s: **SC-002 FAIL**. Candidate finally reset
+  CLOSED/zero. Task remains unchecked until unchanged full retest passes.
+- [ ] **T055** Promote only after T054 complete pass and protected
+  close/drain/reset evidence; retain temporary-storage/restart-loss disclosure.
+  Otherwise keep original mock100%. Physical cellular/human acceptance remains
+  separate. **Depends: T054 passing**.
+- [x] **T056** Kitty prepared durable support packet, **no actual ticket filed**.
+  Terminal Container Apps rollout root cause remains unknown; private backend
+  not verified ready. Packet preparation is not resolution or service acceptance.
+- [ ] **T057** Durable track independently establishes actual case status,
+  evidence-backed cause and healthy private app/connectivity/report/persistent
+  audit proof before durable GO. Do not equate hybrid memory success with
+  Cosmos repair. **Depends: T056**.
+- [ ] **T058** Forge diagnoses actual hybrid semantic/performance failure using
+  sanitized category/similarity/embedding and measured latency evidence; one
+  bounded tested correction at a time. No thresholds/fixture weakening, card
+  grouping, safety reduction or assumed lock bottleneck. **Depends: T054 attempted**.
+  R8 confirms sync-I/O/event-loop and reset-epoch defects; T062/T064 own current
+  correction. Semantic resolution is not established by reviewed lock changes.
+- [ ] **T059** Parent retests corrected canary with untouched45/concurrency40,
+  records complete outcome/latency/cleanup evidence and promotes only if all
+  original gates pass. Until then stable --mockfallback stays100%; current
+  source382/UI14/image33 passes do not waive acceptance. **Depends: T058**.
 
 ## Phase 0 — Applied artifacts and observed baseline (retain completion)
 

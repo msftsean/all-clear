@@ -41,11 +41,11 @@ def get_knowledge_service(settings: Settings | None = None) -> KnowledgeServiceI
 
 @lru_cache
 def get_session_store(settings: Settings | None = None) -> SessionStoreInterface:
-    """Get session store instance (mock or production)."""
+    """Get session store instance (mock, temporary demo memory, or Cosmos)."""
     if settings is None:
         settings = get_settings()
 
-    if settings.use_mock_services:
+    if settings.use_mock_services or settings.surge_demo_memory_storage:
         from app.services.mock.session_store import MockSessionStore
         return MockSessionStore()
     else:
@@ -137,9 +137,26 @@ def clear_service_caches() -> None:
     get_capstone_lead_store.cache_clear()
     get_chat_client.cache_clear()
     get_embedding_fn.cache_clear()
+    get_async_azure_credential.cache_clear()
     get_incident_store.cache_clear()
     get_pipeline.cache_clear()
     get_surge_room.cache_clear()
+
+
+@lru_cache
+def get_async_azure_credential():  # type: ignore[no-untyped-def]
+    """Return a shared async Azure credential for live model clients."""
+    from azure.identity.aio import DefaultAzureCredential
+
+    return DefaultAzureCredential()
+
+
+async def close_async_azure_credential() -> None:
+    """Close the cached async credential during application shutdown."""
+    if get_async_azure_credential.cache_info().currsize:
+        credential = get_async_azure_credential()
+        await credential.close()
+        get_async_azure_credential.cache_clear()
 
 
 # =============================================================================
@@ -173,11 +190,7 @@ def get_chat_client():  # type: ignore[no-untyped-def]
     chat_api_version = "preview"
 
     api_key = settings.azure_openai_api_key or None
-    credential = None
-    if not api_key:
-        from azure.identity import DefaultAzureCredential
-
-        credential = DefaultAzureCredential()
+    credential = None if api_key else get_async_azure_credential()
 
     def _make(model: str, endpoint: str, api_version: str) -> OpenAIChatClient:
         if api_key:
@@ -284,20 +297,19 @@ def get_embedding_fn():  # type: ignore[no-untyped-def]
             api_key=api_key,
         )
     else:
-        from azure.identity import DefaultAzureCredential
-
         client = OpenAIEmbeddingClient(
             model=model,
             azure_endpoint=settings.azure_openai_endpoint,
             api_version=embed_api_version,
-            credential=DefaultAzureCredential(),
+            credential=get_async_azure_credential(),
         )
 
     async def _embed(text: str) -> list[float]:
         from app.agents.retry import with_rate_limit_retry
 
         response = await with_rate_limit_retry(
-            lambda: client.get_embeddings([text])
+            lambda: client.get_embeddings([text]),
+            operation="embedding",
         )
         return list(response[0].vector) if response else []
 
@@ -308,13 +320,14 @@ def get_embedding_fn():  # type: ignore[no-untyped-def]
 def get_incident_store():  # type: ignore[no-untyped-def]
     """Return the incident store. Cached so dedup state persists across requests.
 
-    Mock mode uses the in-memory MockIncidentStore; live mode uses the durable
-    Cosmos `incidents` store (spec 016 D1/D2). Live imports are lazy so mock mode
-    never requires the Cosmos SDK or credentials (Constitution Art. V).
+    Mock mode and the explicit temporary Room Surge demo option use the
+    in-memory MockIncidentStore; ordinary live mode uses the durable Cosmos
+    `incidents` store (spec 016 D1/D2). Live imports are lazy so mock mode never
+    requires the Cosmos SDK or credentials (Constitution Art. V).
     """
     settings = get_settings()
 
-    if settings.use_mock_services:
+    if settings.use_mock_services or settings.surge_demo_memory_storage:
         from app.services.mock.incident_store import MockIncidentStore
 
         return MockIncidentStore()

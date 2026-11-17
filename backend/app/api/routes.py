@@ -234,10 +234,15 @@ async def search_knowledge(
 
 @router.get("/health", tags=["Health"], summary="Service health")
 async def health_check(settings: Settings = Depends(get_settings)) -> dict:
-    """Lightweight health probe reporting the active mode."""
+    """Lightweight health probe reporting AI and persistence modes."""
     return {
         "status": "healthy",
         "mock_mode": settings.use_mock_services,
+        "storage_mode": (
+            "memory"
+            if settings.use_mock_services or settings.surge_demo_memory_storage
+            else "cosmos"
+        ),
         "domain": "all-clear-incident-triage",
     }
 

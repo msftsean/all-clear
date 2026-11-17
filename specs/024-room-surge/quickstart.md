@@ -1,9 +1,112 @@
 # Phase 1 Quickstart: Verify, release, rehearse
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
-**Target**: **TODAY 2026-11-17 13:00 Eastern**
-**Status**: ✅ Deployed mock fallback PASS; ⛔ live AI/semantic NO-GO; physical cellular scan unverified
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R9, 2026-11-17 15:00 ET
+**Target**: Original **2026-11-17 13:00 Eastern** elapsed; bounded recovery
+**Status**: ✅ R9 deployed/accounted; ⛔ FINAL live NO-GO: grouping/latency FAIL; no more paid load
 **Source**: [plan](plan.md), [tasks](tasks.md), observed parent verification
+
+## R9 current operator boundary — observed FINAL NO-GO
+
+Public mock remains named pin **100% untouched**, CLOSED/zero. R9
+**--hybridr9 Healthy/one replica**, actual backend digest below verified,
+health **false/memory**, keyless controls **403**; **no cutover**.
+Do not direct attendees to the candidate.
+Reviewed async Azure credential, pre-lock embedding and reset generation guards
+retain **atomic decision+persistence**. Late success remains accepted and
+domain-persisted with optional **`room_counted=false`**/explicit reset notice;
+late blocks/errors do not pollute the new room. Receipt compatibility retained.
+
+Built Linux backend
+**sha256:318a475c91f3e21bb7b605052eb586a2a8c01192076a5dc71575961c0d36795a**
+passed **all390 tests in one run**, with read-only README/docs/frontend-source
+fixtures. Source frontend **14 tests / Node22 build PASS**; built frontend
+**sha256:b6711361acd28fe5ce6121312bbe871b8d4a2f49ad6531efb685c6f354ecf606**,
+**index-CXbXlhpf.js**, hash
+**46F1130F6BF45E9F70B4809149F51169B1CDDD100ED8B6263679CF5A63927412**.
+R9 frontend **Healthy Single/latest**: actual hosted bundle and full hash above
+exactly match; public health **mock=true**. Initial transient old HTML preceded
+readiness+hosted-hash confirmation. This is deployment proof, not acceptance.
+
+Actual untouched45/concurrency40: **45/45 HTTP200**, **43 accepted signals→36
+incidents**, **2 safety blocks**, **0 errors/failed/escalated**, wall **19.7s**.
+A/B/C/D distinct **10/7/6/10 =33**, disjoint **FAIL4–6**; E3distinct/disjoint
+**PASS**. Complete/error-free accounting **PASS**. Full45 median **16.32s**,
+p95 **17.97s FAIL<8s**. Candidate finally reset **CLOSED/zero**.
+**FINAL NO-GO; no more paid load.** Semantic calibration/design **and latency
+need actual solutions**; async/reset fixes are not full demo acceptance.
+Durable blocked; no support case filed or physical-phone confirmation.
+
+## Historical R8 operator boundary — failed, no live GO
+
+Public mock100% and frontendf688/**index-CNv7Cu5d.js** remain unchanged.
+Candidate **--hybridr8**, image
+**sha256:0c755cd5a5dbb15ac5d7f1e93c2f9b94d10c0a1dc47e4590c64773f96afe7d7b**,
+is Healthy/1replica/false-memory/zero normal traffic but **failed** untouched45/
+concurrency40: HTTP41accepted→34incidents,2blocked,2client timeouts(B,C);
+A–D31/E3disjoint. Wall60.2s,median16.46s,p9518.22s from43/45 HTTPsuccesses:
+**incomplete, invalid acceptance**. Timed-out2 later completed around82s;
+all43pipeline+2blocks logged does not convert them to client successes.
+
+Initial finally-resetCLOSED/zero was polluted by late completions to
+**CLOSED/2signals/2incidents/devices0**. **14:24 ET cleanup verified**: all45
+requests settled; second reset of only quiescent **--hybridr8** restored
+**CLOSED/zero**, without domain deletion. Stable public mock read-only verified
+**CLOSED/zero**, **not reset**. **36 actual Azure Search rows**, all
+**`vector_query=True` / results3**, verify live knowledge SDK fix, not
+semantic/performance acceptance. Forge fixes
+sync-I/O/event-loop blocking and reset epoch, then must retest unchanged45/
+concurrency40. Source Linux380runtime+4doc checks separately PASS/source384PASS
+is not acceptance of ongoing fixes. OPENmostly0.67–0.82 vs observedATTACH≥0.8308
+needs semantic diagnosis; no threshold/taxonomy/fixture/card-routing weakening.
+Cellular QR instructions were sent, **no actual user confirmation**.
+
+Do not promote this candidate or reuse transient clean state as proof. Retain
+old mock100%, confirm quiescence before reset, require stable closed/zero plus
+complete passing fixed-fixture evidence before promotion. Older R7 metrics and
+operator sequence below remain historical, not the current candidate result.
+
+## Historical R7 hybrid sequence — failed before R8
+
+User approved parallel hybrid/durable work. **SURGE_DEMO_MEMORY_STORAGE=false**
+by default. Parent's app-only canary explicitly uses **MOCK_MODE=false** and
+**SURGE_DEMO_MEMORY_STORAGE=true**; both incident and session stores become
+cached memory while Azure chat/embeddings/knowledge remain real. No card/LLM-
+router/safety/PII/audit-call shortcuts. **Reports/session/audit lost on restart**;
+this is not durable acceptance.
+
+Implementation evidence: **382 backend /14 UI PASS; real Linux image33 focused
+PASS; local startup false/memory PASS**. These do not prove actual model calls,
+semantic grouping. Candidate **--hybrid1340** now Healthy/Running/1replica with
+actual false/memory health and keyless403; full45/concurrency40 produced
+**43accepted→34incidents,2blocked,0errors/failed/rate limits**. A10/B7/C6/D8
+give **31disjoint A–D incidents:SC-001 FAIL**; E3distinct/accounting PASS.
+Median15.67s/p9516.81s/wall17.7s gives **SC-002 FAIL**. Candidate protected-reset
+CLOSED/zero. **No cutover: --mockfallback explicitly100%**.
+
+Current mode-aware frontend **--hybrid1340** is deployed Healthy, actual bundle
+**index-CNv7Cu5d.js**; it does not promote the hybrid backend. R6 bundle/revision
+and browser/mock metrics below remain historical, not a fresh hybrid pass.
+Forge investigates actual grouping/performance failure; no threshold/fixture
+weakening or card grouping. Corrected full retest results are **pending**.
+
+1. Parent records corrected canary images/revision/target; do not alter public traffic or
+   existing secrets/private redteam.
+2. GET canary `/api/health`: **mock_mode=false**, **storage_mode=memory**.
+   UI health refresh10s; confirm **LIVE AZURE AI - TEMPORARY DEMO STORAGE**,
+   own-word instructions, **no mock sample button**, visible restart-loss warning.
+   Health/startup alone is not model/knowledge/audit acceptance.
+3. After evidence-backed diagnosis/correction, verify normal report/control/
+   privacy/audit flow, then rerun **untouched original
+   45-request fixture at concurrency40** with protected `--key-env` input. Every
+   coverage/separation/error/latency gate remains mandatory; failed first-run
+   metrics above cannot be called a pass.
+4. Close/drain/reset; parent may promote only after full pass and evidence.
+   Otherwise old mock stays100%; verified mock/replay instructions below remain
+   the public path. Restart loses memory records; reset itself is tally-only.
+
+Kitty's durable support packet is prepared, **no actual ticket**; private backend
+not verified ready, terminal rollout cause unknown. Hybrid success would not
+repair Cosmos or close the durable track.
 
 ## Final stage instructions — supersede cloud/rehearsal setup below
 

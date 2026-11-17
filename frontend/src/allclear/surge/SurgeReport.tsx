@@ -35,6 +35,7 @@ export function resultHeadline(r: SurgeReportResult): string {
 }
 
 export function resultDetail(r: SurgeReportResult): string {
+  if (r.room_counted === false) return r.message;
   if (r.outcome === "joined" && r.room_reports) {
     const others = r.room_reports - 1;
     return `${r.room_reports} people in this room reported the same thing${
@@ -89,7 +90,7 @@ export default function SurgeReport() {
           </div>
           <h2 className="mt-1 text-lg font-semibold text-inkwarm">{card.title}</h2>
           <p className="mt-1 text-[15px] leading-snug text-inkwarm">{card.scene}</p>
-          {mode === "live" && (
+          {(mode === "live" || mode === "live-demo") && (
             <p className="mt-2 text-sm text-midwarm">{card.prompt} Don't copy the card. Say it your way.</p>
           )}
           {mode === "mock" && (

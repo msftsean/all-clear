@@ -36,10 +36,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         print("Fix: set them in backend/.env, or set MOCK_MODE=true to run fully offline.")
         print(bar)
 
-    yield
+    try:
+        yield
+    finally:
+        from app.core.dependencies import close_async_azure_credential
 
-    # Shutdown
-    print("Shutting down...")
+        await close_async_azure_credential()
+        print("Shutting down...")
 
 
 def create_app() -> FastAPI:

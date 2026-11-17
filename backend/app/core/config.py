@@ -338,6 +338,13 @@ class Settings(BaseSettings):
         default=60, ge=5, le=3600,
         description="Per-device rate-limit window for audience reports, in seconds",
     )
+    surge_demo_memory_storage: bool = Field(
+        default=False,
+        description=(
+            "Use in-memory incident and session stores for an explicitly temporary "
+            "live Room Surge demo; AI and knowledge providers remain live."
+        ),
+    )
     azure_footprint_estimate_multiplier: float = Field(
         default=1.0,
         ge=0.1,
@@ -389,18 +396,19 @@ class Settings(BaseSettings):
         return self.mock_mode or self.is_test
 
     def missing_live_settings(self) -> list[str]:
-        """Required Azure settings that are empty when running live (not mock mode).
+        """Required Azure settings for the enabled live services.
 
         Lets the app fail loudly with a clear, actionable message instead of a
         cryptic SDK crash (e.g. "Invalid URL scheme or hostname") on the first
         request — the exact "I thought the database worked" trap for first-timers.
+        The explicitly temporary Room Surge memory mode does not require Cosmos.
         """
         if self.use_mock_services:
             return []
         missing: list[str] = []
         if not self.azure_openai_endpoint:
             missing.append("AZURE_OPENAI_ENDPOINT")
-        if not self.cosmos_db_endpoint:
+        if not self.surge_demo_memory_storage and not self.cosmos_db_endpoint:
             missing.append("AZURE_COSMOS_ENDPOINT")
         if not self.azure_search_endpoint:
             missing.append("AZURE_SEARCH_ENDPOINT")

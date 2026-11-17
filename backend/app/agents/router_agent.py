@@ -17,6 +17,8 @@ confidence floor) come from Settings, never hard-coded magic numbers.
 from __future__ import annotations
 
 import math
+import time
+from dataclasses import dataclass
 from typing import Optional
 
 from agent_framework import Executor, WorkflowContext, handler
@@ -55,6 +57,15 @@ _LIFE_SAFETY_TERMS = (
 
 # PII types that warrant a human handoff (Constitution Art. I: protect sensitive data).
 _SENSITIVE_PII = ("ssn", "credit_card")
+
+
+@dataclass(frozen=True)
+class RouterTimings:
+    embedding_ms: float
+    store_read_ms: float
+    vector_compare_ms: float
+    candidate_vectors: int
+    best_similarity: float | None
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -109,22 +120,55 @@ class RouterExecutor(Executor):
         Returns the RoutingDecision and the signal embedding (carried forward so the
         OPEN_INCIDENT path can persist it without recomputation).
         """
+        decision, embedding, _ = await self.decide_with_timings(signal_text, classification)
+        return decision, embedding
+
+    async def embed_signal(self, signal_text: str) -> list[float]:
+        """Embed the redacted signal before entering the atomic dedup section."""
+        return await self._embed(signal_text)
+
+    async def decide_with_timings(
+        self,
+        signal_text: str,
+        classification: SignalClassification,
+        *,
+        precomputed_embedding: list[float] | None = None,
+        embedding_ms: float | None = None,
+    ) -> tuple[RoutingDecision, list[float], RouterTimings]:
+        """Return the deterministic decision, its vector, and safe phase timings."""
         rules: list[str] = []
-        embedding = await self._embed(signal_text)
+        if precomputed_embedding is None:
+            embedding_started = time.perf_counter()
+            embedding = await self._embed(signal_text)
+            embedding_ms = (time.perf_counter() - embedding_started) * 1000
+        else:
+            embedding = precomputed_embedding
+            embedding_ms = embedding_ms or 0.0
 
         # --- Step 1: dedup against open incidents in the SAME category (read-only) ---
         category = classification.intent_category
+        store_read_started = time.perf_counter()
         vectors = await self._store.get_open_incident_vectors(category)
+        store_read_ms = (time.perf_counter() - store_read_started) * 1000
         best_id: Optional[str] = None
         best_sim = 0.0
+        compare_started = time.perf_counter()
         for incident_id, vector in vectors:
             sim = _cosine(embedding, vector)
             if sim > best_sim:
                 best_sim, best_id = sim, incident_id
+        vector_compare_ms = (time.perf_counter() - compare_started) * 1000
+        timings = RouterTimings(
+            embedding_ms=embedding_ms,
+            store_read_ms=store_read_ms,
+            vector_compare_ms=vector_compare_ms,
+            candidate_vectors=len(vectors),
+            best_similarity=best_sim if vectors else None,
+        )
 
         if best_id is not None and best_sim >= self._settings.dedup_threshold:
             rules.append(f"dedup_match>={self._settings.dedup_threshold}")
-            return (await self._attach_decision(best_id, best_sim, rules), embedding)
+            return (await self._attach_decision(best_id, best_sim, rules), embedding, timings)
 
         rules.append("dedup_no_match")
 
@@ -150,7 +194,7 @@ class RouterExecutor(Executor):
             magnitude=1,
             routing_rules_applied=rules,
         )
-        return (decision, embedding)
+        return (decision, embedding, timings)
 
     async def _attach_decision(
         self, incident_id: str, similarity: float, rules: list[str]

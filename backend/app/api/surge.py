@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import hmac
 import logging
+import time
 from typing import Literal, Optional
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
@@ -31,6 +32,10 @@ router = APIRouter()
 
 BLOCKED_MESSAGE = (
     "Blocked by the safety filter, so nothing was created. That's the guardrail working."
+)
+ROOM_RESET_NOTICE = (
+    "The room was reset while it was processing, so this response is not included "
+    "in the current room tally."
 )
 
 
@@ -97,6 +102,8 @@ async def surge_report(
         )
 
     card = normalize_card(payload.card)
+    generation = room.generation
+    started = time.perf_counter()
     try:
         result = await pipeline.process_signal(
             text=payload.message,
@@ -105,19 +112,41 @@ async def surge_report(
         )
     except Exception as exc:  # noqa: BLE001 - translate safety blocks; count others
         if _is_content_safety_block(exc):
-            room.record_blocked(card)
-            return {"accepted": False, "outcome": "blocked", "message": BLOCKED_MESSAGE}
-        room.record_failed()
+            room_counted = room.record_blocked(card, generation=generation)
+            message = BLOCKED_MESSAGE
+            if not room_counted:
+                message = f"{message} {ROOM_RESET_NOTICE}"
+            print(
+                f"surge_report_phases outcome=blocked "
+                f"total_ms={(time.perf_counter() - started) * 1000:.1f}",
+                flush=True,
+            )
+            return {
+                "accepted": False,
+                "outcome": "blocked",
+                "message": message,
+                "room_counted": room_counted,
+            }
+        room.record_failed(generation=generation)
         logger.exception("surge report failed")
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="All Clear is busy. Try again in a few seconds.",
         ) from exc
 
-    summary = room.record_result(card, result)
+    summary = room.record_result(card, result, generation=generation)
+    print(
+        f"surge_report_phases outcome={result.routing.outcome.value} "
+        f"category={result.classification.intent_category.value} "
+        f"total_ms={(time.perf_counter() - started) * 1000:.1f}",
+        flush=True,
+    )
+    message = result.action.user_message
+    if not summary["room_counted"]:
+        message = f"{message} {ROOM_RESET_NOTICE}"
     return {
         "accepted": True,
         **summary,
         "severity": result.action.severity.value,
-        "message": result.action.user_message,
+        "message": message,
     }

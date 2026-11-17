@@ -85,10 +85,16 @@ class SurgeRoom:
     escalated_to_person: int = 0
     rate_limited: int = 0
     failed: int = 0
+    _generation: int = field(default=0, init=False, repr=False)
     by_card: dict[str, int] = field(default_factory=dict)
     _tiles: dict[str, _Tile] = field(default_factory=dict)
     _devices: set[str] = field(default_factory=set)
     _recent: dict[str, deque] = field(default_factory=dict)
+
+    @property
+    def generation(self) -> int:
+        """Current room epoch used to discard completions admitted before reset."""
+        return self._generation
 
     # ------------------------------------------------------------------ control
     def open(self) -> None:
@@ -102,6 +108,7 @@ class SurgeRoom:
 
     def reset(self) -> None:
         """Clear the room tally (never Incidents/Reports/audit). Leaves it closed."""
+        self._generation += 1
         self.is_open = False
         self.opened_at = None
         self.closed_at = None
@@ -133,24 +140,42 @@ class SurgeRoom:
     def _count_card(self, card: str) -> None:
         self.by_card[card] = self.by_card.get(card, 0) + 1
 
-    def record_result(self, card: str, result: Any) -> dict[str, Any]:
+    def record_result(
+        self, card: str, result: Any, *, generation: int | None = None
+    ) -> dict[str, Any]:
         """Tally a PipelineResult. Returns the reporter-facing summary."""
-        self.signals += 1
-        self._count_card(card)
         action = result.action
         routing = result.routing
         incident_id = getattr(action, "incident_id", None)
         outcome = str(_value(getattr(routing, "outcome", "")))
+        if generation is not None and generation != self.generation:
+            return {
+                "outcome": (
+                    "escalated" if not incident_id and getattr(action, "escalated", False)
+                    else "received" if not incident_id
+                    else "joined" if outcome == "ATTACH_TO_INCIDENT"
+                    else "opened"
+                ),
+                "incident_id": incident_id,
+                "room_reports": 0,
+                "room_counted": False,
+            }
+
+        self.signals += 1
+        self._count_card(card)
 
         if not incident_id:
             # Crisis safety net (or any path without an Incident): a person handles it.
             if getattr(action, "escalated", False):
                 self.escalated_to_person += 1
-            return {
+            summary = {
                 "outcome": "escalated" if getattr(action, "escalated", False) else "received",
                 "incident_id": None,
                 "room_reports": 0,
             }
+            if generation is not None:
+                summary["room_counted"] = True
+            return summary
 
         now = self.wall()
         tile = self._tiles.get(incident_id)
@@ -174,18 +199,27 @@ class SurgeRoom:
         if isinstance(magnitude, int) and magnitude > tile.magnitude:
             tile.magnitude = magnitude
 
-        return {
+        summary = {
             "outcome": "joined" if outcome == "ATTACH_TO_INCIDENT" else "opened",
             "incident_id": incident_id,
             "room_reports": tile.room_reports,
         }
+        if generation is not None:
+            summary["room_counted"] = True
+        return summary
 
-    def record_blocked(self, card: str) -> None:
+    def record_blocked(self, card: str, *, generation: int | None = None) -> bool:
+        if generation is not None and generation != self.generation:
+            return False
         self.blocked += 1
         self._count_card(card)
+        return True
 
-    def record_failed(self) -> None:
+    def record_failed(self, *, generation: int | None = None) -> bool:
+        if generation is not None and generation != self.generation:
+            return False
         self.failed += 1
+        return True
 
     # ---------------------------------------------------------------- snapshot
     def snapshot(self) -> dict[str, Any]:

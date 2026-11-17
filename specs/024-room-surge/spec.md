@@ -1,14 +1,123 @@
 # Feature Specification: Room Surge
 
 **Feature ID**: `024-room-surge` | **Working branch**: `event/arlington-2026-11-18`
-**Created**: 2026-11-08 | **Revision**: R6, 2026-11-17 12:42 ET
-**Target**: **TODAY, Tuesday 2026-11-17, 13:00 Eastern**, seven-minute showcase
-**Status**: ✅ Disclosed mock fallback deployed/browser/load PASS; ⛔ live AI/semantic acceptance NO-GO; physical cellular scan unverified
+**Created**: 2026-11-08 | **Revision**: R9, 2026-11-17 15:00 ET
+**Target**: Original showcase **2026-11-17 13:00 Eastern** (elapsed); bounded recovery continues
+**Status**: ✅ R9 source/deployment/accounting verified; ⛔ FINAL live NO-GO: grouping and latency FAIL; no cutover
 **Readiness**: `████░░░░░` **4/9 primary-live gates**; G5 blocked, G6 failed; fallback does not satisfy live acceptance ([gates](plan.md#completion-gates))
 **Source**: msftsean request and live-test follow-up; Cowork patch commit `e1eca20`
 on `7bed125`; repository inspection and observed tests in [plan.md](plan.md).
 
 ## Objective and scope lock
+
+### R9 — observed rehearsal FAILED; FINAL NO-GO
+
+Reviewed integration uses async Azure credentials, computes embeddings before
+the lock, and retains **atomic decision + persistence**. Reset generation guards
+keep late successes domain-persisted/accepted with **`room_counted=false`** and
+an explicit reset notice; late blocks/errors cannot pollute the new room.
+The optional frontend receipt field is backwards compatible.
+
+Immutable Linux backend
+**`sha256:318a475c91f3e21bb7b605052eb586a2a8c01192076a5dc71575961c0d36795a`**
+passed **all390 tests in one run**, with read-only README/docs/frontend-source
+fixtures. Source frontend **14 tests / Node22 build PASS**. Frontend image
+**`sha256:b6711361acd28fe5ce6121312bbe871b8d4a2f49ad6531efb685c6f354ecf606`**,
+bundle **`index-CXbXlhpf.js`**, hash
+**`46F1130F6BF45E9F70B4809149F51169B1CDDD100ED8B6263679CF5A63927412`**.
+These are built/source checks, **not deployed semantic/performance acceptance**.
+
+Actual **--hybridr9** backend Healthy/one replica, digest above verified,
+health **false/memory**, keyless control **403**. Untouched45/concurrency40:
+**45/45 HTTP200**, **43 accepted signals→36 incidents**, **2 safety blocks**,
+**0 errors/failed/escalated**, wall **19.7s**. A/B/C/D distinct
+**10/7/6/10 =33**, pairwise disjoint: **SC-001 FAIL** against4–6.
+E3 distinct/disjoint and complete/error-free accounting **PASS**.
+Full45 latency median **16.32s**, p95 **17.97s**: **SC-002 FAIL**, requires<8s.
+Candidate finally reset **CLOSED/zero**; **no cutover**. Public mock remains
+named **100% traffic pin**, untouched.
+
+R9 frontend now **Healthy, Single/latest**; actual hosted
+**index-CXbXlhpf.js** and full hash above match exactly; public health **mock=true**.
+Initial readiness briefly served old HTML; subsequent readiness plus hosted-hash
+verification confirms deployment, not semantic acceptance.
+**No more paid load.** Semantic calibration/design **and latency require actual
+solutions**; async/reset source fixes are not full demo acceptance. Durable
+blocked; no support case filed or physical-phone confirmation.
+
+### Historical R8 — actual failed canary and reset-generation defect
+
+Reviewed changes include the Search SDK `k` fix, knowledge/sitrep work outside
+the **atomic dedup** critical section, and privacy-safe phase instrumentation.
+Verification: **Linux380 backend/runtime checks PASS plus4 repository-document
+checks PASS separately with read-only fixtures**; Forge's source run
+**384 PASS**. These are implementation evidence, not acceptance of current fixes.
+
+Image **`sha256:0c755cd5a5dbb15ac5d7f1e93c2f9b94d10c0a1dc47e4590c64773f96afe7d7b`**,
+candidate **`--hybridr8`**, Healthy/one replica, health false/memory,
+**zero normal traffic**. Untouched45/concurrency40 **FAILED**: HTTP
+**41 accepted signals→34 incidents**,2safety blocks,2client timeouts (B,C);
+A–D31/E3disjoint observed IDs. Wall **60.2s**, median **16.46s**, p95 **18.22s**
+from **43/45 HTTP successes**: incomplete and **invalid acceptance**, not a pass.
+The two timed-out reports eventually completed around82s; all43 pipeline
+completions plus2blocks are logged, but eventual completion cannot undo timeouts.
+
+The initial finally-reset CLOSED/zero was **polluted by late completions**:
+**CLOSED /2signals /2incidents /devices0**. This confirms a reset-generation
+defect, not clean final state from that first reset. **14:24 ET cleanup verified**:
+all45 requests had settled; a second reset of only quiescent **--hybridr8**
+restored **CLOSED/zero**. Stable public mock was read-only verified **CLOSED/zero**,
+not reset. Domain records were not deleted; cleanup does not fix the epoch defect.
+Forge is fixing actual synchronous-I/O/event-loop blocking and reset epoch
+handling. No threshold, taxonomy, fixture or card-routing changes. Observed
+OPEN similarities mostly **0.67–0.82**, ATTACH observations **≥0.8308** require
+further semantic diagnosis; these are observations, not a new threshold value
+or proof the semantic problem is fixed.
+
+Stable public mock remains100%; frontend artifact **f688**, served
+**`index-CNv7Cu5d.js`**, unchanged. Cellular QR instructions were sent, **no
+actual user confirmation**. Actual Azure Search evidence: **36 rows**, all
+**`vector_query=True` / results3**, verifies the live knowledge SDK fix, not
+semantic/performance acceptance. Fixed source and complete
+unchanged-fixture retest remain pending; do not claim readiness.
+
+### R7 — explicit hybrid demo opt-in (canary deployed; acceptance FAILED)
+
+User approved parallel temporary-demo and durable recovery tracks: **“can you
+do both in parallel.”** New **`SURGE_DEMO_MEMORY_STORAGE=false` by default**;
+with `MOCK_MODE=false`, opting in selects **cached memory incident AND session
+stores** while retaining real Azure chat, semantic embeddings and knowledge.
+This is **not mock mode**. QueryAgent authority, zero-LLM RouterExecutor,
+three ActionAgent tools, safety/PII/escalation and audit calls remain unchanged.
+
+Health reports **`storage_mode="memory"|"cosmos"` independently of `mock_mode`**.
+The R7 UI polls health every **10 seconds** (separate from board state polling)
+and shows **LIVE AZURE AI - TEMPORARY DEMO STORAGE** for false/memory, with
+own-word instructions and **no mock sample button**. Incident/report/session/
+audit data in the memory stores **is lost on restart**; no durable-storage or
+production-readiness claim is permitted. Reset remains tally-only, not deletion.
+
+**Implementation evidence**: source backend **382 PASS**, UI **14 PASS**;
+real Linux backend-image focused tests **33 PASS**; local startup health
+**mock_mode=false /storage_mode=memory PASS**. These did not establish acceptance.
+
+**Actual canary evidence, 13:46 ET**: backend candidate **`--hybrid1340`**
+Healthy/Running, one replica, real Azure AI +memory, health **false/memory**,
+keyless control403. Untouched45-request/concurrency40 rehearsal:
+**43 accepted signals →34 incidents**,2safety blocks,0errors/failed/rate limits.
+A10/B7/C6/D8 distinct IDs: **31 pairwise-disjoint A–D incidents**, so
+**SC-001 FAIL** (requires4–6); E3distinct and complete accounting PASS.
+Median **15.67s**, p95 **16.81s**, wall **17.7s**: **SC-002 FAIL**.
+Candidate protected reset CLOSED/zero. **NO cutover**: stable backend
+**`--mockfallback` keeps100% traffic**. New mode-aware frontend **`--hybrid1340`**
+deployed Healthy, served bundle **`index-CNv7Cu5d.js`**; this does not promote
+the hybrid backend. Forge investigates actual semantic/performance failure;
+no threshold/fixture/card-grouping weakening permitted. Fixed retest pending.
+
+Durable track: Kitty prepared a support packet, **no actual ticket filed**.
+The private backend is not verified ready; the terminal Container Apps rollout
+failure's root cause remains **unknown**. Earlier policy-caused Cosmos
+reachability evidence remains valid but does not explain that terminal rollout.
 
 **Final event decision, 12:42 ET**: the 12:10 live/fallback cutoff passed.
 Corrected private backend rollout terminally failed at 12:17:52 ET; no usable
@@ -154,6 +263,22 @@ Print only after the actual public join origin and real-phone scanning work.
   pipeline processing; no card-based server grouping, dedup/threshold change or
   hidden shortcut. Live own-word behavior remains unchanged. This demonstrates
   repeated-wording mock flow, **not live semantic acceptance**.
+- **FR-011 — temporary demo storage**: `SURGE_DEMO_MEMORY_STORAGE` MUST default
+  false. Its explicit opt-in selects cached memory incident and session stores,
+  not mock Azure clients. With `MOCK_MODE=false`, chat/embedding/knowledge remain
+  real Azure; routing/safety/audit-call behavior is unchanged. Normal false/flag-
+  false operation keeps Cosmos storage. Public health separates `storage_mode`
+  from `mock_mode`; UI health refresh is10s and discloses false/memory using
+  **LIVE AZURE AI - TEMPORARY DEMO STORAGE**, own-word reporting, no mock samples,
+  and restart loss. This approved demo-only retention tradeoff is not a waiver
+  of audit calls, attributable reports or safety and is not durable acceptance.
+- **FR-012 — reset-generation isolation**: A result admitted before a tally reset
+  MUST NOT repopulate the new tally after reset; domain pipeline processing,
+  reports and audit must still complete normally. R8 observed the violation;
+  R9 source guards are reviewed/tested, **deployed acceptance still pending**.
+  Late success remains accepted/domain-persisted, with optional
+  `room_counted=false` and explicit reset notice; late blocks/errors must not
+  affect new-room tallies. Close/drain/reset after quiescence remains required.
 
 ### Incident-triage and safety constraints
 
@@ -167,8 +292,12 @@ become incidents; tally reset never erases operational records.
 unchanged. Pipeline redacts downstream text before embedding/persistence;
 public location is redacted again and capped to 40 characters. Live mode uses
 the existing Azure integration design; approved audience resource provisioning
-may be needed, but no new model architecture, data retention scheme, platform, or
-telemetry payload is introduced. Tally/rate metadata is process-local.
+may be needed, but no new model architecture/platform/telemetry payload is
+introduced. **R7 explicitly changes demo retention only when opted in**:
+incident/report/session/audit records use cached memory stores and are lost on
+restart. Audit calls and PII filtering remain; disclose and never represent
+ephemeral records as durable. Default Cosmos path is unchanged. Tally/rate
+metadata remains process-local in all modes.
 
 **Grounding**: Board facts come from pipeline results, not raw submissions.
 Sitreps retain source-record citations; never project an unreviewed receipt or
@@ -201,11 +330,24 @@ See [data-model.md](data-model.md) and [API contract](contracts/surge-api.md).
   are recorded before the freeze. Unknowns block live GO.
 
 **Current disposition**: SC-001/002 live acceptance remains failed/unproven.
-Fallback **11 focused UI tests** (including configured API-origin), Node22
+Latest observed rehearsal R8 adds two client timeouts and a reset-generation
+failure; partial HTTP-response latency and eventual completion are not a pass.
+R9 source/image checks pass and actual full accounting passes, but
+43accepted→36incidents/A–D33 fails grouping and full45 p9517.97s fails latency.
+FINAL live NO-GO; no cutover or more paid load. Semantic/design and latency
+solutions remain required, not established by async/reset fixes.
+R7 source/image/startup checks remain green; actual real-Azure/memory canary ran
+without request errors but **failed both semantic grouping and latency**.
+Promotion is blocked pending evidence-backed fix and unchanged full-fixture
+retest; public stable mock retains100%. Earlier failed durable45/43errors and
+mock40→4 remain separate historical runs.
+Historical R6 fallback **11 focused UI tests** (including configured API-origin), Node22
 build/typecheck, new-module/cards/tests strict lint and deployed browser/mock
 flow checks passed. Frontend revision
-`allclear-sbuqtpuppifra-frontend--mocklabel1236` is Healthy/Running, 100% traffic,
-bundle `index-DVUyNrL6.js`. Physical cellular scan, full accessibility/projection
+`allclear-sbuqtpuppifra-frontend--mocklabel1236` was Healthy/Running, 100% traffic,
+bundle `index-DVUyNrL6.js` then; current mode-aware frontend is **--hybrid1340**,
+served **index-CNv7Cu5d.js**, with stable **backend --mockfallback100%**.
+Physical cellular scan, full accessibility/projection
 and live semantic/load criteria remain unverified/NO-GO; original 43 failures
 in 45 live attempts are not superseded by mock success.
 

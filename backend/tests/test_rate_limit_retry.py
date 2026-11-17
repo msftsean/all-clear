@@ -11,7 +11,10 @@ RateLimitError = type("RateLimitError", (Exception,), {})
 
 
 @pytest.mark.asyncio
-async def test_retries_then_succeeds(monkeypatch):
+async def test_retries_then_succeeds_without_logging_signal_text(
+    monkeypatch,
+    caplog: pytest.LogCaptureFixture,
+):
     sleeps: list[float] = []
 
     async def _fake_sleep(d):
@@ -24,13 +27,15 @@ async def test_retries_then_succeeds(monkeypatch):
     async def op():
         calls["n"] += 1
         if calls["n"] < 3:
-            raise RateLimitError("Error code: 429 - too_many_requests")
+            raise RateLimitError("Sensitive request text Error code: 429 - too_many_requests")
         return "ok"
 
-    result = await with_rate_limit_retry(op)
+    result = await with_rate_limit_retry(op, operation="classification")
     assert result == "ok"
     assert calls["n"] == 3
     assert len(sleeps) == 2  # two backoffs before the third (successful) attempt
+    assert "azure_openai_rate_limit_retry operation=classification" in caplog.text
+    assert "Sensitive request text" not in caplog.text
 
 
 @pytest.mark.asyncio

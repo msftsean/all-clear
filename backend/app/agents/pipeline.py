@@ -42,6 +42,7 @@ from app.agents.schemas import (
     ActionStatus,
     EscalationReason,
     IncidentAction,
+    IncidentRecord,
     PipelineResult,
     Queue,
     RoutingDecision,
@@ -96,7 +97,8 @@ async def classify_signal(agent: Agent, text: str) -> SignalClassification:
     response = await with_rate_limit_retry(
         lambda: agent.run(
             text, options=ChatOptions(response_format=SignalClassification)
-        )
+        ),
+        operation="classification",
     )
     value = response.value
     if not isinstance(value, SignalClassification):  # pragma: no cover - defensive
@@ -172,7 +174,9 @@ class AllClearPipeline:
         # redacted text, so PII is never echoed back or stored at rest.
         # This mirrors the voice path (realtime.py redact_pii on ingress/egress)
         # and satisfies Constitution Art. I.1 + voice/text lockstep (Art. V.1).
+        classification_started = time.perf_counter()
         classification = await classify_signal(self._query_agent, text)
+        classification_ms = (time.perf_counter() - classification_started) * 1000
         safe_text = redact_pii_text(text)
         await self._publish(
             session_id,
@@ -184,11 +188,24 @@ class AllClearPipeline:
             },
         )
 
+        embedding_started = time.perf_counter()
+        embedding = await self._router.embed_signal(safe_text)
+        embedding_ms = (time.perf_counter() - embedding_started) * 1000
+
         # Hold the dedup lock across decide() -> run_action() so no other signal can
         # slip through the "no open incident matched yet" window and create a sibling
         # duplicate incident for the same event (see lock docstring in __init__).
+        lock_wait_started = time.perf_counter()
         async with self._dedup_lock:
-            decision, embedding = await self._router.decide(safe_text, classification)
+            lock_wait_ms = (time.perf_counter() - lock_wait_started) * 1000
+            router_started = time.perf_counter()
+            decision, _, router_timings = await self._router.decide_with_timings(
+                safe_text,
+                classification,
+                precomputed_embedding=embedding,
+                embedding_ms=embedding_ms,
+            )
+            router_ms = (time.perf_counter() - router_started) * 1000
             await self._publish(
                 session_id,
                 {
@@ -209,7 +226,22 @@ class AllClearPipeline:
                 session_id=session_id,
                 channel=channel,
             )
-            action: IncidentAction = await self._action.run_action(routed)
+            persistence_started = time.perf_counter()
+            open_record: IncidentRecord | None = None
+            if decision.outcome is RoutingOutcome.OPEN_INCIDENT:
+                open_record = await self._action.create_open_incident(routed)
+                action: IncidentAction | None = None
+            else:
+                action = await self._action.run_action(routed)
+            persistence_ms = (time.perf_counter() - persistence_started) * 1000
+        completion_timings: dict[str, float] = {}
+        completion_started = time.perf_counter()
+        if open_record is not None:
+            action = await self._action.complete_open_incident(
+                routed, open_record, completion_timings
+            )
+        completion_ms = (time.perf_counter() - completion_started) * 1000
+        assert action is not None
         await self._publish(
             session_id,
             {
@@ -226,6 +258,27 @@ class AllClearPipeline:
         )
 
         elapsed_ms = int((time.perf_counter() - started) * 1000)
+        if channel == "report":
+            best_similarity = (
+                f"{router_timings.best_similarity:.4f}"
+                if router_timings.best_similarity is not None
+                else "none"
+            )
+            print(
+                f"surge_pipeline_phases category={classification.intent_category.value} "
+                f"outcome={decision.outcome.value} classification_ms={classification_ms:.1f} "
+                f"lock_wait_ms={lock_wait_ms:.1f} router_ms={router_ms:.1f} "
+                f"embedding_ms={router_timings.embedding_ms:.1f} "
+                f"incident_store_read_ms={router_timings.store_read_ms:.1f} "
+                f"vector_compare_ms={router_timings.vector_compare_ms:.1f} "
+                f"candidate_vectors={router_timings.candidate_vectors} "
+                f"best_similarity={best_similarity} incident_persist_ms={persistence_ms:.1f} "
+                f"incident_id={action.incident_id or 'none'} "
+                f"knowledge_ms={completion_timings.get('knowledge_ms', 0.0):.1f} "
+                f"sitrep_ms={completion_timings.get('sitrep_ms', 0.0):.1f} "
+                f"completion_ms={completion_ms:.1f} total_ms={elapsed_ms}",
+                flush=True,
+            )
         result = PipelineResult(
             session_id=session_id,
             channel=channel,
