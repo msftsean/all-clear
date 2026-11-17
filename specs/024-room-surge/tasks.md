@@ -1,7 +1,7 @@
 # Tasks: Room Surge recovery
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R3, 2026-11-17 10:15 ET
-**Deadline**: **2026-11-17 13:00 Eastern** | **Progress**: `███░░░░░░` **3/9 gates**
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R4, 2026-11-17 11:27 ET
+**Deadline**: **2026-11-17 13:00 Eastern** | **Progress**: `████░░░░░` **4/9 gates**
 **Sources**: [spec](spec.md), [plan/evidence/gates](plan.md), user live-test
 authorization; patch `e1eca20` on `7bed125`.
 
@@ -34,16 +34,17 @@ every operational signal/report.
   stopped; incidents/reports/audit were **not** deleted.
 - [x] **T006** Refresh the nine feature docs for today's deadline, evidence and
   full recovery loop; design Constitution checks pass (G0/G1).
-- [ ] **T007** Parent mechanically reviews links/status/claims, runs
+- [x] **T007** Parent mechanically reviewed links/status/claims, ran
   `.specify\scripts\powershell\update-agent-context.ps1 -AgentType copilot`
   with `SPECIFY_FEATURE=024-room-surge`, and **commits/pushes this plan FIRST**
   on the existing branch before implementation/deployment execution.
   **Depends: T006**. No setup-plan rerun/branch checkout. Record published SHA.
   Update 10:23 ET: agent-context updater succeeded; generated root commands/
-  paths corrected by parent. Commit/push publication remains pending.
-- [ ] **T008** Parent reviews/checkpoints already generated
+  paths corrected by parent. Published checkpoint **`00141cd`**.
+- [x] **T008** Parent reviewed/checkpointed
   `frontend\package-lock.json` alignment for `qrcode` and `@types/qrcode`.
   **Depends: T012**. Bishop does not edit this file; required for Docker `npm ci`.
+  Published minimal **88-package Linux lock** in `00141cd`; Node 22.23.5 build passed.
 
 ## Phase 1 — Approved subscription, separate audience resource plan (G2)
 
@@ -59,12 +60,14 @@ every operational signal/report.
   actual tenant **`16b3c013-d300-468d-ac64-7eda0820b6d3`**. Wrong-context CNE/MCP
   failures are not evidence MCAPS 2026 is inaccessible. Exact CLI inventory
   and deployed target readiness remain T016/T020b, not completed.
-- [ ] **T016** 🛑 Kitty completes read-only approved-subscription inventory,
+- [x] **T016** Kitty completed initial approved-subscription inventory,
   identifying separate audience resources/names/FQDN, eligible dependencies and
   permissions in local ignored [deployment plan](..\..\.azure\deployment-plan.md).
   Historical [spec 022](..\022-event-day-readiness-verification\tasks.md) target
   is reference only; never reuse `ca-allclear-redteam-20261001` or its secrets.
   Parent mirrors non-secret decisions into `research.md`. **Depends: T016a**.
+  Audience **`rg-allclear-surge-20261117`** deployed; corrective target/new-app
+  usable URL remains unverified.
 - [ ] **T017** Review/validate concrete separate audience resource plan and
   target-specific azd/deployment mapping. If audience apps exist, capture
   versions/traffic/config; if new, validate Bicep/what-if before creation.
@@ -124,12 +127,12 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   [verification commands](plan.md#verification-matrix). Preserve authority,
   PII, audit and escalation tests. Record candidate/test evidence in `plan.md`.
   **375 passed in 8.15s**. **Depends: T019d**. Earlier T010/T011 remain completed baseline facts.
-- [ ] **T026** In `frontend`, run `npm ci --ignore-scripts`, Surge Vitest,
+- [x] **T026** Frontend locked production build, Surge Vitest,
   `npm run typecheck`, `npm run build`; check every exit code. Record lock/build
   evidence and parent checkpoint.   **Depends: T008, T019d, T019e**. Earlier T012 remains
   completed; no install churn beyond required lock alignment.
-  Update: **6 UI tests /typecheck /build PASS**; parent confirms locked install/
-  lock checkpoint before marking the aggregate task complete.
+  **6 UI tests /typecheck /Node 22.23.5 build PASS**; minimal Linux lock and
+  immutable images built/pushed/deployed from **`00141cd`**.
 - [ ] **T014** Capture/check 1920×1080 `/surge`, 390×844 `/report`, print preview
   `/surge/cards`; certify projector/back-of-room counters/tiles/readability.
   **Depends: T026**. Existing route smoke is insufficient.
@@ -160,6 +163,10 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   direct SPA routes and frontend `/api` proxy, live models, stable single
   backend process/replica, unauthenticated control=403 and private authorized
   control. Record G5 in `plan.md`. **Depends: T020a, T020c**. STOP/rollback on mismatch.
+  **PARTIAL**: initial 19-resource preview passed; both immutable images deployed;
+  models GPT-5.1 cap150/embedding cap50 Succeeded; backend MI OpenAI User,
+  one replica, frontend health mock=false, key configured/keyless403 confirmed.
+  Report503 means G5 NOT complete. Preserve initial apps during correction.
 
 ## Phase 5 — Authorized live rehearsal, diagnose, rerun (G6)
 
@@ -169,6 +176,9 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   45-request fixture with private environment credential. Record sanitized
   time/commit/revisions/replica/card sets/coverage/errors/blocked/escalated/failed,
   median/p95 and SC-001/002 in `research.md`. **Depends: T019d, T020b**.
+  **ATTEMPTED / FAILED**: 45 attempts, 0 accepted signals/0 incidents,
+  2 safety blocks/43 failed; single report503. p95 **2.75s from only two HTTP
+  successes is invalid acceptance evidence**. Reset confirmed CLOSED/zero.
 - [ ] **T022** If T021 fails, classify failure: transport/auth/proxy, quota/429/
   503, category drift, semantic embedding/similarity, retained-incident reuse,
   or serialized dedup-lock live latency. Measure rather than assume lock
@@ -176,10 +186,46 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   rerun affected tests/preview/deploy and identical T021. No blanket threshold
   lowering/card grouping/safety weakening. If T021 passes, mark this task
   not-needed with evidence. **Depends: T021 attempted**.
+  **ROOT CAUSE CONFIRMED** in Activity Log: inherited `MCAPSGovDeployPolicies`,
+  `CosmosDB_PublicNetwork_Modify` + `CosmosDB_LocalAuth_Modify`; public/local
+  auth Disabled, no Cosmos PE, initial ACA has no VNet. Follow T040–T044;
+  no policy bypass or app/threshold changes.
 - [ ] **T023** Confirm capacity/headroom and zero request/server errors in live
   evidence; every A–D report covered, 4–6 separated incidents, E separation,
   p95 <8s, no rule bypass. Parent records G6/checkpoint only on passing evidence.
   **Depends: T021 passing, T022 disposition**.
+
+## Phase 5b — Bounded policy-compliant recovery (G2/G5/G6)
+
+- [x] **T039** Existing Search seed script completed **12/12 All Clear articles**,
+  **1536-dimensional vectors**, using scoped operator OpenAI User on the new
+  audience account. No repository secrets; runtime Search consumption still
+  needs proof in successful report/knowledge flow.
+- [ ] **T040** Kitty prepares corrective network/identity delta in owned
+  deployment artifacts: NEW VNet-integrated ACA environment, Cosmos private
+  endpoint/private DNS, backend MI **SQL Built-in Data Contributor**, NEW
+  backend/frontend apps. Reuse audience models/Cosmos/Search/ACR and tested
+  immutable images. Parent validates/previews before any execution.
+  **Depends: T022 diagnosis**. Preserve initial apps and private redteam unchanged.
+- [ ] **T041** After parent validation, deploy only isolated corrective
+  network/identity resources and new apps; verify private Cosmos DNS/resolution,
+  private connectivity and MI data-plane read/write/audit access; public and
+  local-auth restrictions stay Disabled. Record revisions/traffic and
+  first-release fallback. **Depends: T040 validated**.
+- [ ] **T042** Prove new frontend/proxy/new backend live mode, one replica,
+  safe coach control, then **one synthetic report →valid receipt +board +
+  durable report/incident/audit +knowledge flow**. Health alone is insufficient.
+  No usable URL claim until this passes. **Depends: T041**. Close/drain/reset
+  tally afterward, preserving operational data.
+- [ ] **T043** Rerun unchanged **45-request /40-worker** live fixture against
+  the proven NEW audience frontend. Require all coverage/error/separation/
+  semantic/latency gates; no selective-success p95. Record safe evidence and
+  cleanup; only then close T021/T023 and G5/G6. **Depends: T042**.
+- [ ] **T044** At **12:10 ET**, choose live only if T043 passes with time for
+  human rehearsal/freeze; otherwise rehearse **loaded replay or explicitly
+  labeled mock** on a working build. Keep 13:00 stage time. No policy exemption,
+  public-Cosmos/local-auth re-enable, unsafe URL or untested live claim.
+  **Depends: T040 attempted**; do not wait indefinitely for provisioning.
 
 ## Phase 6 — Human checks, cleanup, freeze (G7/G8)
 

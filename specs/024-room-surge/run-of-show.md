@@ -1,17 +1,31 @@
 # Run of show: Room Surge — seven minutes
 
 **Stage**: **TODAY 2026-11-17 13:00 Eastern**
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R3, 2026-11-17 10:15 ET
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R4, 2026-11-17 11:27 ET
 **Source**: [spec](spec.md), [plan/gates](plan.md), observed local evidence
-**Status**: 🟨 `███░░░░░░` **3/9 readiness gates**; live **NOT CERTIFIED**
+**Status**: ⛔ `████░░░░░` **4/9 gates**; initial deployment partial, live run **FAILED**
 
 ## Before projection
+
+**Current reality, 11:27 ET**: candidate `00141cd` tested/published, immutable
+images deployed in `rg-allclear-surge-20261117`; live-mode health and keyless403
+passed, but **45 live attempts produced zero accepted signals/incidents,
+2 safety blocks and 43 failures**. p95 2.75s measures only two responses and
+is **not** a latency pass. Tally reset CLOSED/zero. No new usable URL yet.
+
+Inherited policy disables Cosmos public access/local auth; initial ACA lacks
+VNet/private endpoint access. Kitty prepares NEW private-networked apps/
+Cosmos PE/DNS/MI access, parent validates first; never bypass policy or alter
+initial apps/private redteam. Search seed 12/12 is complete, not report-path proof.
+Require successful canary **and full live rerun** before live GO; if not ready
+by **12:10 ET**, use a rehearsed loaded replay/labeled mock. Keep 13:00 stage time.
 
 - Operator and presenter must record G2–G8 before calling this a live GO.
   Live testing and MCAPS 2026 separate-audience subscription choice are
   authorized, and NEW audience resource/app-secret creation is approved.
-  Exact inventory, build/configuration and live acceptance remain unverified;
-  plan publication precedes execution. Historical corporate-tenant login is
+  Initial inventory/build/deployment and publication are complete, but live
+  report processing failed; replacement networking/deployment and acceptance
+  remain unverified. Historical corporate-tenant login is
   not today's path; existing secrets/private redteam remain untouched.
 - By 12:10 choose live vs verified fallback; by 12:30 freeze tested revision,
   run-through, safe reset/closed board, real phones and fallback.

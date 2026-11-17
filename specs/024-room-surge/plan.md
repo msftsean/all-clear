@@ -1,17 +1,18 @@
 # Implementation Plan: Room Surge recovery
 
 **Branch**: `event/arlington-2026-11-18` | **Feature**: `024-room-surge`
-**Revision**: R3, 2026-11-17 10:15 ET | **Spec**: [spec.md](spec.md)
+**Revision**: R4, 2026-11-17 11:27 ET | **Spec**: [spec.md](spec.md)
 **Event**: **2026-11-17 13:00 Eastern**, seven minutes
-**Status**: 🟨 Planning complete; live release **BLOCKED**
-**Progress**: `███░░░░░░` **3/9 completion gates**
+**Status**: ⛔ Partial Azure deployment; live acceptance FAILED; private-network correction in progress
+**Progress**: `████░░░░░` **4/9 completion gates**
 **Sources**: Cowork patch `e1eca20` on `7bed125`; current repository; parent
 session verification; user's live-test authorization. No cloud changes in this pass.
 
 **Confirmed target update**: User selected **a separate audience app** in
 `MCAPS-2026-segayle`, subscription `9f8986ed-ceb2-414d-8fcb-46d5cfc70618`,
 for today. Kitty owns read-only inventory and the local ignored
-[deployment plan](..\..\.azure\deployment-plan.md), pending inventory. Historical
+[deployment plan](..\..\.azure\deployment-plan.md). Initial inventory/deployment
+completed; corrective network plan is pending parent validation. Historical
 corporate-tenant recovery is deferred until today's demo works. Concrete
 **Creation permission is now granted (10:15 ET)** for new separate audience
 resources and NEW app-scoped secrets, including coach key. User: “yes create
@@ -25,6 +26,47 @@ preflight and deployment handoff remain required. **Docker readiness PASS,
 and `docker info`. azd 1.37.3 is installed; existing `remoteBuild:false` local
 build path can proceed without a remote-build/default change. Image build,
 tests and deployment remain separate gates.
+
+## Current Azure evidence — 11:27 ET (supersedes earlier pending entries)
+
+**Published candidate**: `00141cd` includes application code, IaC and minimal
+**88-package Linux npm lock**. Isolated full backend **375 PASS**; production-
+image Surge tests **26 PASS**; frontend **6 PASS**, Node **22.23.5** build PASS.
+Both immutable images were built, pushed and deployed. Parent-owned publication
+gate is satisfied for this candidate; later corrective changes need their own
+validation/checkpoint.
+
+| Surface | Actual evidence / limit |
+|---|---|
+| Audience resources | MCAPS 2026, tenant `16b3c013-d300-468d-ac64-7eda0820b6d3`, **`rg-allclear-surge-20261117`**; initial **19-resource preview passed** |
+| Models | GPT-5.1 capacity **150**, embedding capacity **50**, provisioning **Succeeded** |
+| Backend | Managed identity's OpenAI User role confirmed; **one replica**; immutable image deployed |
+| Frontend/control | Public health `mock_mode=false`; coach key configured; keyless control **403**. These do **not** prove report processing |
+| Search knowledge | Existing seed script completed **12/12 All Clear articles**, **1536-dimensional vectors**; scoped operator OpenAI User on the new account; no repo secrets |
+| **Actual live rehearsal** | **45 attempts: 0 accepted signals, 0 incidents, 2 safety blocks, 43 failures**. Single-report probe also **503**. **FAIL**, not a semantic/throughput result |
+| Latency | Reported p95 **2.75s covers only two successful HTTP responses**; **invalid for SC-002 go/no-go** with 43 failures. Never label this a latency pass |
+| Cleanup | Live room tally reset confirmed **CLOSED / zero**. Operational records were not purged |
+| Confirmed root cause | Activity Log: inherited **`MCAPSGovDeployPolicies`**, policies **`CosmosDB_PublicNetwork_Modify`** and **`CosmosDB_LocalAuth_Modify`** force Cosmos public network and local auth **Disabled**. No private endpoint, and initial ACA environment has no VNet integration |
+
+This is a confirmed infrastructure/policy reachability mismatch, **not an
+application-template bug or live semantic-dedup failure**. Do not enable public
+Cosmos access, turn local auth back on, request an exemption, or weaken policy.
+Initial health and two blocked probes are not an audience-ready URL.
+
+**Bounded correction (Kitty prepares; parent validates before execution)**:
+new VNet-integrated ACA environment; Cosmos private endpoint plus private DNS;
+managed-identity **SQL Built-in Data Contributor** access; NEW backend/frontend
+apps using the current audience-owned models, Cosmos, Search and ACR. Preserve
+initial apps and private redteam adapter unchanged. Reuse tested immutable images
+unless a separately evidenced code defect requires a tested new candidate.
+No new usable audience URL is yet verified.
+
+Validate/preview the isolated network/identity resource delta first, then deploy
+new apps, prove private Cosmos DNS/connectivity and managed-identity data access,
+and require a successful single-report receipt plus board/persistence/audit
+before rerunning the identical 45-request/40-worker fixture. Reset/close after
+each controlled test window. If this path misses the decision window, use only a
+rehearsed loaded replay or labeled mock fallback; never claim partial health as GO.
 
 **Execution coordination, 10:18 ET**: Forge owns only the known rehearsal
 false-pass fixes, protected `--key-env` credential intake, and small masked
@@ -144,7 +186,7 @@ These are **already observed**, not commands rerun by this documentation pass.
 | Full backend, `MOCK_MODE=true` | **364 passed, 8.22s** |
 | Surge frontend Vitest | **5 passed**; React `act` warnings around QR tests |
 | Frontend production build | **Passed**; existing Browserslist/gradient warnings |
-| npm reproducibility | `npm install --ignore-scripts` generated required `package-lock.json` alignment for `qrcode` / `@types/qrcode`; patch changed manifest only; Docker uses `npm ci`; lock pending parent checkpoint |
+| npm reproducibility | Initial alignment followed by minimal 88-package Linux lock published in `00141cd`; Node 22.23.5 build and immutable image builds passed |
 | Actual local Chromium smoke | 390×844 `/report?card=A` → receipt; `/surge` poll updated 1 signal / 1 incident; local QR PNG and six card PNGs generated |
 | Smoke caveat | Receipt joined an existing retained incident. No projection/readability/contrast/real-phone certification |
 | Cleanup | Local servers stopped after reset: `open=false`, signals=0, incidents=0. Reset did **not** delete incidents/reports/audit |
@@ -152,7 +194,7 @@ These are **already observed**, not commands rerun by this documentation pass.
 | Post-fix backend | Forge: **26 focused passed**, including **11 new verifier tests**; parent full mock backend **375 passed in 8.15s** |
 | Post-fix frontend | **6 Surge UI tests passed**, typecheck and production build passed; masked non-URL operator-entry path implemented |
 | Post-fix actual browser integration | **PASS**, keyed isolated mock backend: missing key →403; masked Coach key /Set key →Open works; 390×844 report A →board polls 1 signal; local QR PNG generated; request observer saw no key in URLs and no `X-Surge-Key` on public calls; reset confirmed `open=false`, signals=0, incidents=0; both helpers stopped. **Not live semantic acceptance** |
-| Target access | Explicit-subscription CLI: selected MCAPS 2026 subscription **Enabled**, tenant `16b3c013-d300-468d-ac64-7eda0820b6d3`; deployed resources/FQDN still unverified |
+| Target access | Explicit CLI subscription Enabled, tenant `16b3c013-d300-468d-ac64-7eda0820b6d3`; initial audience RG/deployment verified; replacement usable URL remains unverified |
 
 The mock result is consistent with FR-005's existing bag-of-words caveat,
 **not proof of a broken live semantic dedup**. Historical stand-in-server success
@@ -169,14 +211,15 @@ choice requires invented evidence. Operational findings remain explicitly blocke
 |---|---|
 | `azd env list --output json` → `[]` | No selected/recovered azd environment; do not run blind `azd up` |
 | Current CLI subscription `MCAPS-Hybrid-REQ-51667-2023-segayl` (`4b27ac87-dec6-45d5-8634-b9f71bd1dd26`) | No AllClear apps found there |
-| `MCAPS-2026-segayle` (`9f8986ed-ceb2-414d-8fcb-46d5cfc70618`) | **Enabled**, actual tenant `16b3c013-d300-468d-ac64-7eda0820b6d3` verified with explicit CLI subscription; separate audience resource inventory pending; private adapter excluded |
+| `MCAPS-2026-segayle` (`9f8986ed-ceb2-414d-8fcb-46d5cfc70618`) | **Enabled**, actual tenant `16b3c013-d300-468d-ac64-7eda0820b6d3`; initial RG `rg-allclear-surge-20261117` deployed; private adapter excluded |
 | [Spec 022 task record](..\022-event-day-readiness-verification\tasks.md) | Historical target: subscription `a8a91d76-473f-49e2-ba21-1d394ba9a968`, `rg-all-clear-demo`; apps `allclear-p74h22h3c2hqm-backend` / `allclear-p74h22h3c2hqm-frontend` |
 | Recorded frontend origin | `https://allclear-p74h22h3c2hqm-frontend.agreeablegrass-0b5ab03b.eastus2.azurecontainerapps.io`; `/api/health` and `/api/surge/state` both failed DNS, **not** an HTTP route-absence finding |
 | Inventory in recorded subscription | Failed `AADSTS130504`: expired Temporary Access Pass; tenant `cbc044cf-defc-4487-8475-4df2b4b237ca`; human reauthentication required |
 | Subsequent device-login attempt | Selected account does not exist in tenant Microsoft CNE / cannot access Azure CLI; external-user membership required. Correct target/account or administrator access must be confirmed; repeatedly logging the same account into that tenant will not resolve membership |
 | Deployed coach key/live dependencies | `SURGE_COACH_KEY` **UNKNOWN**, not proven blank; model auth, semantic embeddings, quota, replicas and audience deployment not verified |
 
-No deployment, secret/configuration change, or live rehearsal has occurred.
+The early observations above are historical; deployment and failed live
+rehearsal have now occurred as recorded in the 11:27 ET ledger.
 Kitty independently owns approved-subscription inventory; do not duplicate
 known-failing historical-tenant auth retries. The separate audience app in MCAPS
 2026 is now the **confirmed target choice**, not a proven deployed app. No
@@ -194,7 +237,7 @@ adapter or its secrets. A five-to-fifteen-minute existing-app update is only an 
   admission/status codes, frontend routes, and measurement contract.
 - [Quickstart](quickstart.md): Windows local checks and gated deployment/rehearsal
   operator sequence; no key values or key-bearing URLs.
-- Parent successfully updated agent context; publication remains pending. **Post-design Constitution Check:
+- Parent successfully updated agent context and published `00141cd`. **Post-design Constitution Check:
   PASS**, with live release gates still blocked.
 
 ## Phase 2 — Recovery execution sequence
@@ -298,14 +341,14 @@ above remain checked; reruns below certify **future** code changes.
 
 | Gate | State | Completion evidence / stop condition |
 |---|---|---|
-| G0 Spec Kit alignment | ✅ | R3 feature docs agree; parent agent-context update succeeded; GitHub publication required before execution |
+| G0 Spec Kit alignment | ✅ | Parent context update succeeded; code/IaC/lock checkpoint `00141cd` published; R4 records actual failure/corrective gates |
 | G1 Local baseline | ✅ | Observed 15 + 364 backend, 5 UI, build, browser flow and closed/zero cleanup; **not** live semantic proof |
-| G2 Audience target/config plan | 🛑 | MCAPS 2026 target and creation/NEW-secret permissions confirmed; exact inventory/resource/FQDN mapping, dependency/quota/scale plan and technical validation pending; runtime proof checked G5 |
+| G2 Audience target/config plan | 🟨 | Initial target/inventory/19-resource preview complete; corrective VNet/private-endpoint/DNS/MI plan requires parent validation before execution |
 | G3 Trustworthy verifier + private control | ✅ | 11 new verifier tests /26 focused passes; protected `--key-env`; 6 UI passes, typecheck/build; actual keyed mock browser verifies masked entry, 403 without key, authorized Open, public-request credential separation and cleanup |
-| G4 Tested release checkpoint | 🟨 | Full backend 375/8.15s and UI/typecheck/build pass; parent confirms locked install/lock inclusion and publishes exact checkpoint |
-| G5 Deployed candidate | ⬜ | Published plan + validated separate audience resources, working Docker or reviewed ACR build, safe control/live dependencies/scale, preview, rollback or first-release fallback, images/revisions/traffic/health/deep links/proxy verified |
-| G6 Live semantic/load | ⬜ | Authorized 45-request/40-worker run passes SC-001/002 and safety/error/coverage gates on confirmed candidate |
-| G7 Cleanup + human rehearsal | ⬜ | Real phones/accessibility/projection + seven-minute/fallback run; then closed/zero stable tally with operational data retained |
+| G4 Tested release checkpoint | ✅ | `00141cd`: isolated backend 375, production-image Surge 26, UI 6, Node 22.23.5 build, Linux lock and immutable image build/push pass |
+| G5 Deployed candidate | 🟨 | Initial images deployed/models Succeeded/MI role/one replica/live-mode health/keyless 403 verified, but report 503: no working Cosmos network/data path. Replacement deployment and successful report/persistence/audit required |
+| G6 Live semantic/load | ⛔ | FAILED: 45 attempts, 0 accepted, 0 incidents, 2 blocked, 43 failed; 2.75s p95 on two responses invalid. Identical full successful rerun required |
+| G7 Cleanup + human rehearsal | 🟨 | Failed-run reset CLOSED/zero confirmed; replacement cleanup, real phones/accessibility/projection and seven-minute/fallback run remain |
 | G8 Freeze / final GO | ⬜ | Parent records exact tested/deployed checkpoint, fallback artifact and presenter/operator GO; any unknown safety/privacy gate = NO-GO |
 
 ### Today-only decision checkpoints (ET; targets, not promises)
@@ -314,20 +357,20 @@ above remain checked; reruns below certify **future** code changes.
 |---|---|
 | 10:20 | Target + isolated creation/NEW-secret approval confirmed; publish plan, converge inventory/technical preflight and fallback preparation |
 | 10:50 | G3/G4 verifier + tested candidate; avoid feature expansion |
-| 11:15 | G5 separate audience deployment/health decision |
-| 11:45 | G6 live rehearsal evidence; budget one isolated repair/rerun |
-| 12:10 | Decide live vs verified fallback; no promise that missing cloud access can be recovered in time |
+| 11:27 actual | Initial deployment partial; live run FAILED; policy root cause confirmed; private-network correction preparing, not executed |
+| 11:45 target | Corrective preview/validation and private network/MI canary decision; if delayed, prepare tested loaded replay/mock in parallel |
+| 12:10 | Hard live-vs-verified-fallback decision based on working canary plus full live acceptance; no policy bypass or unproven URL |
 | 12:30 | G7/G8 freeze: real phones, projection, rehearsal, cleanup and rollback/fallback proven |
 | 12:45 | Closed-board/fallback/QR final check; no unverified late changes |
 | **13:00** | Showcase; these checkpoints do not move the stage time |
 
 ## Risks, rollback and scope discipline
 
-- **Inventory/resource/key unknown**: operational blockers, not proof resources
-  are absent. Today's separate audience target is in approved MCAPS 2026;
-  corporate-tenant TAP/membership recovery is deferred. Never reuse private
-  redteam resources/secrets. Isolated resource/NEW coach-secret creation is
-  approved; execution still requires published plan and technical preflight.
+- **Policy-enforced Cosmos isolation**: public/local-auth Disabled; initial
+  ACA lacks private connectivity. New VNet-integrated apps/private endpoint/DNS/
+  MI SQL role need parent validation and proof. Initial resources/key/models
+  exist; their health did not establish report acceptance. Never bypass policy
+  or touch initial apps/private redteam to make the new path work.
 - **Semantic/latency uncertainty**: use live evidence and fixed fixture; mock
   fragmentation and fast mock p95 cannot predict live success. Do not weaken
   dedup correctness or lock protection to improve counts/timing.

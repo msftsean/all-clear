@@ -1,10 +1,10 @@
 # Feature Specification: Room Surge
 
 **Feature ID**: `024-room-surge` | **Working branch**: `event/arlington-2026-11-18`
-**Created**: 2026-11-08 | **Revision**: R3, 2026-11-17 10:15 ET
+**Created**: 2026-11-08 | **Revision**: R4, 2026-11-17 11:27 ET
 **Target**: **TODAY, Tuesday 2026-11-17, 13:00 Eastern**, seven-minute showcase
-**Status**: 🟨 Local baseline verified; Azure audience readiness **BLOCKED / NOT CERTIFIED**
-**Readiness**: `███░░░░░░` **3/9 gates** ([gate definitions](plan.md#completion-gates))
+**Status**: ⛔ Azure images deployed, live run failed; policy-compliant network correction in progress
+**Readiness**: `████░░░░░` **4/9 gates**; G5 partial, G6 failed ([gate definitions](plan.md#completion-gates))
 **Source**: msftsean request and live-test follow-up; Cowork patch commit `e1eca20`
 on `7bed125`; repository inspection and observed tests in [plan.md](plan.md).
 

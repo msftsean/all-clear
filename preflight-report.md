@@ -1,7 +1,8 @@
 # Room Surge Azure preflight
 
-**Revision:** 2026-11-17 / 01  
-**Status:** PASS - infrastructure preview and production images; live acceptance pending  
+**Revision:** 2026-11-17 / 02
+
+**Status:** Corrective private-path preflight PASS; initial live test FAILED
 **Branch:** `event/arlington-2026-11-18`  
 **Target:** MCAPS-2026-segayle, `rg-allclear-surge-20261117`, East US 2  
 **Scope:** New audience resources only. Private red-team and other applications untouched.
@@ -66,3 +67,27 @@ stack, verify real models/storage/coach controls and one replica, then execute t
 authorized 40-concurrent rehearsal. Require complete report accounting, no failed
 requests or cross-event merges, A-D collapsing to at most six Incidents, and p95
 under eight seconds. Reset only the tally to CLOSED/zero; preserve domain data.
+
+## Initial live result and private-path recovery
+
+The initial stack deployed successfully with live mode, one replica and working
+protected coach controls. Its real rehearsal failed: 45 attempts, zero accepted
+Signals/Incidents, two safety blocks, 43 failures. The 2.75-second p95 represented
+only two successful HTTP responses and is not acceptance evidence. The board was
+reset CLOSED/zero.
+
+Activity logs confirmed inherited MCAPS governance modified Cosmos to disable
+public networking and account-key authentication. The initial ACA environment
+had no private path. Do not undo those policies or add public-access exceptions.
+
+At 11:34 ET, both new corrective templates passed the skill's full Bicep helper
+and scoped Provider previews: `infra/surge-network.bicep` adds private networking,
+Cosmos SQL private endpoint/DNS and a VNet-integrated ACA environment;
+`infra/surge-apps.bicep` adds new apps with user-assigned identities and
+database-scoped Cosmos data access. Existing apps and governance settings remain
+unchanged. Bootstrap mode creates identities/roles before image pull; verify
+ACR Pull propagation before deploying apps.
+
+The same tested immutable images are retained. The new Search index is seeded
+with all 12 All Clear articles and 1536-dimensional embeddings. Live acceptance
+must be repeated after the private path works; fallback decision is 12:10 ET.
