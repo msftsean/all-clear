@@ -9,10 +9,14 @@ Per contracts/quickstart-cli.md. All cases run with ZERO Azure credentials:
 from __future__ import annotations
 
 import os
+from pathlib import Path
+
+import conftest
+import pytest
 
 from conftest import REPO_ROOT, assert_scenario_ready, run
 
-QUICKSTART = str(REPO_ROOT / "scripts" / "quickstart.sh")
+QUICKSTART = "scripts/quickstart.sh"
 
 # Env stripped of all live-lane Azure vars (forces the fail-closed path).
 LIVE_ENV_VARS = [
@@ -61,3 +65,30 @@ def test_mock_lane_exits_zero_and_is_scenario_ready():
         f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
     )
     assert_scenario_ready(result.stdout)
+
+
+def test_windows_bash_resolver_ignores_system32(monkeypatch, tmp_path):
+    if os.name != "nt":
+        pytest.skip("Windows Bash resolution only")
+
+    resolver = getattr(conftest, "_resolve_bash", None)
+    assert resolver is not None
+
+    git_root = tmp_path / "Git"
+    git_executable = git_root / "cmd" / "git.exe"
+    git_executable.parent.mkdir(parents=True)
+    git_executable.touch()
+    git_bash = git_root / "usr" / "bin" / "bash.exe"
+    git_bash.parent.mkdir(parents=True)
+    git_bash.touch()
+
+    monkeypatch.setattr(
+        conftest.shutil,
+        "which",
+        lambda name: {
+            "git": str(git_executable),
+            "bash": r"C:\Windows\System32\bash.exe",
+        }.get(name),
+    )
+
+    assert Path(resolver()).resolve() == git_bash.resolve()

@@ -274,7 +274,7 @@
       <div class="run-stamp" aria-label="Run information">
         <span><strong>Results date:</strong> 12 Nov 2026</span>
         <span><strong>Execution time:</strong> Unknown (not captured in the run record)</span>
-        <span><strong>Snapshot metadata:</strong> 2026-11-12 12:52 -05:00</span>
+        <span><strong>Snapshot metadata:</strong> 2026-11-12 14:11 -05:00</span>
         <span><strong>Branch:</strong> <code>event/arlington-2026-11-18</code></span>
         <span><strong>HEAD:</strong> <code>96db514bfeded80fd6b607199351c0c0ab11567f</code></span>
         <span><strong>Worktree:</strong> dirty; modified and untracked paths listed below</span>
@@ -288,7 +288,7 @@
       <div class="verdict-mark" aria-hidden="true">!</div>
       <div>
         <h2 id="verdict-title">Not ready to claim client-facing assurance</h2>
-        <p>Post-hardening smoke, frontend build, local accuracy eval, Lab 05/07 focused tests, and both repaired local MCP probes pass. Chromium-only browser checks pass, but full cross-browser coverage remains incomplete. Guardian confirmed the session/transcript paths are fail-closed or disabled, realtime client-controlled instructions are fixed, and the PII-escalation regression is fixed. Verified ownership, authenticated ACS ingress, and broader route-auth scope remain unresolved; live Foundry quality/red-team evaluation is blocked. No remote or production targets were contacted.</p>
+        <p>Post-hardening smoke, root quickstart contracts, frontend build, local accuracy eval, Lab 05/07 focused tests, both repaired local MCP probes, and the full five-project browser suite pass. The browser run passed 85 tests; its five skips are the placeholder voice E2E. All retargeted accessibility checks ran. Guardian confirmed the session/transcript paths are fail-closed or disabled, realtime client-controlled instructions are fixed, and the PII-escalation regression is fixed. Verified ownership, authenticated ACS ingress, and broader route-auth scope remain unresolved; live Foundry quality/red-team evaluation is blocked. No remote or production targets were contacted.</p>
       </div>
     </section>
 
@@ -361,24 +361,24 @@
           <p class="trace"><strong>Reproduce from repository root:</strong><br><code>python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server start</code><br><code>python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server solution</code></p>
         </article>
 
-        <article class="card" data-status="fail">
+        <article class="card" data-status="pass">
           <div class="card-top">
             <h3>Repository-root quickstart / contract tests · separate from backend suite</h3>
-            <span class="status status-fail">Fail</span>
+            <span class="status status-pass">Pass</span>
           </div>
-          <div class="metric">2 passed · 10 failed</div>
-          <p>This local run is distinct from the 349-test smoke backend suite: it starts at repository root and collects root <code>tests/quickstart/...</code>, not <code>backend/tests</code>. Last confirmed result: 2 passed, 10 failed—2 Azure-hook expectations, 5 quickstart documentation expectations (missing HEADSTART), and 3 CLI tests with a Bash/Windows path mismatch. No post-hardening rerun of this root suite is reported.</p>
-          <p class="trace"><strong>Reproduce from repository root:</strong> <code>python -m pytest tests/ -q</code>. <strong>Last confirmed result:</strong> 2 passed, 10 failed.</p>
+          <div class="metric">15 passed · 1 warning</div>
+          <p>This local run is distinct from the 349-test smoke backend suite: it starts at repository root and collects root <code>tests/quickstart/...</code>, not <code>backend/tests</code>. The latest run passes all 15 quickstart contracts, including the deployed Search index default and explicit Git Bash selection on Windows. One third-party Schemathesis deprecation warning remains.</p>
+          <p class="trace"><strong>Reproduce from repository root:</strong> <code>python -m pytest tests/ -q --tb=short</code>. <strong>Latest result:</strong> 15 passed, 1 warning, 2.04 seconds.</p>
         </article>
 
-        <article class="card" data-status="incomplete">
+        <article class="card" data-status="pass">
           <div class="card-top">
             <h3>Frontend Playwright</h3>
-            <span class="status status-incomplete">Environment-incomplete</span>
+            <span class="status status-pass">Pass · full matrix</span>
           </div>
-          <div class="metric">6 passed · 75 skipped · 9 failed</div>
-          <p><strong>Historical full run:</strong> 6 passed, 75 skipped, 9 failed after <code>npm ci</code>; failures were attributed to missing Firefox/WebKit binaries. The attempted <code>npx playwright install chromium firefox webkit</code> stalled and was stopped after a partial Firefox download from <code>frontend</code>. Full cross-browser coverage remains incomplete; retain these initial counts as history rather than replacing them with the Chromium-only subset.</p>
-          <p class="trace"><strong>Exact command:</strong> <code>Set-Location frontend; npm run test:e2e</code>. <strong>Scope:</strong> local frontend browser suite; related tests at <code>frontend/tests/e2e</code>.</p>
+          <div class="metric">85 passed · 5 skipped · 0 failed</div>
+          <p><strong>Latest full run:</strong> all 90 tests completed across Chromium, Firefox, WebKit, Mobile Chrome, and Mobile Safari in 1.8 minutes. The 14 accessibility checks ran in every project; the five skips are the placeholder voice E2E test. The forced-colors axe check excludes <code>color-contrast</code>; default-mode contrast is covered by a separate check. The earlier 6 passed, 75 skipped, 9 failed result is retained only as history; exact browser revisions are now available and cross-browser coverage is complete for the active tests.</p>
+          <p class="trace"><strong>Exact command:</strong> from <code>frontend</code>, <code>npm run test:e2e -- --reporter=line</code>. <strong>Scope:</strong> local browser suite at <code>frontend/tests/e2e</code>.</p>
         </article>
 
         <article class="card" data-status="pass">
@@ -386,9 +386,9 @@
             <h3>Playwright · Chromium-only subset</h3>
             <span class="status status-pass">Pass · subset only</span>
           </div>
-          <div class="metric">3 passed · 15 skipped · 0 failed</div>
-          <p>Local Chromium project result only. It does not complete or replace the Firefox/WebKit cross-browser run.</p>
-          <p class="trace"><strong>Exact command:</strong> from <code>frontend</code>, <code>npx playwright test --project=chromium --reporter=line</code>. <strong>Execution time:</strong> not captured.</p>
+          <div class="metric">17 passed · 1 skipped · 0 failed</div>
+          <p>Current Chromium result from the full matrix. It is a subset of, not additive to, the full five-project run. The single skip is the placeholder voice E2E test.</p>
+          <p class="trace"><strong>Exact command:</strong> from <code>frontend</code>, <code>npx playwright test --project=chromium --reporter=line</code>.</p>
         </article>
 
         <article class="card" data-status="pass">
@@ -484,8 +484,8 @@
           <p>The probe rejects JSON error responses; both local probes passed, and Guardian independently confirmed the PII-escalation fix. Preserve those results and keep red-team checks local unless live-scan prerequisites are authorized and available.</p>
         </article>
         <article class="card">
-          <h3>Complete browser coverage</h3>
-          <p>The multi-browser install stalled and was stopped after a partial Firefox download. Chromium-only passed, but Firefox/WebKit coverage remains incomplete; install the required revisions and rerun the full suite before replacing the initial counts.</p>
+          <h3>Browser coverage</h3>
+          <p>All active browser and accessibility checks now pass across the five configured projects. The only skipped test is the existing voice E2E placeholder; implement a real voice-path test when that feature is enabled for browser testing.</p>
         </article>
         <article class="card">
           <h3>Live evaluation prerequisites</h3>
@@ -550,7 +550,7 @@
         <p><strong>Refresh checklist:</strong></p>
         <ul>
           <li>Capture the report update time, current HEAD, and fresh <code>git status --short</code>; replace this snapshot inventory if it changes.</li>
-          <li>After the pending browser install/revision check and rerun, record its output and execution time, then update Playwright counts; retain the initial result only as history.</li>
+          <li>Keep the current Playwright result at 85 passed, 5 placeholder-voice skips, and 0 failed until a new full-matrix run changes it; retain the earlier incomplete result only as history.</li>
           <li>Lab 07's fixed probes pass and reject JSON error responses; update this status only if new probe evidence changes. Keep the HIGH findings marked disabled—not functionally resolved—until principal, tenant/session/call ownership, and authenticated-ACS integration are verified. Preserve the realtime and PII-escalation fixes, including the PII detector-coverage limitation.</li>
           <li>Keep Foundry quality and live red-team marked blocked until the required deployed URL, judge/project endpoint, and Azure auth are available and the actual runs complete.</li>
         </ul>

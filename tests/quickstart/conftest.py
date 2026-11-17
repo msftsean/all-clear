@@ -6,6 +6,8 @@ seeder's `--dry-run` mode and the `quickstart.sh --mock` lane only.
 
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -38,12 +40,41 @@ def assert_scenario_ready(stdout: str) -> None:
     )
 
 
+def _resolve_bash() -> str:
+    if os.name != "nt":
+        return shutil.which("bash") or "bash"
+
+    git_executable = shutil.which("git")
+    git_roots = (
+        [parent for parent in Path(git_executable).resolve().parents if parent.name.lower() == "git"]
+        if git_executable
+        else []
+    )
+    for variable in ("ProgramFiles", "ProgramFiles(x86)"):
+        program_files = os.environ.get(variable)
+        if program_files:
+            git_roots.append(Path(program_files) / "Git")
+
+    for git_root in git_roots:
+        for candidate in (
+            git_root / "usr" / "bin" / "bash.exe",
+            git_root / "bin" / "bash.exe",
+        ):
+            if candidate.is_file():
+                return str(candidate)
+
+    raise RuntimeError("Git Bash was not found; install Git for Windows to run quickstart tests.")
+
+
 def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
     """Run a command from the repo root, capturing text output."""
+    if cmd and Path(cmd[0]).name.lower() in {"bash", "bash.exe"}:
+        cmd = [_resolve_bash(), *cmd[1:]]
     return subprocess.run(
         cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
+        encoding="utf-8",
         **kwargs,
     )

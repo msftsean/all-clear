@@ -31,6 +31,18 @@ infra:
   module: main
 
 hooks:
+  preprovision:
+    shell: sh
+    run: |
+      echo "Validating the canonical All Clear seed corpus..."
+      python scripts/seed_search_index.py --dry-run
+  postprovision:
+    shell: sh
+    run: |
+      bash scripts/quickstart.sh --no-smoke || {
+        echo "WARNING: Search index seeding is NOT confirmed; review the output and seed the index before the live demo." >&2
+        true
+      }
   postdeploy:
     shell: sh
     run: |

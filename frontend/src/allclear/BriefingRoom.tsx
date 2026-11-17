@@ -442,9 +442,9 @@ export default function BriefingRoom() {
           <div className="flex items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-2.5">
               <img src="/allclear-mark.svg" alt="" className="h-6 w-6 flex-none" />
-              <span className="truncate font-display text-[21px] font-medium tracking-tight text-inkwarm">
+              <h1 className="truncate font-display text-[21px] font-medium tracking-tight text-inkwarm">
                 All Clear
-              </span>
+              </h1>
             </div>
             {demoMode ? (
               <DemoToggle
@@ -460,7 +460,7 @@ export default function BriefingRoom() {
             <button
               data-testid="history-toggle"
               onClick={() => setHistoryOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
+              className="inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
               title="My conversation history"
               aria-expanded={historyOpen}
             >
@@ -469,7 +469,7 @@ export default function BriefingRoom() {
             <button
               data-testid="trust-toggle"
               onClick={() => setTrustOpen((v) => !v)}
-              className="inline-flex items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
+              className="inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-chip border border-paperline bg-paper2 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-inkwarm/30"
               title="Trust controls"
               aria-expanded={trustOpen}
             >
@@ -497,7 +497,7 @@ export default function BriefingRoom() {
             data-testid="dcwater-surge"
             onClick={runDcWaterSurge}
             disabled={dcwRunning || busy}
-            className="ml-auto inline-flex items-center gap-1.5 rounded-chip border border-[#028090]/60 bg-[#028090]/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-[#028090] shadow-antimetal-soft transition-colors hover:border-[#028090]/80 disabled:opacity-50"
+            className="ml-auto inline-flex min-h-11 min-w-11 items-center gap-1.5 rounded-chip border border-[#028090]/60 bg-[#028090]/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-inkwarm shadow-antimetal-soft transition-colors hover:border-[#028090]/80 disabled:opacity-50"
             title="Fire 40 live Muni Water signals through the pipeline"
           >
             {dcwRunning ? `🌊 surging ${dcwProgress}/${DCWATER_SIGNALS.length}` : "🌊 Muni Water surge"}
@@ -506,7 +506,7 @@ export default function BriefingRoom() {
             data-testid="clear-board"
             onClick={clearLiveBoard}
             disabled={dcwRunning}
-            className="rounded-chip border border-paperline bg-paper2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-voice/50 disabled:opacity-50"
+            className="min-h-11 min-w-11 rounded-chip border border-paperline bg-paper2 px-3 py-1.5 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft transition-colors hover:border-voice/50 disabled:opacity-50"
             title="Clear the live ClearBoard"
           >
             clear board
@@ -520,7 +520,7 @@ export default function BriefingRoom() {
               <span className="text-xs font-mono uppercase tracking-wider text-zinc-400">My History</span>
               <button
                 onClick={() => setHistoryOpen(false)}
-                className="text-xs text-zinc-500 hover:text-zinc-300"
+                className="min-h-11 min-w-11 text-xs text-zinc-500 hover:text-zinc-300"
                 aria-label="Close history"
               >
                 ✕
@@ -539,71 +539,85 @@ export default function BriefingRoom() {
           <TrustView azureFootprint={azureFootprint} onClose={() => setTrustOpen(false)} />
         )}
 
-        <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-paper px-5 py-5">
-          {messages.map((m) => (
-            <MessageBubble key={m.id} m={m} />
-          ))}
-          {/* Classification chips materialize under the transcript */}
-          {latest ? <ChipStrip r={latest} /> : null}
-          {busy ? (
-            <div className="flex items-center gap-1.5 px-1 text-midwarm" data-testid="thinking">
-              <span className="h-1.5 w-1.5 animate-blink rounded-full bg-midwarm" />
-              <span className="text-[12px]">Classifying…</span>
+        <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div
+            ref={scrollRef}
+            role="log"
+            aria-label="Incident conversation"
+            aria-live="polite"
+            aria-relevant="additions"
+            className="flex-1 space-y-3 overflow-y-auto bg-paper px-5 py-5"
+          >
+            {messages.map((m) => (
+              <MessageBubble key={m.id} m={m} />
+            ))}
+            {/* Classification chips materialize under the transcript */}
+            {latest ? <ChipStrip r={latest} /> : null}
+            {busy ? (
+              <div className="flex items-center gap-1.5 px-1 text-midwarm" data-testid="thinking">
+                <span className="h-1.5 w-1.5 animate-blink rounded-full bg-midwarm" />
+                <span className="text-[12px]">Classifying…</span>
+              </div>
+            ) : null}
+          </div>
+
+          {messages.length <= 1 ? (
+            <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+              {SUGGESTIONS.map((s, i) => (
+                <button
+                  key={i}
+                  data-testid={`suggestion-${i}`}
+                  onClick={() => send(s)}
+                  className="min-h-11 min-w-11 rounded-chip border border-paperline bg-paper2 px-3 py-1.5 text-left text-[11px] text-midwarm shadow-antimetal-soft transition-colors hover:border-voice/50 hover:text-inkwarm"
+                >
+                  {s}
+                </button>
+              ))}
             </div>
           ) : null}
-        </div>
 
-        {messages.length <= 1 ? (
-          <div className="flex flex-wrap gap-1.5 px-4 pb-2">
-            {SUGGESTIONS.map((s, i) => (
+          <form
+            className="border-t border-paperline bg-paper2 p-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(input);
+            }}
+          >
+            <div className="flex items-end gap-2">
+              <textarea
+                data-testid="signal-input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    send(input);
+                  }
+                }}
+                rows={2}
+                placeholder="Describe the signal…"
+                aria-label="Describe the signal"
+                className="flex-1 resize-none rounded-bubble border border-paperline bg-paper2 px-3 py-2 text-[13px] text-inkwarm shadow-antimetal-soft placeholder:text-midwarm/60 focus:border-voice"
+              />
               <button
-                key={i}
-                data-testid={`suggestion-${i}`}
-                onClick={() => send(s)}
-                className="rounded-chip border border-paperline bg-paper2 px-3 py-1.5 text-left text-[11px] text-midwarm shadow-antimetal-soft transition-colors hover:border-voice/50 hover:text-inkwarm"
+                data-testid="send-signal"
+                type="submit"
+                disabled={busy || !input.trim()}
+                className="min-h-11 min-w-11 rounded-chip bg-grad px-5 py-2 font-sans text-[13px] font-semibold text-white shadow-antimetal-cta transition hover:brightness-105 disabled:opacity-40"
               >
-                {s}
+                Send
               </button>
-            ))}
-          </div>
-        ) : null}
-
-        <form
-          className="border-t border-paperline bg-paper2 p-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(input);
-          }}
-        >
-          <div className="flex items-end gap-2">
-            <textarea
-              data-testid="signal-input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  send(input);
-                }
-              }}
-              rows={2}
-              placeholder="Describe the signal…"
-              className="flex-1 resize-none rounded-bubble border border-paperline bg-paper2 px-3 py-2 text-[13px] text-inkwarm shadow-antimetal-soft placeholder:text-midwarm/60 focus:border-voice"
-            />
-            <button
-              data-testid="send-signal"
-              type="submit"
-              disabled={busy || !input.trim()}
-              className="rounded-chip bg-grad px-5 py-2 font-sans text-[13px] font-semibold text-white shadow-antimetal-cta transition hover:brightness-105 disabled:opacity-40"
-            >
-              Send
-            </button>
-          </div>
-        </form>
+            </div>
+          </form>
+        </main>
       </div>
 
       {/* ---- Night world: canvas ---- */}
-      <main className="relative hidden flex-1 overflow-y-auto bg-antimetal-hero md:block">
+      <section
+        aria-label="ClearBoard"
+        tabIndex={0}
+        className="relative hidden flex-1 overflow-y-auto bg-antimetal-hero md:block"
+      >
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8px_8px,rgba(255,255,255,.34)_1px,transparent_1.5px)] bg-[length:24px_24px] opacity-15 [mask-image:linear-gradient(180deg,#000,transparent_72%)]" />
         <div className="pointer-events-none absolute -right-28 -top-36 h-[620px] w-[620px] rounded-full bg-[radial-gradient(50%_50%,rgba(0,128,248,.32)_0%,rgba(95,189,247,.32)_20%,rgba(211,239,252,.32)_60%,rgba(248,249,252,0)_100%)]" />
         <div className="relative z-10">
@@ -616,7 +630,7 @@ export default function BriefingRoom() {
             demoSignalsReceived={demoSignalsReceived}
           />
         </div>
-      </main>
+      </section>
 
       {/* Mobile canvas summary (no split on phones per DESIGN) */}
       {latest ? (
@@ -671,7 +685,7 @@ function ModelStatusBadge({ status }: { status: ModelStatus }) {
     >
       <span className={`h-1.5 w-1.5 rounded-full ${failoverActive ? "bg-sev1" : "bg-clear"}`} />
       model: {displayModel}
-      <span className="text-midwarm/70">· {label}</span>
+      <span className="text-midwarm">· {label}</span>
     </span>
   );
 }
@@ -692,17 +706,17 @@ function DemoToggle({
   const surgeRunning = mode === "loaded" && signalsReceived < totalSignals;
   return (
     <div data-testid="demo-toggle" className="hidden items-center gap-1 sm:flex">
-      <span className="font-mono text-[9px] uppercase tracking-wider text-midwarm/70">demo</span>
+      <span className="font-mono text-[9px] uppercase tracking-wider text-midwarm">demo</span>
       <button
         data-testid="simulate-surge"
         onClick={onSimulateSurge}
-        className="rounded-chip border border-voice/60 bg-voice/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft"
+        className="min-h-11 min-w-11 rounded-chip border border-voice/60 bg-voice/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-voice shadow-antimetal-soft"
       >
         {surgeRunning ? "surge running" : "simulate surge"}
       </button>
       <button
         onClick={() => onSetMode("blank")}
-        className={`rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
+        className={`min-h-11 min-w-11 rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
           mode === "blank" ? "border-voice/60 text-voice" : "border-paperline text-midwarm"
         }`}
       >
@@ -710,7 +724,7 @@ function DemoToggle({
       </button>
       <button
         onClick={() => onSetMode("loaded")}
-        className={`rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
+        className={`min-h-11 min-w-11 rounded-chip border px-2 py-1 font-mono text-[10px] uppercase tracking-wider shadow-antimetal-soft ${
           mode === "loaded" ? "border-voice/60 text-voice" : "border-paperline text-midwarm"
         }`}
       >
@@ -718,7 +732,7 @@ function DemoToggle({
       </button>
       <button
         onClick={() => onSetMode(null)}
-        className="rounded-chip border border-paperline px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft"
+        className="min-h-11 min-w-11 rounded-chip border border-paperline px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-midwarm shadow-antimetal-soft"
         title="Exit demo mode"
       >
         live
@@ -755,7 +769,7 @@ function MessageBubble({ m }: { m: Msg }) {
         {m.text}
       </div>
       <div className="mt-0.5 flex items-center gap-1.5 px-1">
-        <span className="font-mono text-[9px] text-midwarm/70">{clock(m.ts)}</span>
+        <span className="font-mono text-[9px] text-midwarm">{clock(m.ts)}</span>
       </div>
     </div>
   );

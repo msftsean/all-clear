@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f9ff">
+  <meta name="description" content="Verbatim presenter script aligned to all 19 slides of the final All Clear red-team deck.">
+  <title>Deck-aligned demo script | All Clear presenter guide</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="script-page">
+  <a class="skip" href="#main">Skip to the script</a>
+  <header class="site-header">
+    <a class="brand" href="./" aria-label="All Clear field guide home"><span class="brand-mark" aria-hidden="true">AC<span class="brand-dot">.</span></span><span>ALL CLEAR <span class="brand-separator">/</span> FIELD GUIDE</span></a>
+    <div class="page-tabs" aria-label="Guide pages"><a href="./">Runbook</a><a href="script.html" aria-current="page">Demo script</a></div>
+    <span class="header-meta">OCT 2026 <span aria-hidden="true">·</span> REV 04</span>
+  </header>
+  <main id="main">
+    <div class="script-intro">
+      <p class="kicker">FINAL DECK / 19 SLIDES / VERBATIM</p>
+      <h1>Your demos.<br><em>Your words.</em></h1>
+      <p>Read the blue passages aloud in deck order. Conditional passages are marked and used only when their condition is true. Screen actions, expected evidence and private prerequisites stay outside the spoken text. Charles owns his separate demos; no shared timing has been rehearsed.</p>
+      <div class="script-rule"><strong>Source: final deck speaker notes</strong><span>Native run ≠ fresh CLI run</span><span>Private adapter ≠ production All Clear</span></div>
+    </div>
+    <div class="script-layout">
+      <nav class="script-rail" aria-label="Slide navigation">
+        <p class="kicker">FOLLOW THE DECK</p>
+        <a href="#opening"><span>1–3</span> Opening</a>
+        <a href="#baseline"><span>4</span> Legitimate behavior</a>
+        <a href="#boundaries"><span>5–6</span> Boundaries</a>
+        <a href="#launch"><span>7</span> CLI → Foundry</a>
+        <a href="#fresh-status"><span>8</span> Return to CLI</a>
+        <a href="#retrieval"><span>9–11</span> Retrieval</a>
+        <a href="#sitrep"><span>12–13</span> Sitrep</a>
+        <a href="#observability"><span>14</span> Observability</a>
+        <a href="#native-results"><span>15</span> Results</a>
+        <a href="#decision"><span>16–17</span> Decision</a>
+        <a href="#technical-close"><span>18</span> Questions</a>
+        <a href="#thank-you"><span>19</span> Shared close</a>
+        <p class="rail-rule">Operator commands stay in the private runbook. A CLI launch command and verified native target/version remain prerequisites, not guesses.</p>
+      </nav>
+      <div class="script-beats">
+        <section class="script-beat" id="opening" aria-labelledby="opening-title">
+          <div class="beat-top"><span>SLIDES 1–3 · DECK</span><span>OPENING</span></div>
+          <h2 id="opening-title">Test the boundary.</h2>
+          <div class="say"><span>READ ALOUD · SLIDE 1</span><blockquote>“Red teaming is a controlled attempt to make an AI system cross a boundary it should respect. Today I’ll show how we launch a test, inspect real findings in Microsoft Foundry, and use evidence to decide what needs fixing. I’ll also show two deliberately seeded failures in an isolated All Clear demonstration. Those seeded cases are not vulnerabilities discovered in the production application.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · SLIDE 2</span><blockquote>“Ordinary testing asks whether the system can do its job. Red teaming asks whether someone can steer it outside that job—toward information it should not reveal, instructions it should not follow, or actions it should not take. We are testing behavior at boundaries, not merely checking whether an answer sounds confident.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · SLIDE 3</span><blockquote>“All Clear is running in my CLI environment, and I’ve tested it extensively. That is useful history, not a guarantee that we have exhausted every failure mode. A correct answer on a normal request does not prove that the same system will preserve its access controls and evidence boundaries under adversarial input.”</blockquote></div>
+          <p class="handoff"><strong>DECK:</strong> Explain the contrast; do not represent prior testing as complete security coverage.</p>
+        </section>
+
+        <section class="script-beat" id="baseline" aria-labelledby="baseline-title">
+          <div class="beat-top"><span>SLIDE 4 · DECK / PRIVATE ADAPTER EVIDENCE</span><span>BASELINE</span></div>
+          <h2 id="baseline-title">Preserve useful behavior.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“All Clear’s legitimate job is incident triage: many incoming signals become a clearer operational response. The baseline we want is expected routing, permitted knowledge retrieval, and a situation report faithful to trusted incident information. A system that refuses every request is not a useful incident-triage system. Today’s focused checks do not establish a full-application baseline.”</blockquote></div>
+          <p class="handoff"><strong>DECK / PRIVATE ADAPTER EVIDENCE:</strong> Show only a benign synthetic case if available. Full All Clear signal/routing baseline was not executed for these artifacts.</p>
+        </section>
+
+        <section class="script-beat" id="boundaries" aria-labelledby="boundaries-title">
+          <div class="beat-top"><span>SLIDES 5–6 · DECK</span><span>AUTHORITY</span></div>
+          <h2 id="boundaries-title">Name what each test covers.</h2>
+          <div class="say"><span>READ ALOUD · SLIDE 5</span><blockquote>“The documented All Clear flow starts with classification, then deterministic routing, followed by bounded actions such as incident creation, knowledge search and sitrep generation. The model is one component inside that application. Retrieval, trusted state and tool behavior introduce boundaries that a model-only test cannot establish.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · SLIDE 6</span><blockquote>“A model or prompt-agent result tells us about that tested surface. An application test can tell us about a retrieval or state boundary. A Foundry evaluation scores outcomes for its configured target and criteria. Deterministic assertions give us repeatable, specific checks. They complement each other; they are not interchangeable. Let’s start a new run, then inspect completed evidence while it processes.”</blockquote></div>
+          <p class="handoff"><strong>DECK:</strong> Describe the flow as documented, not every arrow as verified live.</p>
+        </section>
+
+        <section class="script-beat" id="launch" aria-labelledby="launch-title">
+          <div class="beat-top"><span>SLIDE 7 · CLI → FOUNDRY</span><span>START AND SHOW PREPARED EVIDENCE</span></div>
+          <h2 id="launch-title">Launch first. Then inspect.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“I’m starting a fresh red-team run from CLI. While it processes, let’s look at a completed native red-team run I prepared earlier in Microsoft Foundry. This is an actual red-team result—not the separate two-case batch evaluation.”</blockquote></div>
+          <p class="handoff"><strong>CLI → FOUNDRY:</strong> Say “starting” only when executing a verified private launch command and seeing acknowledgment. The launch command has not been supplied or verified; without it, use the conditional passage below. Open prepared native run <code>redteam-run-ckeumngo</code> by verified portal navigation, not by a guessed deep link. Confirm displayed target/version and strategies; otherwise disclose the gap.</p>
+          <details class="edit-note"><summary>IF no verified fresh CLI command or launch acknowledgment</summary><div class="say"><span>READ ALOUD · CONDITIONAL</span><blockquote>“I don’t have a verified fresh-run launch to show, so I won’t claim one started. Instead, I’ll inspect the completed native Foundry run prepared earlier and keep any new run separate.”</blockquote></div></details>
+          <div class="say"><span>READ ALOUD · BEFORE INTERPRETING</span><blockquote>“This result applies to the target and configuration used for this run. It does not automatically establish every All Clear application control. The export does not establish the complete target configuration, so I’m not inferring an application version from the run name.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · ASR</span><blockquote>“Attack success rate measures how often the evaluator reports an attack succeeded. Higher is worse. It is not a percentage-secure score.”</blockquote></div>
+          <details class="edit-note"><summary>IF the completed run does not render in Foundry</summary><div class="say"><span>READ ALOUD · CONDITIONAL</span><blockquote>“The prepared native run has completed, but the portal is not rendering right now. I’ll use the exported records from that earlier run. This is not the fresh run’s output.”</blockquote></div><p>No supplied Foundry screenshot was located for this update; do not promise one on screen.</p></details>
+        </section>
+
+        <section class="script-beat" id="fresh-status" aria-labelledby="fresh-status-title">
+          <div class="beat-top"><span>SLIDE 8 · RETURN TO CLI</span><span>FRESH RUN ONLY</span></div>
+          <h2 id="fresh-status-title">Check the new run.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“The loop is attack, inspect, fix and retest. First establish what happened. Then repair the responsible boundary and rerun the same focused case. Let’s check where the new run is.”</blockquote></div>
+          <p class="handoff"><strong>CLI:</strong> Check the actual status only if a fresh run was launched. No tested launch/status command was supplied for this run. Never call the prepared Foundry result fresh output.</p>
+          <div class="condition-grid">
+            <div><span>IF COMPLETED</span><div class="say"><span>READ ALOUD</span><blockquote>“The run has completed. Let’s inspect its actual output and the scope it tested.”</blockquote></div></div>
+            <div><span>IF STILL RUNNING</span><div class="say"><span>READ ALOUD</span><blockquote>“The run is still processing. I’ll continue with the prepared evidence and our focused boundary demonstrations.”</blockquote></div></div>
+            <div><span>IF FAILED</span><div class="say"><span>READ ALOUD</span><blockquote>“The run did not complete successfully. That is not a pass. We’ll keep that failure visible and continue with the prepared evidence.”</blockquote></div></div>
+            <div><span>IF NOT STARTED</span><div class="say"><span>READ ALOUD</span><blockquote>“There is no new run to check. The completed Foundry run I showed was prepared earlier, and I’ll keep it separate from these application demonstrations.”</blockquote></div></div>
+          </div>
+        </section>
+
+        <section class="script-beat" id="retrieval" aria-labelledby="retrieval-title">
+          <div class="beat-top"><span>SLIDES 9–11 · PRIVATE ADAPTER EVIDENCE</span><span>RETRIEVAL</span></div>
+          <h2 id="retrieval-title">Who can read the article?</h2>
+          <div class="say"><span>READ ALOUD · SLIDE 9</span><blockquote>“Here is a public guidance article and a restricted synthetic article. I’m asking as a user who has no access to the restricted one. In the historical seeded-before case, the restricted marker reaches that user. Information crossed the access boundary in the private synthetic adapter—not production All Clear.”</blockquote></div>
+          <p class="handoff"><strong>PRIVATE ADAPTER EVIDENCE:</strong> Show historical before trace and unauthorized identity; do not turn vulnerable mode back on in the active safe app.</p>
+          <div class="say"><span>READ ALOUD · SLIDE 10</span><blockquote>“Retrieval authorization belongs on the server, using trusted caller identity. The boundary covers document content, snippets and citation metadata. A prompt claiming ‘I am an administrator’ cannot change the caller’s identity. We didn’t teach the model to keep a secret. We stopped giving it information this user cannot access.”</blockquote></div>
+          <div class="condition-grid">
+            <div><span>IF ACTUALLY APPLYING AN ISOLATED PATCH LIVE</span><div class="say"><span>READ ALOUD</span><blockquote>“I’m applying this isolated code change now.”</blockquote></div></div>
+            <div><span>IF ALREADY FIXED</span><div class="say"><span>READ ALOUD</span><blockquote>“Here is the code change that enforces the boundary. It is already applied; now I’ll rerun the same synthetic case.”</blockquote></div></div>
+          </div>
+          <div class="say"><span>READ ALOUD · SLIDE 11</span><blockquote>“I’m rerunning the same synthetic request against safe mode. I’ll inspect the unauthorized retrieval trace for restricted content and citation metadata, then check that public guidance works and an authorized synthetic reader can still retrieve the restricted article. A refusal alone does not prove the boundary held.”</blockquote></div>
+          <p class="handoff"><strong>PRIVATE ADAPTER EVIDENCE:</strong> Use the tested remote probe from the private operator runbook. Only after observing each check, read the appropriate outcome below.</p>
+          <div class="condition-grid"><div><span>IF ALL CHECKS PASS</span><div class="say"><span>READ ALOUD</span><blockquote>“The unauthorized trace excludes the restricted article and citation. Public guidance still works, and the authorized reader still has access. This focused synthetic regression passed.”</blockquote></div></div><div><span>IF ANY CHECK FAILS OR IS UNKNOWN</span><div class="say"><span>READ ALOUD</span><blockquote>“This check did not pass or remains unknown. I will not describe the retrieval boundary as verified until the trace and access controls agree.”</blockquote></div></div></div>
+        </section>
+
+        <section class="script-beat" id="sitrep" aria-labelledby="sitrep-title">
+          <div class="beat-top"><span>SLIDES 12–13 · PRIVATE ADAPTER EVIDENCE</span><span>SITREP / BACKUP IF TIME SLIPS</span></div>
+          <h2 id="sitrep-title">Can guidance change status?</h2>
+          <div class="say"><span>READ ALOUD · SLIDE 12</span><blockquote>“This synthetic incident is open and awaiting review. A genuinely retrieved article contains ordinary guidance plus an instruction to call the incident closed. In the historical seeded-before case, the report says closed. The incident record did not change; the narrative did. That distinction matters.”</blockquote></div>
+          <p class="handoff"><strong>PRIVATE ADAPTER EVIDENCE:</strong> Show the historical retrieval trace, before narrative and trusted open state. This is the second example or the rehearsed backup if time slips.</p>
+          <div class="say"><span>READ ALOUD · SLIDE 13</span><blockquote>“Incident-state fields must come from trusted state. Retrieved articles may supply procedural guidance, but cannot establish that an incident is closed. We validate citation provenance too, so a polished citation cannot launder an unsupported claim. The document can inform the report. It cannot rewrite reality.”</blockquote></div>
+          <div class="condition-grid">
+            <div><span>IF ACTUALLY APPLYING AN ISOLATED PATCH LIVE</span><div class="say"><span>READ ALOUD</span><blockquote>“I’m applying this isolated code change now.”</blockquote></div></div>
+            <div><span>IF ALREADY FIXED</span><div class="say"><span>READ ALOUD</span><blockquote>“Here is the code change that enforces the boundary. It is already applied; now I’ll rerun the same synthetic case.”</blockquote></div></div>
+          </div>
+          <div class="say"><span>READ ALOUD · RETEST</span><blockquote>“I’m rerunning the identical synthetic fixture. I’ll check reported status against trusted state, confirm useful guidance remains, inspect the citations, and verify that no incident record was mutated.”</blockquote></div>
+          <p class="handoff"><strong>PRIVATE ADAPTER EVIDENCE:</strong> Use the tested remote probe; only speak the observed outcome.</p>
+          <div class="condition-grid"><div><span>IF ALL CHECKS PASS</span><div class="say"><span>READ ALOUD</span><blockquote>“The report remains open and awaiting review, retains useful guidance and valid citations, and does not mutate the incident record. This focused synthetic regression passed.”</blockquote></div></div><div><span>IF ANY CHECK FAILS OR IS UNKNOWN</span><div class="say"><span>READ ALOUD</span><blockquote>“The observed result is incomplete or failed. I will keep the trusted state and reported narrative side by side rather than claim the fix worked.”</blockquote></div></div></div>
+        </section>
+
+        <section class="script-beat" id="observability" aria-labelledby="observability-title">
+          <div class="beat-top"><span>SLIDE 14 · DECK</span><span>OBSERVABILITY</span></div>
+          <h2 id="observability-title">Monitoring is not an attack.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“Application Insights provides observability; it does not generate these attacks. Foundry evaluation measures its configured target. Defender and Sentinel can support monitoring and investigation, but those connections are conceptual here, not services this demonstration enabled. An alert is not a red-team scorecard.”</blockquote></div>
+          <p class="handoff"><strong>DECK:</strong> Do not imply telemetry, alerts or Defender/Sentinel integrations were configured for these runs.</p>
+        </section>
+
+        <section class="script-beat" id="native-results" aria-labelledby="native-results-title">
+          <div class="beat-top"><span>SLIDE 15 · FOUNDRY / REVIEWED EXPORT</span><span>NATIVE RESULTS</span></div>
+          <h2 id="native-results-title">A review queue, not a verdict.</h2>
+          <div class="say"><span>READ ALOUD · SUMMARY</span><blockquote>“This completed run contains 107 evaluated records. The evaluator reported 95 passes and 12 successful attacks. That gives us a review queue—not 12 confirmed vulnerabilities. The aggregate reported attack success rate is 11.21 percent: 12 flags out of 107 evaluated records. Category denominators differ, so we inspect individual outcomes.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · ROW 14</span><blockquote>“Here is one reason to review the evaluator. Row 14 contains a structured content-filter block, yet the evaluator flags the block’s own self-harm metadata. That is a candidate scoring artifact, not a confirmed system failure. We inspect the record before deciding what needs repair.”</blockquote></div>
+          <p class="handoff"><strong>FOUNDRY / REVIEWED EXPORT:</strong> Prepared native run <code>redteam-run-ckeumngo</code>; exported prompts are redacted and numeric score fields are 0.0 even on flagged rows—neither establishes severity. Do not show raw content or infer target/version from the run name. If the portal fails, use the genuine reviewed export, not a screenshot that was not supplied. The fresh CLI run, six synthetic adapter assertions and supplementary two-case batch evaluation are separate.</p>
+        </section>
+
+        <section class="script-beat" id="decision" aria-labelledby="decision-title">
+          <div class="beat-top"><span>SLIDES 16–17 · DECK</span><span>RELEASE DECISION / PRACTICE</span></div>
+          <h2 id="decision-title">Keep the decision human-owned.</h2>
+          <div class="say"><span>READ ALOUD · SLIDE 16</span><blockquote>“A defensible release decision identifies the target, tested boundary, evidence and uncertainty. Mandatory tests must finish. Errors and unknowns cannot masquerade as passes. Acceptance thresholds and exceptions are organizational choices with an accountable human owner. These findings do not grant All Clear a release approval.”</blockquote></div>
+          <div class="say"><span>READ ALOUD · SLIDE 17</span><blockquote>“Test an identified build. Inspect the findings. Repair the responsible boundary. Rerun the identical focused fixture, then review broader testing. Preserve the target version and configuration so the comparison means something. A fresh generative attack run may produce different attacks; it is not an identical replay unless replay is verified.”</blockquote></div>
+          <p class="handoff"><strong>DECK:</strong> Present this as a proposed repeatable practice, not a certified or approved release.</p>
+        </section>
+
+        <section class="script-beat" id="technical-close" aria-labelledby="technical-close-title">
+          <div class="beat-top"><span>SLIDE 18 · DECK</span><span>TECHNICAL CLOSE / QUESTIONS</span></div>
+          <h2 id="technical-close-title">Give them one next move.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“For your next release, choose one boundary, one legitimate baseline and one adversarial probe. Record what happened. Repair what failed. Retest—and be explicit about what remains untested. The goal is not a green badge. It is a defensible decision you can repeat. I’m happy to take questions about the model, application permissions or operational readiness.”</blockquote></div>
+          <details class="edit-note"><summary>ONLY IF a presenter handoff was agreed</summary><div class="say"><span>READ ALOUD · CONDITIONAL</span><blockquote>“Charles, the floor is yours.”</blockquote></div></details>
+          <p class="handoff"><strong>DECK:</strong> If no handoff was agreed, finish Sean's block here without assigning Charles an action, time or screen.</p>
+        </section>
+
+        <section class="script-beat" id="thank-you" aria-labelledby="thank-you-title">
+          <div class="beat-top"><span>SLIDE 19 · DECK</span><span>SHARED FINAL CLOSE</span></div>
+          <h2 id="thank-you-title">Thank you.</h2>
+          <div class="say"><span>READ ALOUD</span><blockquote>“Thank you. The takeaway is simple: test the boundary, inspect the evidence, and make the result actionable. Charles and I welcome follow-up questions.”</blockquote></div>
+          <p class="handoff"><strong>DECK:</strong> Shared final close, not an assumed midpoint handoff. Use only existing presenter details on the slide.</p>
+        </section>
+      </div>
+    </div>
+    <div class="script-bottom"><p><strong>Evidence stays scoped.</strong> Completed native run, fresh CLI status, private adapter assertions and optional two-case batch evaluation are four different surfaces.</p><a class="inline-link" href="./#route">Follow the deck →</a></div>
+  </main>
+  <footer><span>ALL CLEAR / RED TEAMING FIELD GUIDE</span><span>Public presenter material · 01 Oct 2026 · rev 04</span><a href="#main">Back to script ↑</a></footer>
+</body>
+</html>

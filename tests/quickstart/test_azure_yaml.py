@@ -22,8 +22,7 @@ def _load():
 def test_postprovision_invokes_quickstart_non_fatal():
     data = _load()
     run = data["hooks"]["postprovision"]["run"]
-    assert "scripts/quickstart.sh" in run
-    assert "--no-smoke" in run
+    assert "bash scripts/quickstart.sh --no-smoke" in run
     # Non-fatal guard: a failure is swallowed so azd still succeeds.
     assert "||" in run
     assert "true" in run

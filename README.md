@@ -20,6 +20,11 @@
 
 This repository is the pro-dev track for developers and architects; business roles are in a separate no-code track run by a partner.
 
+For Day-0 setup, lane selection, and the scenario-ready checklist, see the
+[All Clear Head-Start](docs/quickstart/HEADSTART.md).
+The no-argument quickstart uses live Azure configuration; run
+`bash scripts/quickstart.sh --mock` for credential-free offline validation.
+
 ---
 
 ## 📖 Overview

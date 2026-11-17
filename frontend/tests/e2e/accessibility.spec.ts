@@ -1,18 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-/**
- * Accessibility-focused E2E tests for the Front Door Support Agent.
- * Tests WCAG AA compliance using axe-core.
- */
-
-// QUARANTINED 2026-06-24 (all-clear): axe checks were authored against the pre-redesign
-// Front Door UI; they fail on the current All Clear BriefingRoom. May surface REAL a11y
-// findings. TODO(all-clear-e2e): retarget to BriefingRoom and fix any genuine violations,
-// then remove this skip.
-test.beforeEach(() => {
-  test.skip(true, "Accessibility specs target the pre-redesign UI — retarget to All Clear BriefingRoom (may include real a11y fixes).");
-});
+/** Accessibility checks for the current All Clear BriefingRoom. */
 
 test.describe('Accessibility Compliance', () => {
   test.beforeEach(async ({ page }) => {
@@ -27,16 +16,10 @@ test.describe('Accessibility Compliance', () => {
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
-  test('should have proper heading hierarchy', async ({ page }) => {
-    // Check that headings follow proper hierarchy
+  test('should expose one page-level h1', async ({ page }) => {
     const h1 = await page.locator('h1').count();
-
-    // Should have at least one main heading
-    expect(h1).toBeGreaterThanOrEqual(0); // May be in header
-
-    // All headings should be present in the DOM
-    const allHeadings = await page.locator('h1, h2, h3, h4, h5, h6').all();
-    expect(allHeadings.length).toBeGreaterThan(0);
+    expect(h1).toBe(1);
+    await expect(page.getByRole('heading', { level: 1, name: 'All Clear' })).toBeVisible();
   });
 
   test('should have sufficient color contrast in default mode', async ({ page }) => {
@@ -52,63 +35,48 @@ test.describe('Accessibility Compliance', () => {
     expect(contrastViolations).toHaveLength(0);
   });
 
-  test('should maintain accessibility in high contrast mode', async ({ page }) => {
-    // Enable high contrast mode
-    await page.getByRole('button', { name: /high contrast|toggle contrast/i }).click();
-
-    // Wait for mode to apply
-    await expect(page.locator('.high-contrast')).toBeVisible();
-
-    // Run accessibility scan
+  test('should maintain accessibility in forced-colors mode', async ({ page }) => {
+    await page.emulateMedia({ forcedColors: 'active' });
+    // Contrast is tested in default mode; forced-colors remaps the palette.
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
+      .disableRules(['color-contrast'])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
   test('should have proper focus indicators', async ({ page }) => {
-    // Tab through interactive elements
-    const input = page.getByRole('textbox', { name: /message/i });
-    await input.focus();
-
-    // Check that focus is visible
+    const input = page.getByRole('textbox', { name: /describe the signal/i });
     const inputBox = await input.boundingBox();
     expect(inputBox).not.toBeNull();
 
-    // Focus should have visual indication (check computed styles or screenshot)
-    const focusStyle = await input.evaluate((el) => {
+    const readIndicatorStyles = () => input.evaluate((el) => {
       const styles = window.getComputedStyle(el);
       return {
         outline: styles.outline,
+        outlineStyle: styles.outlineStyle,
         boxShadow: styles.boxShadow,
-        border: styles.border,
+        borderColor: styles.borderColor,
       };
     });
+    const beforeFocus = await readIndicatorStyles();
+    await input.focus();
+    const afterFocus = await readIndicatorStyles();
 
-    // At least one focus indicator should be present
     const hasFocusIndicator =
-      focusStyle.outline !== 'none' ||
-      focusStyle.boxShadow !== 'none' ||
-      focusStyle.border !== 'none';
-
+      (afterFocus.outline !== beforeFocus.outline && afterFocus.outlineStyle !== 'none') ||
+      (afterFocus.boxShadow !== beforeFocus.boxShadow && afterFocus.boxShadow !== 'none') ||
+      afterFocus.borderColor !== beforeFocus.borderColor;
     expect(hasFocusIndicator).toBe(true);
   });
 
   test('should support keyboard-only navigation', async ({ page }) => {
-    // Start with Tab key navigation
-    await page.keyboard.press('Tab');
-
-    // Should be able to navigate to all interactive elements
-    const interactiveElements = await page.locator('button, a, input, textarea, [tabindex]').all();
-
-    for (let i = 0; i < Math.min(interactiveElements.length, 10); i++) {
+    const input = page.getByRole('textbox', { name: /describe the signal/i });
+    for (let i = 0; i < 20; i++) {
+      if (await input.evaluate((element) => element === document.activeElement)) break;
       await page.keyboard.press('Tab');
     }
-
-    // Should be able to reach the message input
-    const input = page.getByRole('textbox', { name: /message/i });
-    await input.focus();
     await expect(input).toBeFocused();
   });
 
@@ -127,25 +95,17 @@ test.describe('Accessibility Compliance', () => {
     const buttons = await page.getByRole('button').all();
 
     for (const button of buttons) {
-      const accessibleName = await button.getAttribute('aria-label') ||
-        await button.textContent();
-
-      expect(accessibleName).toBeTruthy();
-      expect(accessibleName!.length).toBeGreaterThan(0);
+      const label =
+        (await button.getAttribute('aria-label')) ?? (await button.innerText()).trim();
+      expect(label).toBeTruthy();
     }
   });
 
   test('should announce dynamic content changes', async ({ page }) => {
-    // Check for aria-live regions
-    const liveRegions = await page.locator('[aria-live]').count();
-
-    // Should have at least one live region for chat messages
-    // Or the chat container should be set up for dynamic announcements
-    const chatContainer = page.locator('[role="log"], [aria-live="polite"], [aria-live="assertive"]');
-    const hasLiveRegion = await chatContainer.count() > 0 || liveRegions > 0;
-
-    // This is a best practice check - may need adjustment based on implementation
-    expect(hasLiveRegion || true).toBe(true); // Soft check for now
+    const transcript = page.getByRole('log');
+    await expect(transcript).toBeVisible();
+    await expect(transcript).toHaveAttribute('aria-live', 'polite');
+    await expect(transcript).toHaveAttribute('aria-relevant', 'additions');
   });
 });
 
@@ -193,16 +153,13 @@ test.describe('Screen Reader Support', () => {
   });
 
   test('should provide status messages for actions', async ({ page }) => {
-    // Send a message
-    const input = page.getByRole('textbox', { name: /message/i });
-    await input.fill('Test message');
+    const input = page.getByRole('textbox', { name: /describe the signal/i });
+    const transcript = page.getByRole('log');
+    await input.fill('A water main break is flooding the intersection at 5th and Main.');
     await page.getByRole('button', { name: /send/i }).click();
 
-    // Wait for response
-    await expect(page.getByText('Test message')).toBeVisible();
-
-    // Response should be visible and announced
-    await expect(page.locator('[role="main"]')).toContainText(/ticket|help/i, {
+    await expect(transcript).toContainText('A water main break is flooding the intersection at 5th and Main.');
+    await expect(transcript.locator('[data-testid="agent-message"]')).toHaveCount(2, {
       timeout: 30000,
     });
   });
@@ -235,16 +192,15 @@ test.describe('Responsive Accessibility', () => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto('/');
 
-    // Check button sizes are at least 44x44 pixels (WCAG target size)
+    // Keep interactive targets at least 44x44 pixels for touch use.
     const buttons = await page.getByRole('button').all();
 
     for (const button of buttons) {
       const box = await button.boundingBox();
       if (box) {
-        // WCAG 2.1 recommends 44x44 minimum touch target
-        // Allow some flexibility for icon buttons with padding
-        expect(box.width).toBeGreaterThanOrEqual(32);
-        expect(box.height).toBeGreaterThanOrEqual(32);
+        const label = await button.innerText();
+        expect(box.width, `button "${label}" should be at least 44px wide`).toBeGreaterThanOrEqual(44);
+        expect(box.height, `button "${label}" should be at least 44px tall`).toBeGreaterThanOrEqual(44);
       }
     }
   });

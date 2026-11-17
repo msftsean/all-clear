@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 # Embedding model / dims mirror labs/04-build-rag-pipeline/setup_index.py.
-DEFAULT_INDEX_NAME = "university-kb"
+DEFAULT_INDEX_NAME = "knowledge-base"
 DEFAULT_EMBEDDING_DEPLOYMENT = "text-embedding-ada-002"
 EMBEDDING_DIMENSIONS = 1536
 CONTENT_TRUNCATE_CHARS = 8000
@@ -268,7 +268,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--index-name",
-        default=os.environ.get("AZURE_SEARCH_INDEX_NAME", DEFAULT_INDEX_NAME),
+        default=(
+            os.environ.get("AZURE_SEARCH_INDEX_NAME")
+            or os.environ.get("AZURE_SEARCH_INDEX")
+            or DEFAULT_INDEX_NAME
+        ),
         help=f"Search index name (default: env AZURE_SEARCH_INDEX_NAME or {DEFAULT_INDEX_NAME}).",
     )
     parser.add_argument(

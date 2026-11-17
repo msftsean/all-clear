@@ -40,3 +40,15 @@ def test_dry_run_id_set_is_stable_and_deduplicated():
 
     # The upsert key set is identical between runs (no growth on re-run).
     assert set(ids_run1) == set(ids_run2)
+
+
+def test_default_seed_index_matches_all_clear_backend():
+    seeder = _load_seeder()
+    assert seeder.parse_args(["--dry-run"]).index_name == "knowledge-base"
+
+
+def test_seed_index_uses_deployment_environment(monkeypatch):
+    seeder = _load_seeder()
+    monkeypatch.delenv("AZURE_SEARCH_INDEX_NAME", raising=False)
+    monkeypatch.setenv("AZURE_SEARCH_INDEX", "custom-index")
+    assert seeder.parse_args(["--dry-run"]).index_name == "custom-index"
