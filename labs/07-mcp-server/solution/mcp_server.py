@@ -35,11 +35,15 @@ except ImportError:
 
 LABS_DIR = Path(__file__).parent.parent.parent
 SHARED_DIR = LABS_DIR.parent / "shared"
+BACKEND_DIR = LABS_DIR.parent / "backend"
 LAB04_SOLUTION = LABS_DIR / "04-build-rag-pipeline" / "solution"
 LAB05_SOLUTION = LABS_DIR / "05-agent-orchestration" / "solution"
 
+sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(LAB04_SOLUTION))
 sys.path.insert(0, str(LAB05_SOLUTION))
+
+from app.services.pii import redact_pii, redact_pii_text  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -112,12 +116,14 @@ mcp = FastMCP(
 @mcp.tool()
 async def classify_signal(signal_text: str, session_id: Optional[str] = None) -> str:
     """
-    Process an inbound signal through the QueryAgent classification path.
+    Process a sanitized inbound signal through the Lab 05 pipeline.
 
-    Authority: classify only. This helper cannot route, create records, search
-    knowledge, or bypass escalation.
+    Session IDs are accepted for compatibility but ignored until an owner
+    identity contract exists. Input PII is removed before processing.
     """
-    logger.info("Classifying signal: %s...", signal_text[:50])
+    safe_signal_text = redact_pii_text(signal_text)
+    pii_detected = safe_signal_text != signal_text
+    logger.info("Classifying signal: %s...", safe_signal_text[:50])
     pipeline = get_agent_pipeline()
 
     if pipeline is None:
@@ -128,13 +134,13 @@ async def classify_signal(signal_text: str, session_id: Optional[str] = None) ->
                 "target_queue": "field-operations",
                 "confidence": 0.86,
                 "entities": {
-                    "location": "Main St" if "Main St" in signal_text else None,
+                    "location": "Main St" if "Main St" in safe_signal_text else None,
                     "severity_indicators": (
-                        ["downed line"] if "line" in signal_text.lower() else []
+                        ["downed line"] if "line" in safe_signal_text.lower() else []
                     ),
                 },
-                "requires_escalation": "power line" in signal_text.lower(),
-                "pii_detected": False,
+                "requires_escalation": pii_detected or "power line" in safe_signal_text.lower(),
+                "pii_detected": pii_detected,
                 "fallback": True,
             },
             indent=2,
@@ -142,30 +148,34 @@ async def classify_signal(signal_text: str, session_id: Optional[str] = None) ->
 
     try:
         result, new_session_id = await pipeline.process(
-            user_message=signal_text,
-            session_id=session_id,
+            signal_text=safe_signal_text,
+            pii_detected=pii_detected,
         )
         response = {
-            "response": result.content,
+            "response": result.user_message,
             "session_id": new_session_id,
+            "status": result.status,
+            "incident_id": result.incident_id,
+            "queue": result.queue,
+            "severity": getattr(result.severity, "value", result.severity),
             "confidence": result.confidence,
             "requires_followup": result.requires_followup,
-            "suggested_actions": result.suggested_actions,
         }
-        if result.sources:
-            response["sources"] = [
+        if result.citations:
+            response["citations"] = [
                 {
-                    "title": source.get("title", "Unknown"),
-                    "preview": source.get("content_preview", "")[:100] + "...",
+                    "source_id": citation.source_id,
+                    "source_type": citation.source_type,
+                    "quote": redact_pii_text(citation.quote),
                 }
-                for source in result.sources
+                for citation in result.citations
             ]
-        return json.dumps(response, indent=2)
+        return json.dumps(redact_pii(response), indent=2)
     except Exception as e:
-        logger.exception("Error classifying signal: %s", e)
+        logger.error("Error classifying signal (%s)", type(e).__name__)
         return json.dumps(
             {
-                "error": str(e),
+                "error": redact_pii_text(str(e)),
                 "message": (
                     "An error occurred while classifying the signal. "
                     "Escalate if severity or PII cannot be determined."

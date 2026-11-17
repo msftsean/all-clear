@@ -14,21 +14,35 @@ Beast=QA/Event Tester, Kitty=Azure/DevOps). Prior in-flight work was preserved
 and reviewed under the new names rather than discarded; the retired agent
 folders were moved to `.squad/agents/_alumni/`.
 
-## 2026-09-20 — Authoritative 390-minute event path (S0-S5)
+## 2026-09-20 — Prior event path (superseded)
 
-The event-ready path is the mock-runnable participant spine already on the
-runbook: Lab 00 setup, Lab 01 classification, Lab 03 spec/constitution
-alignment, Lab 04 grounded retrieval, Lab 05 orchestration/surge replay, and
-Lab 09 GitHub verification — 315 minutes of work plus 75 minutes of protected
-breaks/lunch. Individual Azure MCP setup (Lab 02), `azd up` deployment
-(Lab 06), MCP red-team (Lab 07), APIM gateway (Lab 08), voice/phone
-extensions, and model-continuity/failover (Exercise 05y) are optional,
-coach-led, or take-home and must never be presented as part of the completion
-contract. Completion must be backed by executable verifier evidence
-(`verify_environment.py`, `test_lab01.py`, `test_lab03.py`, `verify_index.py`
-+ `test_rag.py`, `test_lab05.py` + surge smoke test, and the Lab 09 starter +
-`participant_extension/` gate), never by an environment variable or verbal
-claim. Full plan: `docs/event-readiness/DELIVERY_PLAN.md`.
+The earlier participant path has been superseded by the Arlington Day 2
+schedule below. Preserve this entry as historical context; use the current
+event-clock decision as the source of truth.
+
+## 2026-11-09 — Event clock set to 9:00 AM - 4:45 PM ET (supersedes 390-minute clock)
+
+Azure Days Arlington Day 2 runs Wednesday, November 18, 2026, from 9:00 AM to
+4:45 PM ET. The 465-minute S0-S6 path has 375 working minutes and 90 minutes
+for breaks, buffer, and working lunch:
+
+| Clock | Block |
+| --- | --- |
+| 9:00-9:30 | S0 |
+| 9:30-10:15 | S1 |
+| 10:15-10:30 | Break |
+| 10:30-11:15 | S2 |
+| 11:15-12:15 | S3 |
+| 12:15-12:30 | Buffer / table check |
+| 12:30-1:15 | Working lunch; optional glass-box audit |
+| 1:15-2:45 | S4 |
+| 2:45-3:00 | Break |
+| 3:00-3:45 | S5 |
+| 3:45-4:45 | S6 pilot plans and demos |
+
+Labs 02, 06, 07, and 08, plus voice/phone and failover continuity, remain
+optional or facilitator-led. The event-ready path and evidence are recorded
+in `docs/event-readiness/DELIVERY_PLAN.md`.
 
 ## 2026-09-20 — Azure event path is shared-backend-first
 
@@ -101,7 +115,7 @@ classification, severity/SLA, and escalation using the existing
 The MCP red-team probe (`labs/07-mcp-server/exercises/mcp_red_team_probe.py`)
 is deterministic and offline, checking PII redaction, prompt-injection
 resistance, and SEV1/SLA preservation against the Lab 07 server contract.
-Both are optional/take-home, not part of the required S0-S5 completion
+Both are optional/take-home, not part of the required S0-S6 completion
 contract.
 
 ## 2026-09-20 — Glass-Box Audit evaluator metric naming and builder strategy

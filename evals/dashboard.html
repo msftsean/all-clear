@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local All Clear evaluation results for human Rubberduck review.">
+  <title>All Clear · Local Evaluation Review</title>
+  <script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.55;
+    }
+    a { color: var(--cp-link); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    a:hover { color: var(--cp-accent-hover); }
+    :focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 3px; }
+    .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+    .masthead { padding: 28px 0 20px; border-bottom: 1px solid var(--cp-border); }
+    .eyebrow {
+      margin: 0 0 6px;
+      color: var(--cp-accent);
+      font-size: .78rem;
+      font-weight: 750;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.7rem); line-height: 1.12; }
+    .subhead { margin: 10px 0 0; color: var(--cp-text-muted); max-width: 760px; }
+    .run-stamp {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 18px;
+      color: var(--cp-text-muted);
+      font-size: .92rem;
+    }
+    .run-stamp strong { color: var(--cp-text); }
+    main { padding: 24px 0 48px; }
+    .verdict {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 20px;
+      margin: 0 0 22px;
+      background: var(--cp-accent-soft);
+      border: 1px solid var(--cp-accent);
+      border-radius: 16px;
+    }
+    .verdict-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--cp-accent);
+      color: var(--cp-accent-fg);
+      font-weight: 800;
+      font-size: 1.2rem;
+    }
+    .verdict h2 { margin: 0 0 4px; font-size: 1.2rem; }
+    .verdict p { margin: 0; color: var(--cp-text-muted); }
+    .notice {
+      padding: 12px 16px;
+      margin: 0 0 26px;
+      background: var(--cp-surface);
+      border-left: 4px solid var(--cp-warning);
+      border-radius: 0 .625rem .625rem 0;
+      color: var(--cp-text-muted);
+    }
+    .section-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 30px 0 14px;
+    }
+    .section-heading h2 { margin: 0; font-size: 1.4rem; }
+    .section-heading p { margin: 4px 0 0; color: var(--cp-text-muted); }
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 0 0 14px;
+    }
+    .filter {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: .625rem;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font: inherit;
+      font-size: .9rem;
+      cursor: pointer;
+    }
+    .filter[aria-pressed="true"] { border-color: var(--cp-accent); background: var(--cp-accent-soft); }
+    .cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card {
+      min-width: 0;
+      padding: 18px;
+      background: var(--cp-surface);
+      border: 1px solid var(--cp-border);
+      border-radius: 16px;
+      box-shadow: 0 1px 2px var(--cp-border);
+    }
+    .card[hidden] { display: none; }
+    .card-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+    .card h3 { margin: 0; font-size: 1.05rem; line-height: 1.35; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      gap: 6px;
+      padding: 3px 9px;
+      border: 1px solid var(--cp-border-strong);
+      border-radius: 999px;
+      background: var(--cp-surface);
+      color: var(--cp-text);
+      font-size: .76rem;
+      font-weight: 750;
+      letter-spacing: .03em;
+      text-transform: uppercase;
+    }
+    .status-pass { border-color: var(--cp-success); }
+    .status-fail { border-color: var(--cp-danger); }
+    .status-blocked, .status-incomplete { border-color: var(--cp-warning); }
+    .severity {
+      display: inline-block;
+      padding: 2px 7px;
+      border-left: 3px solid var(--cp-danger);
+      background: var(--cp-surface-soft);
+      color: var(--cp-text);
+      font-size: .72rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      vertical-align: 1px;
+    }
+    .severity-medium { border-left-color: var(--cp-warning); }
+    .metric {
+      margin: 12px 0 8px;
+      font-size: 1.45rem;
+      font-weight: 750;
+      letter-spacing: -.02em;
+    }
+    .metric small { font-size: .82rem; font-weight: 500; letter-spacing: 0; color: var(--cp-text-muted); }
+    .card p { margin: 8px 0; color: var(--cp-text-muted); }
+    .card ul { margin: 8px 0 0; padding-left: 20px; }
+    .card li { margin: 5px 0; }
+    .trace {
+      margin-top: 14px;
+      padding-top: 11px;
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text-soft);
+      font-size: .84rem;
+    }
+    code, .code {
+      overflow-wrap: anywhere;
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: .9em;
+    }
+    .trace code { color: var(--cp-text); }
+    .full { grid-column: 1 / -1; }
+    .finding-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .finding {
+      padding: 12px 14px;
+      border: 1px solid var(--cp-border);
+      border-radius: .625rem;
+      background: var(--cp-bg-elevated);
+    }
+    .finding strong { display: block; margin-bottom: 3px; }
+    .finding p { margin: 0; color: var(--cp-text-muted); }
+    .finding .trace { margin-top: 8px; padding-top: 0; border-top: 0; }
+    .footer {
+      padding: 18px 0 28px;
+      border-top: 1px solid var(--cp-border);
+      color: var(--cp-text-muted);
+      font-size: .9rem;
+    }
+    .footer p { margin: 5px 0; }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    @media (max-width: 720px) {
+      .wrap { width: min(100% - 28px, 1120px); }
+      .cards { grid-template-columns: 1fr; }
+      .full { grid-column: auto; }
+      .section-heading { align-items: start; flex-direction: column; }
+      .verdict { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <p class="eyebrow">All Clear · Rubberduck review · Report 01</p>
+      <h1>Local evaluation results</h1>
+      <p class="subhead">A candid snapshot of confirmed evidence from the Windows local checkout. Execution scope is stated per suite; this is not a deployment or client-readiness certification.</p>
+      <div class="run-stamp" aria-label="Run information">
+        <span><strong>Results date:</strong> 12 Nov 2026</span>
+        <span><strong>Execution time:</strong> Unknown (not captured in the run record)</span>
+        <span><strong>Snapshot metadata:</strong> 2026-11-12 12:52 -05:00</span>
+        <span><strong>Branch:</strong> <code>event/arlington-2026-11-18</code></span>
+        <span><strong>HEAD:</strong> <code>96db514bfeded80fd6b607199351c0c0ab11567f</code></span>
+        <span><strong>Worktree:</strong> dirty; modified and untracked paths listed below</span>
+        <span><strong>Scope:</strong> reported results only</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="verdict" aria-labelledby="verdict-title">
+      <div class="verdict-mark" aria-hidden="true">!</div>
+      <div>
+        <h2 id="verdict-title">Not ready to claim client-facing assurance</h2>
+        <p>Post-hardening smoke, frontend build, local accuracy eval, Lab 05/07 focused tests, and both repaired local MCP probes pass. Chromium-only browser checks pass, but full cross-browser coverage remains incomplete. Guardian confirmed the session/transcript paths are fail-closed or disabled, realtime client-controlled instructions are fixed, and the PII-escalation regression is fixed. Verified ownership, authenticated ACS ingress, and broader route-auth scope remain unresolved; live Foundry quality/red-team evaluation is blocked. No remote or production targets were contacted.</p>
+      </div>
+    </section>
+
+    <p class="notice"><strong>How to read this report:</strong> Pass = confirmed successful result; Fail = confirmed failure or invalid/false-green result; Blocked = required live prerequisites unavailable; Environment-incomplete = run did not finish its intended coverage due to local setup. Severity badges apply only to security findings and are separate from suite result filters. Counts from focused tests overlap the full backend suite and are not additive.</p>
+
+    <section aria-labelledby="suite-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="suite-title">Evaluation suites</h2>
+          <p>Filter by suite result. Security severity labels appear separately in the findings section.</p>
+        </div>
+        <span id="visible-count" class="sr-only" aria-live="polite"></span>
+      </div>
+      <div class="filters" role="group" aria-label="Filter results by status">
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">All results</button>
+        <button class="filter" type="button" data-filter="pass" aria-pressed="false">Pass</button>
+        <button class="filter" type="button" data-filter="fail" aria-pressed="false">Fail</button>
+        <button class="filter" type="button" data-filter="blocked" aria-pressed="false">Blocked</button>
+        <button class="filter" type="button" data-filter="incomplete" aria-pressed="false">Environment-incomplete</button>
+      </div>
+      <div class="cards" id="suite-cards">
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Smoke test · backend + frontend unit</h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">349 passed <small>backend · 3 warnings</small></div>
+          <p><strong>Post-hardening rerun:</strong> <code>npm run smoke-test</code> exited 0; frontend unit tests passed 6 across 3 files. The earlier pre-hardening result was 347 backend passed and 4 frontend tests passed; the new results supersede those counts for the smoke suite. This is a local Windows checkout run. The backend part changes into <code>backend</code> and collects <code>backend/tests</code> using <code>backend/pyproject.toml</code>; it is distinct from the repository-root contract run below.</p>
+          <p class="trace"><strong>Reproduce from repository root:</strong> <code>npm run smoke-test</code><br><strong>Script:</strong> <code>bash scripts/smoke-test.sh</code><br><strong>Shell:</strong> Git Bash at <code>C:\Program Files\Git\usr\bin\bash.exe</code> (verified).</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Backend scenario accuracy</h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">60 / 60 <small>100%</small></div>
+          <p>Post-hardening local scenario-evaluation rerun met the configured 0.90 minimum accuracy; no live Foundry judge or deployed service was involved in this command.</p>
+          <p class="trace"><strong>Trace:</strong> from <code>backend</code>, run <code>python scripts/check_eval.py --min-accuracy 0.90</code>.</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Glass-Box <code>evaluate_scenarios()</code></h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">5 / 5 <small>in-memory harness</small></div>
+          <p>Earlier local in-memory harness result on record; no generated results file exists. It was not included in the latest post-hardening rerun report.</p>
+          <p class="trace"><strong>Trace:</strong> <code>evals/glass-box-audit/</code> · in-memory invocation; no data artifact.</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Targeted backend safety / PII / escalation / router</h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">81 passed <small>and a separate 32 passed run</small></div>
+          <p>Earlier focused local pytest runs from <code>backend</code> in PowerShell with <code>$env:PYTHONPATH='.'</code>. They overlap the earlier 347-test backend suite; these are historical focused counts, not additive to the latest 349-pass smoke result.</p>
+          <p class="trace"><strong>Reproduce 81 passed:</strong><br><code>python -m pytest tests\test_schemas.py tests\test_voice\test_safety_net.py tests\test_voice\test_endpoints.py tests\test_voice\test_pii_filter.py tests\test_router_no_llm.py tests\test_pipeline_e2e.py tests\test_voice_tool_path.py -q</code></p>
+          <p class="trace"><strong>Reproduce 32 passed:</strong><br><code>python -m pytest tests\test_routes.py tests\test_mock_chat_client.py tests\test_action_tools.py -q</code></p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>MCP red-team probe · Lab 07</h3>
+            <span class="status status-pass">Pass · post-fix</span>
+          </div>
+          <div class="metric">Both repaired probes passed</div>
+          <p><strong>Post-fix:</strong> Both Lab 07 start/solution probes passed locally after correcting the broken call and making the probe reject JSON error responses. Guardian independently reviewed the change. The earlier false-green is retained as history only; these local probes do not replace the blocked live red-team scan.</p>
+          <p class="trace"><strong>Reproduce from repository root:</strong><br><code>python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server start</code><br><code>python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server solution</code></p>
+        </article>
+
+        <article class="card" data-status="fail">
+          <div class="card-top">
+            <h3>Repository-root quickstart / contract tests · separate from backend suite</h3>
+            <span class="status status-fail">Fail</span>
+          </div>
+          <div class="metric">2 passed · 10 failed</div>
+          <p>This local run is distinct from the 349-test smoke backend suite: it starts at repository root and collects root <code>tests/quickstart/...</code>, not <code>backend/tests</code>. Last confirmed result: 2 passed, 10 failed—2 Azure-hook expectations, 5 quickstart documentation expectations (missing HEADSTART), and 3 CLI tests with a Bash/Windows path mismatch. No post-hardening rerun of this root suite is reported.</p>
+          <p class="trace"><strong>Reproduce from repository root:</strong> <code>python -m pytest tests/ -q</code>. <strong>Last confirmed result:</strong> 2 passed, 10 failed.</p>
+        </article>
+
+        <article class="card" data-status="incomplete">
+          <div class="card-top">
+            <h3>Frontend Playwright</h3>
+            <span class="status status-incomplete">Environment-incomplete</span>
+          </div>
+          <div class="metric">6 passed · 75 skipped · 9 failed</div>
+          <p><strong>Historical full run:</strong> 6 passed, 75 skipped, 9 failed after <code>npm ci</code>; failures were attributed to missing Firefox/WebKit binaries. The attempted <code>npx playwright install chromium firefox webkit</code> stalled and was stopped after a partial Firefox download from <code>frontend</code>. Full cross-browser coverage remains incomplete; retain these initial counts as history rather than replacing them with the Chromium-only subset.</p>
+          <p class="trace"><strong>Exact command:</strong> <code>Set-Location frontend; npm run test:e2e</code>. <strong>Scope:</strong> local frontend browser suite; related tests at <code>frontend/tests/e2e</code>.</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Playwright · Chromium-only subset</h3>
+            <span class="status status-pass">Pass · subset only</span>
+          </div>
+          <div class="metric">3 passed · 15 skipped · 0 failed</div>
+          <p>Local Chromium project result only. It does not complete or replace the Firefox/WebKit cross-browser run.</p>
+          <p class="trace"><strong>Exact command:</strong> from <code>frontend</code>, <code>npx playwright test --project=chromium --reporter=line</code>. <strong>Execution time:</strong> not captured.</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Frontend production build</h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">Build passed</div>
+          <p>Local frontend build completed successfully.</p>
+          <p class="trace"><strong>Trace:</strong> from <code>frontend</code>, <code>npm run build</code>.</p>
+        </article>
+
+        <article class="card" data-status="pass">
+          <div class="card-top">
+            <h3>Lab 05 + Lab 07 focused tests</h3>
+            <span class="status status-pass">Pass</span>
+          </div>
+          <div class="metric">19 passed · 1 deselected</div>
+          <p>Local focused test result across Labs 05 and 07. The keyword filter deselects the Azure-dependent test; it is not included in this pass count. The PII regression test verifies escalation and that detected values do not reach model requests, logs, sessions, incidents, decisions, or responses.</p>
+          <p class="trace"><strong>Exact command from repository root:</strong><br><code>python -m pytest labs\07-mcp-server\test_lab07.py labs\05-agent-orchestration\test_lab05.py -q -k "not live_azure" --tb=short</code><br><strong>Execution time:</strong> not captured.</p>
+        </article>
+
+        <article class="card" data-status="blocked">
+          <div class="card-top">
+            <h3>Azure AI Foundry quality evaluation</h3>
+            <span class="status status-blocked">Blocked</span>
+          </div>
+          <div class="metric">Not run against live service</div>
+          <p>Blocked: requires a deployed backend URL, Foundry project/judge endpoint, and Azure authentication. No remote or production target was contacted for this suite.</p>
+          <p class="trace"><strong>Trace:</strong> <code>evals/quality/quality_eval.py</code> · blocked by missing live prerequisites.</p>
+        </article>
+
+        <article class="card" data-status="blocked">
+          <div class="card-top">
+            <h3>Live red-team scan</h3>
+            <span class="status status-blocked">Blocked</span>
+          </div>
+          <div class="metric">Not run against live service</div>
+          <p>Blocked: requires a deployed backend URL, Foundry project/judge endpoint, and Azure authentication. Local MCP probes are separate and do not substitute for this scan. Historical <code>evals/red-team/RESULTS.md</code> is excluded from current-state evidence.</p>
+          <p class="trace"><strong>Trace:</strong> <code>evals/red-team/red_team_scan.py</code> · blocked by missing live prerequisites.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="security-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="security-title">Security findings</h2>
+          <p>Statuses distinguish a fixed code path from a protected-but-disabled feature. Neither establishes complete application-wide authorization. Guardian completed an independent local review; live deployment and gateway behavior remain unverified.</p>
+        </div>
+      </div>
+      <div class="card full">
+        <ul class="finding-list">
+          <li class="finding">
+            <strong><span class="severity">Severity: HIGH</span> Session access control · Protected / disabled</strong>
+            <p>Both session GET routes return 503 and the frontend no longer requests history. This is fail-closed disablement, not ownership authorization. Voice sessions are still persisted using a shared identity; keep history disabled until a verified principal and server-side tenant/session ownership exist.</p>
+            <p class="trace"><strong>Reference:</strong> <code>backend/app/api/sessions.py:25-45</code>; <code>frontend/src/allclear/ConversationHistory.tsx</code> · confidence 9/10.</p>
+          </li>
+          <li class="finding">
+            <strong><span class="severity">Severity: HIGH</span> Transcript exposure · Protected / disabled</strong>
+            <p>The public SSE route returns 503; the ACS media WebSocket closes with 1008 before obtaining an Azure token. Redaction now runs before bus publication, but phone bridging/transcript display is disabled, internal bus subscription can still be unfiltered, and call-ID filtering is not authorization.</p>
+            <p class="trace"><strong>Reference:</strong> <code>backend/app/api/transcripts.py:32-40</code>; <code>backend/app/api/media_ws.py:467-473</code> · confidence 9/10.</p>
+          </li>
+          <li class="finding">
+            <strong><span class="severity severity-medium">Severity: MEDIUM</span> Client-controlled realtime instructions/session ID · Fixed</strong>
+            <p>The handler generates a fresh session ID and passes the fixed safety prompt; the Azure service also hardcodes that prompt. The caller-controlled prompt/session path is no longer used.</p>
+            <p class="trace"><strong>Reference:</strong> <code>backend/app/api/realtime.py:202-231</code>; <code>backend/app/services/azure/realtime.py:137</code> · confidence 8/10.</p>
+          </li>
+          <li class="finding">
+            <strong><span class="severity severity-medium">Severity: MEDIUM</span> PII signal lost before deterministic escalation · Fixed</strong>
+            <p>Both Lab 07 servers now capture trusted PII metadata before redaction and pass it separately into the Lab 05 pipeline. The router preserves escalation without sending detected source text to the model. Detection is limited to patterns recognized by the shared redactor; this is not comprehensive PII/PHI detection.</p>
+            <p class="trace"><strong>Reference:</strong> <code>labs/07-mcp-server/{start,solution}/mcp_server.py:124-153</code>; <code>labs/05-agent-orchestration/solution/pipeline.py:121-145</code> · confidence 9/10.</p>
+          </li>
+        </ul>
+        <p class="notice"><strong>Broader auth-scope uncertainty:</strong> Guardian found no general end-user authentication dependency on the reviewed application routes; which routes are intentionally public and whether a deployment gateway adds protection are unknown. This is an unresolved integration/authorization question, not a severity-rated finding in this report. Inventory route exposure and enforce verified identity/ownership for tenant- or operator-scoped actions before multi-tenant production use.</p>
+      </div>
+    </section>
+
+    <section aria-labelledby="blockers-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="blockers-title">Open gates and next evidence</h2>
+          <p>These items prevent a stronger assurance statement.</p>
+        </div>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <h3>Security remediation</h3>
+          <p>Implement verified principal and tenant/session/call ownership plus authenticated ACS ingress before restoring history or phone transcripts. Inventory route authentication and clarify deployment-gateway protections. Broaden PII/PHI detection before treating the Lab 07 flag as comprehensive privacy coverage.</p>
+        </article>
+        <article class="card">
+          <h3>Probe correction</h3>
+          <p>The probe rejects JSON error responses; both local probes passed, and Guardian independently confirmed the PII-escalation fix. Preserve those results and keep red-team checks local unless live-scan prerequisites are authorized and available.</p>
+        </article>
+        <article class="card">
+          <h3>Complete browser coverage</h3>
+          <p>The multi-browser install stalled and was stopped after a partial Firefox download. Chromium-only passed, but Firefox/WebKit coverage remains incomplete; install the required revisions and rerun the full suite before replacing the initial counts.</p>
+        </article>
+        <article class="card">
+          <h3>Live evaluation prerequisites</h3>
+          <p>Only when authorized and provisioned, run Foundry quality evaluation and live red-team scan with a deployed backend URL, judge/project endpoint, and Azure auth. This report made no network calls.</p>
+        </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="snapshot-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="snapshot-title">Snapshot anchor and refresh checklist</h2>
+          <p>The evaluation execution time is unknown; only the run date is in the confirmed record.</p>
+        </div>
+      </div>
+      <div class="card full">
+        <p><strong>Repository anchor:</strong> branch <code>event/arlington-2026-11-18</code>, HEAD <code>96db514</code>. Snapshot metadata verified 2026-11-12 12:52 -05:00. The working tree was dirty; the following state is recorded as-is and is not attributed to this dashboard. <code>frontend/test-results/.last-run.json</code> is restored/clean and is not listed as modified.</p>
+        <details class="finding">
+          <summary><strong>Working-tree paths at snapshot</strong></summary>
+          <p><strong>Modified:</strong></p>
+          <ul class="state-list">
+            <li><code>backend/app/api/media_ws.py</code></li>
+            <li><code>backend/app/api/realtime.py</code></li>
+            <li><code>backend/app/api/sessions.py</code></li>
+            <li><code>backend/app/api/transcripts.py</code></li>
+            <li><code>backend/app/main.py</code></li>
+            <li><code>backend/app/models/voice_schemas.py</code></li>
+            <li><code>backend/app/services/azure/realtime.py</code></li>
+            <li><code>backend/app/services/transcript_bus.py</code></li>
+            <li><code>backend/tests/test_conversation_persistence.py</code></li>
+            <li><code>backend/tests/test_transcripts/test_sse_http.py</code></li>
+            <li><code>backend/tests/test_transcripts/test_transcript_bus.py</code></li>
+            <li><code>backend/tests/test_voice/test_endpoints.py</code></li>
+            <li><code>frontend/src/allclear/BriefingRoom.tsx</code></li>
+            <li><code>frontend/src/allclear/ConversationHistory.tsx</code></li>
+            <li><code>frontend/src/allclear/LiveCalls.tsx</code></li>
+            <li><code>frontend/src/hooks/useTranscriptStream.ts</code></li>
+            <li><code>labs/05-agent-orchestration/solution/pipeline.py</code></li>
+            <li><code>labs/07-mcp-server/exercises/mcp_red_team_probe.py</code></li>
+            <li><code>labs/07-mcp-server/README.md</code></li>
+            <li><code>labs/07-mcp-server/SPEC.md</code></li>
+            <li><code>labs/07-mcp-server/solution/mcp_server.py</code></li>
+            <li><code>labs/07-mcp-server/start/mcp_server.py</code></li>
+            <li><code>specs/019-evolution-loop/plan.md</code></li>
+            <li><code>specs/019-evolution-loop/spec.md</code></li>
+            <li><code>specs/019-evolution-loop/tasks.md</code></li>
+          </ul>
+          <p><strong>Untracked:</strong></p>
+          <p>These are status entries only; their provenance is not inferred. The three pre-existing untracked paths were preserved, not modified or described as outputs: <code>.foundry/datasets/all-clear-conversation-scenarios-2026-10-01.jsonl</code>, <code>redteam demo prompt.txt</code>, and <code>swa-runbook/</code>.</p>
+          <ul class="state-list">
+            <li><code>.foundry/datasets/all-clear-conversation-scenarios-2026-10-01.jsonl</code></li>
+            <li><code>backend/tests/test_media_ws_security.py</code></li>
+            <li><code>backend/tests/test_voice/test_azure_realtime.py</code></li>
+            <li><code>evals/dashboard.html</code></li>
+            <li><code>frontend/src/allclear/ConversationHistory.test.tsx</code></li>
+            <li><code>frontend/src/allclear/LiveCalls.test.tsx</code></li>
+            <li><code>labs/07-mcp-server/test_lab07.py</code></li>
+            <li><code>redteam demo prompt.txt</code></li>
+            <li><code>swa-runbook/</code></li>
+          </ul>
+        </details>
+        <p><strong>Refresh checklist:</strong></p>
+        <ul>
+          <li>Capture the report update time, current HEAD, and fresh <code>git status --short</code>; replace this snapshot inventory if it changes.</li>
+          <li>After the pending browser install/revision check and rerun, record its output and execution time, then update Playwright counts; retain the initial result only as history.</li>
+          <li>Lab 07's fixed probes pass and reject JSON error responses; update this status only if new probe evidence changes. Keep the HIGH findings marked disabled—not functionally resolved—until principal, tenant/session/call ownership, and authenticated-ACS integration are verified. Preserve the realtime and PII-escalation fixes, including the PII detector-coverage limitation.</li>
+          <li>Keep Foundry quality and live red-team marked blocked until the required deployed URL, judge/project endpoint, and Azure auth are available and the actual runs complete.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p><strong>Evidence boundary:</strong> Results above are limited to confirmed run notes for 12 Nov 2026. No scores were inferred, focused counts were not added to suite totals, and blocked or incomplete work is not represented as a pass.</p>
+      <p>Single-file local report · no external scripts, stylesheets, assets, or network requests. The page has two inline scripts: theme detection (first) and suite-result filtering.</p>
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const buttons = [...document.querySelectorAll(".filter")];
+      const cards = [...document.querySelectorAll("#suite-cards [data-status]")];
+      const count = document.getElementById("visible-count");
+      const labels = {
+        all: "all results",
+        pass: "passing results",
+        fail: "failing results",
+        blocked: "blocked results",
+        incomplete: "environment-incomplete results"
+      };
+      function setFilter(value) {
+        let visible = 0;
+        cards.forEach((card) => {
+          const show = value === "all" || card.dataset.status === value;
+          card.hidden = !show;
+          if (show) visible += 1;
+        });
+        buttons.forEach((button) => {
+          button.setAttribute("aria-pressed", String(button.dataset.filter === value));
+        });
+        count.textContent = `Showing ${visible} ${labels[value]}.`;
+      }
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => setFilter(button.dataset.filter));
+      });
+      setFilter("all");
+    })();
+  </script>
+</body>
+</html>

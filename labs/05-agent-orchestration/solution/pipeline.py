@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -118,7 +118,11 @@ class AgentPipeline:
         self.router_executor = router_executor or RouterExecutor(open_incidents=open_incidents)
         self.action_agent = action_agent or ActionAgent()
 
-    async def process(self, signal_text: str, session_id: Optional[str] = None) -> tuple[IncidentAction, str]:
+    async def process(
+        self, signal_text: str, session_id: Optional[str] = None, *,
+        pii_detected: bool = False,
+    ) -> tuple[IncidentAction, str]:
+        """Process sanitized text, preserving trusted pre-redaction PII detection."""
         if not signal_text or not signal_text.strip():
             session = self.session_manager.get_or_create(session_id)
             return IncidentAction(
@@ -136,6 +140,9 @@ class AgentPipeline:
 
         session = self.session_manager.get_or_create(session_id)
         classification = await self.query_agent.classify(signal_text, session.get_context_summary())
+        classification = replace(
+            classification, pii_detected=pii_detected or classification.pii_detected,
+        )
         decision = await self.router_executor.route(classification, signal_text)
         action = await self.action_agent.execute(decision, session.get_history())
         session.add_turn(

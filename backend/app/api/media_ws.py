@@ -23,6 +23,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.core.dependencies import get_realtime_service, get_settings
 from app.services.azure.phone import PHONE_SYSTEM_PROMPT
+from app.services.pii import redact_pii_text
 from app.services.transcript_bus import transcript_bus
 
 logger = logging.getLogger(__name__)
@@ -61,14 +62,12 @@ class _TokenManager:
 _token_mgr = _TokenManager()
 
 
-@router.websocket("/acs-media")
-async def acs_media_bridge(ws: WebSocket) -> None:
-    """Bridge ACS media streaming to Azure OpenAI Realtime API.
+async def _run_acs_media_bridge(ws: WebSocket) -> None:
+    """Run the media relay after a trusted ACS ingress has been established.
 
     Audio flow:
       Caller → ACS → [this WS] → Azure OpenAI Realtime → [this WS] → ACS → Caller
     """
-    await ws.accept()
     settings = get_settings()
     call_id = str(uuid4())
     call_start = datetime.now(timezone.utc)
@@ -112,14 +111,15 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         text = caller_transcript_buf.pop(item_id, "").strip()
         if not text:
             return
+        safe_text = redact_pii_text(text)
         caller_published.add(item_id)
         logger.info(
             "Media bridge: Caller said (call_id=%s, item=%s): %s",
-            call_id, item_id, text[:120],
+            call_id, item_id, safe_text[:120],
         )
         await transcript_bus.publish({
             "type": "user_speech",
-            "text": text,
+            "text": safe_text,
             "call_id": call_id,
         })
 
@@ -273,13 +273,14 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                 # Support both preview and GA event names for agent speech transcript
                 if t in ("response.audio_transcript.done", "response.output_audio_transcript.done"):
                     text = msg.get("transcript", "")
+                    safe_text = redact_pii_text(text)
                     logger.info(
                         "Media bridge: AI said (call_id=%s): %s",
-                        call_id, text[:120],
+                        call_id, safe_text[:120],
                     )
                     await transcript_bus.publish({
                         "type": "agent_speech",
-                        "text": text,
+                        "text": safe_text,
                         "call_id": call_id,
                     })
                     logger.debug(
@@ -294,13 +295,14 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                     if text and item_id and item_id not in caller_published:
                         caller_published.add(item_id)
                         caller_transcript_buf.pop(item_id, None)
+                        safe_text = redact_pii_text(text)
                         logger.info(
                             "Media bridge: Caller said (call_id=%s): %s",
-                            call_id, text[:120],
+                            call_id, safe_text[:120],
                         )
                         await transcript_bus.publish({
                             "type": "user_speech",
-                            "text": text,
+                            "text": safe_text,
                             "call_id": call_id,
                         })
                     else:
@@ -341,7 +343,9 @@ async def acs_media_bridge(ws: WebSocket) -> None:
                     }))
                     await openai_ws.send(json.dumps({"type": "response.create"}))
                     logger.info(f"Media bridge: tool '{name}' result sent")
-                    summary = (result.result or result.error or "")[:200]
+                    summary = redact_pii_text(
+                        result.result or result.error or ""
+                    )[:200]
                     await transcript_bus.publish({
                         "type": "tool_call",
                         "tool": name,
@@ -457,3 +461,13 @@ async def acs_media_bridge(ws: WebSocket) -> None:
         except Exception:
             pass
         logger.info("Media bridge: session ended (call_id=%s)", call_id)
+
+
+@router.websocket("/acs-media")
+async def acs_media_bridge(ws: WebSocket) -> None:
+    """Reject the public bridge until ACS caller identity can be verified."""
+    await ws.accept()
+    await ws.close(
+        code=1008,
+        reason="Authenticated ACS ingress is not configured",
+    )

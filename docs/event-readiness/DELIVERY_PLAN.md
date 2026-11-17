@@ -1,27 +1,30 @@
 # All Clear Event Readiness Delivery Plan
 
 **Audience:** facilitators and event owners  
-**Decision:** run the mock-runnable participant spine in 390 minutes. Do not attempt the full lab catalog in one event day.
+**Event:** Azure Days Arlington, Day 2 — Wednesday, November 18, 2026, 9:00 AM–4:45 PM ET (465 minutes).
+**Decision:** run the mock-runnable S0–S6 participant path. Do not attempt the full lab catalog in one event day.
 
 ## Scope cut
 
-The repository contains more workshop material than can honestly fit a 390-minute day. The event-ready path is the six-stage participant spine already represented in `participant-runbook/index.html`: setup, classification, spec discipline, grounded retrieval, orchestration/surge, and GitHub verification. This path is **315 minutes of working time plus 75 minutes of breaks/lunch**.
+The repository contains more workshop material than can honestly fit the event day. The event-ready path is the seven-block participant path in `participant-runbook/index.html`: setup, classification, spec discipline, grounded retrieval, orchestration/surge, GitHub verification, and pilot planning/demos. This path is **375 minutes of working time plus 90 minutes of breaks, buffer, and working lunch**.
 
-The required path intentionally cuts live cloud buildout from the completion contract. `labs/README.md` names `00 -> 01 -> 03 -> 04 -> 05` as the participant spine and marks Lab 02 and Labs 06-09 as optional extensions for a longer session. The current participant workbook keeps Lab 09 as the final required operating loop, so this plan treats Lab 09 as required but keeps Lab 02, Lab 06, Lab 07, Lab 08, voice, phone, and failover continuity as optional/facilitator-led.
+The required path intentionally cuts live cloud buildout from the completion contract. `labs/README.md` names `00 -> 01 -> 03 -> 04 -> 05 -> 09` as the event build path; Lab 09 is required and Labs 02, 06, 07, and 08 are optional extensions. Voice, phone, and failover continuity remain optional/facilitator-led.
 
-## 390-minute run of show
+## 465-minute run of show
 
 | Clock | Minutes | Block | Status | Repository artifacts | Completion evidence | Facilitator fallback |
 | --- | ---: | --- | --- | --- | --- | --- |
-| 11:00-11:30 | 30 | **S0 - Setup and mock baseline** | Required | `participant-runbook/index.html#stage0`; `labs/00-setup/README.md`; `labs/00-setup/verify_environment.py`; `CONTEXT.md`; `.specify/memory/constitution.md` | Participant can open the repo, confirm Python 3.11+ and Node 18+, run the Lab 00 environment check, and reach `/api/health` on the local or shared backend. | Use Codespaces if local setup stalls. Keep `MOCK_MODE=true`. If a participant cannot start services, pair them to the facilitator shared backend and keep them in the workbook. |
-| 11:30-12:15 | 45 | **S1 - Classify signals and bounded authority** | Required | `participant-runbook/index.html#stage1`; `labs/01-understanding-agents/README.md`; `labs/01-understanding-agents/exercises/01a-intent-classification.md`; `labs/01-understanding-agents/exercises/01b-prompt-engineering.md`; `labs/01-understanding-agents/test_lab01.py`; `CONTEXT.md` | Participant can explain QueryAgent, RouterExecutor, and ActionAgent boundaries; classification produces typed `SignalClassification`; RouterExecutor remains deterministic and prompt-free. Evidence command: `cd labs/01-understanding-agents && python test_lab01.py` where available. | If implementation time slips, coach from the bounded-authority matrix and use the provided test fixture or reference path for discussion, but require the participant to identify classify-only vs decide-only vs act-only responsibilities. |
-| 12:15-12:30 | 15 | **Break** | Required break | N/A | Participants stop work; facilitators triage setup blockers. | Move unresolved environment blockers to shared backend path before S2 starts. |
-| 12:30-1:15 | 45 | **S2 - Spec-driven capability** | Required | `participant-runbook/index.html#stage2`; `labs/03-spec-driven-development/README.md`; `labs/03-spec-driven-development/exercises/03a-write-spec.md`; `labs/03-spec-driven-development/exercises/03b-generate-from-spec.md`; `.specify/memory/constitution.md`; `CONTEXT.md`; `labs/03-spec-driven-development/test_lab03.py` | Participant produces or reviews a Spec Kit feature spec/plan/tasks that use All Clear language, preserves bounded authority, forces statutory-clock SEV1 escalation, and names verifiers before implementation. Evidence command: `cd labs/03-spec-driven-development && python test_lab03.py` where available. | If Copilot/Spec Kit commands are unavailable, use the README acceptance bullets as a manual review rubric and have participants mark violations against the constitution. |
-| 1:15-2:15 | 60 | **S3 - Grounded retrieval and citations** | Required | `participant-runbook/index.html#stage3`; `labs/04-build-rag-pipeline/README.md`; `labs/04-build-rag-pipeline/verify_index.py`; `labs/04-build-rag-pipeline/test_rag.py`; `CONTEXT.md` | Participant verifies the pre-populated knowledge base and demonstrates that a response claim traces to a source record. Evidence commands: `cd labs/04-build-rag-pipeline && python verify_index.py` and `python test_rag.py`. | Use the pre-populated/mock knowledge index. Do not spend event time creating embeddings or re-provisioning search. If Azure credentials fail, run local verification and coach the citation contract. |
-| 2:15-3:00 | 45 | **Lunch / reset** | Required lunch | N/A | Facilitators confirm every table has S0-S3 evidence or a fallback assignment before orchestration starts. | Triage participants into three groups: green path, shared-backend path, or observe-and-run-tests path. |
-| 3:00-4:30 | 90 | **S4 - Three-agent orchestration and surge replay** | Required | `participant-runbook/index.html#stage4`; `labs/05-agent-orchestration/README.md`; `labs/05-agent-orchestration/test_lab05.py`; `labs/05-agent-orchestration/scenarios/surge/README.md`; `labs/05-agent-orchestration/scenarios/surge/smoke_test.py`; `CONTEXT.md`; `.specify/memory/constitution.md` | Participant shows QueryAgent -> RouterExecutor -> ActionAgent end-to-end; RouterExecutor has zero LLM calls; duplicate surge signals attach as reports to one incident; SEV1/statutory-clock cases escalate; sitreps are citation-grounded. Evidence commands: `cd labs/05-agent-orchestration && python test_lab05.py`, `python test_surge.py` if present, or `cd backend && PYTHONPATH=. python ../labs/05-agent-orchestration/scenarios/surge/smoke_test.py`. | If live services fail, keep the mock pipeline. If participants are behind, run the surge replay as a facilitator demo and require participants to identify dedup, severity/SLA, escalation, and citation evidence from the output. |
-| 4:30-4:45 | 15 | **Break** | Required break | N/A | Facilitators confirm GitHub access before S5. | Participants without GitHub Actions access can run the local verifier and watch a facilitator fork run. |
-| 4:45-5:30 | 45 | **S5 - GitHub workflow and bounded extension** | Required | `participant-runbook/index.html#stage5`; `labs/09-github-in-the-lab/README.md`; `.github/workflows/smoke-test.yml`; `scripts/smoke-test.sh`; `labs/09-github-in-the-lab/test_starter_red_to_green.py`; `labs/09-github-in-the-lab/participant_extension/` | Participant forks or uses an assigned repo, runs `smoke-test.yml` or the local equivalent, and completes one bounded extension under `participant_extension/` with a green starter verifier. Evidence command: `cd labs/09-github-in-the-lab && python -m pytest -q test_starter_red_to_green.py`; repository evidence is a green workflow run or local smoke result. | If GitHub Actions is unavailable, run the local verifier and show the offline smoke gate described in `labs/09-github-in-the-lab/README.md`. Keep RouterExecutor untouched. |
+| 9:00-9:30 | 30 | **S0 - Setup and mock baseline** | Required | `participant-runbook/index.html#stage0`; `labs/00-setup/README.md`; `labs/00-setup/verify_environment.py`; `CONTEXT.md`; `.specify/memory/constitution.md` | `cd labs/00-setup && python verify_environment.py` passes; mock mode or the shared backend provides a healthy `/api/health`. | Use Codespaces if local setup stalls. Keep `MOCK_MODE=true`; pair blocked participants with the shared backend. |
+| 9:30-10:15 | 45 | **S1 - Classify signals and bounded authority** | Required | `participant-runbook/index.html#stage1`; `labs/01-understanding-agents/README.md`; `labs/01-understanding-agents/exercises/01a-intent-classification.md`; `labs/01-understanding-agents/exercises/01b-prompt-engineering.md`; `CONTEXT.md` | A typed `SignalClassification` is produced; participants can explain classify-only, deterministic decide-only, and bounded act-only authority. | Coach from the bounded-authority matrix and use the provided test fixture or reference path for discussion. |
+| 10:15-10:30 | 15 | **Break** | Required break | N/A | Participants stop work; facilitators triage setup blockers. | Move unresolved environment blockers to the shared-backend path before S2. |
+| 10:30-11:15 | 45 | **S2 - Spec-driven capability** | Required | `participant-runbook/index.html#stage2`; `labs/03-spec-driven-development/README.md`; exercises 03a/03b; `.specify/memory/constitution.md`; `CONTEXT.md` | A Spec Kit spec, plan, and tasks use All Clear terms, preserve bounded authority and statutory-clock SEV1 escalation, and name verifiers before implementation. | If Copilot/Spec Kit commands are unavailable, use the README acceptance bullets as a manual review rubric. |
+| 11:15-12:15 | 60 | **S3 - Grounded retrieval and citations** | Required | `participant-runbook/index.html#stage3`; `labs/04-build-rag-pipeline/README.md`; `verify_index.py`; `test_rag.py`; `CONTEXT.md` | `cd labs/04-build-rag-pipeline && python verify_index.py` and `python test_rag.py` pass; cited records trace to the local corpus. | Use the pre-populated/mock knowledge corpus. Do not spend event time creating embeddings or re-provisioning search. |
+| 12:15-12:30 | 15 | **Buffer / table check** | Buffer | N/A | Facilitators confirm each table has S0-S3 evidence or a fallback assignment before orchestration starts. | Triage participants into green path, shared-backend path, or observe-and-run-tests path. |
+| 12:30-1:15 | 45 | **Working lunch (optional glass-box audit)** | Protected lunch; audit optional | `evals/glass-box-audit/README.md`; `participant-runbook/index.html#stage4` | Lunch remains protected; interested attendees may review the glass-box audit without making it a completion gate. | Skip the audit if tables need recovery time. |
+| 1:15-2:45 | 90 | **S4 - Three-agent orchestration and surge replay** | Required | `participant-runbook/index.html#stage4`; `labs/05-agent-orchestration/README.md`; `test_lab05.py`; surge scenario README and smoke test; `CONTEXT.md`; `.specify/memory/constitution.md` | The surge evidence shows QueryAgent -> RouterExecutor -> ActionAgent, zero RouterExecutor LLM calls, report attachment on dedup, SEV1/statutory-clock escalation, and citation-grounded sitreps. | Keep the mock pipeline. If tables are behind, demonstrate the replay and have attendees identify dedup, severity/SLA, escalation, and citation evidence. |
+| 2:45-3:00 | 15 | **Break** | Required break | N/A | Participants stop work; facilitators confirm GitHub access before S5. | Participants without Actions access can run the local verifier and watch a facilitator fork run. |
+| 3:00-3:45 | 45 | **S5 - GitHub workflow and bounded extension** | Required | `participant-runbook/index.html#stage5`; `labs/09-github-in-the-lab/README.md`; `.github/workflows/smoke-test.yml`; `scripts/smoke-test.sh`; `test_starter_red_to_green.py`; `participant_extension/` | `cd labs/09-github-in-the-lab && python -m pytest -q test_starter_red_to_green.py` passes; the extension stays bounded and RouterExecutor untouched. | If Actions is unavailable, run the local verifier and offline smoke gate. |
+| 3:45-4:45 | 60 | **S6 - 30-day pilot plans (20 min) and demos (40 min)** | Required | `participant-runbook/index.html#stage6`; `docs/lab-to-production.md`; completed lab evidence | Each team presents a 30-day pilot plan choosing one domain pack and operational KPI, then demos its completed All Clear evidence. | Use mock-mode evidence and a guided repository walkthrough; do not make a live Azure deployment a prerequisite. |
 
 ## Required vs optional exercises
 
@@ -35,6 +38,7 @@ Participants are complete when they can show evidence for all required blocks:
 4. **Lab 04:** knowledge search returns grounded, citation-ready results from the pre-populated index.
 5. **Lab 05:** orchestration proves deterministic routing, dedup-as-report attachment, SEV1/statutory escalation, no PII echo, and citation-grounded action.
 6. **Lab 09:** GitHub smoke/extension loop is green without requiring Azure credentials.
+7. **S6:** the team presents a 30-day pilot plan with one domain pack and operational KPI, then demos its completed All Clear evidence.
 
 ### Optional / coach-led / take-home
 
@@ -63,7 +67,7 @@ Do not accept completion based on an environment variable, a manually edited suc
 ## Facilitator fallback model
 
 1. **Shared backend first:** before doors open, publish a tested shared backend URL and verify `GET /api/health`.
-2. **Mock mode always available:** keep `MOCK_MODE=true` as the baseline. Azure credentials are not required for the core S0-S5 learning outcome.
+2. **Mock mode always available:** keep `MOCK_MODE=true` as the baseline. Azure credentials are not required for the core S0-S6 learning outcome.
 3. **Pre-populated knowledge:** use the existing Lab 04 index/data path; do not rebuild search infrastructure during the core agenda.
 4. **Reference/demo path:** for blocked participants, run the facilitator demonstration and require them to interpret the evidence instead of losing the block to setup.
 5. **Cloud extensions only after green core:** allow APIM, MCP, `azd up`, voice, phone, and failover only when the participant has already completed required evidence or when the block is explicitly coach-led.
@@ -75,9 +79,9 @@ Do not accept completion based on an environment variable, a manually edited suc
 - [ ] Workbook is served over HTTP(S), not `file://`, and the linked lab paths open.
 - [ ] Facilitator shared backend URL is recorded; `curl --fail --max-time 10 "$BACKEND_URL/api/health"` succeeds.
 - [ ] At least one real/shared backend signal submission returns an incident id, severity/SLA, queue, and grounded response.
-- [ ] Core local verifiers are known green before the event: Lab 00 environment check, Lab 01, Lab 03, Lab 04 index/RAG, Lab 05 orchestration/surge, and Lab 09 starter verifier.
+- [ ] Core local verifiers are known green before the event: Lab 00 environment check, Lab 01, Lab 03, Lab 04 index/RAG, Lab 05 orchestration/surge, and Lab 09 starter verifier; the S6 pilot/demo handoff is ready.
 - [ ] Facilitators can run the surge replay and explain incident/report/magnitude evidence from the output.
-- [ ] Azure credentials, if offered, are preflighted for the event tenant; failure of Azure credentials does not block S0-S5.
+- [ ] Azure credentials, if offered, are preflighted for the event tenant; failure of Azure credentials does not block S0-S6.
 - [ ] Facilitators agree that Labs 02, 06, 07, 08, voice, phone, APIM, and failover continuity are optional unless separately scheduled.
 - [ ] Breaks and lunch remain protected; optional extensions do not consume required block time.
 
@@ -86,10 +90,10 @@ Do not accept completion based on an environment variable, a manually edited suc
 - [ ] No tested shared backend and local setup is expected to carry all participants.
 - [ ] The workbook links or required lab verifier paths are broken.
 - [ ] Lab 05 surge/orchestration evidence cannot be produced in mock mode.
-- [ ] Facilitators plan to require individual `azd up`, APIM provisioning, MCP setup, or voice/phone as part of the 390-minute completion contract.
+- [ ] Facilitators plan to require individual `azd up`, APIM provisioning, MCP setup, or voice/phone as part of the S0-S6 completion contract.
 - [ ] Claims of grounded output cannot be tied to citations or source records.
 - [ ] Any path weakens bounded authority, deterministic routing, mandatory escalation, PII discipline, or verifier-first delivery from the constitution.
 
 ## Final readiness call
 
-**Conditional go.** The event is ready if facilitators run the S0-S5 spine above and preserve the optional cut. It is not ready if the event is marketed or facilitated as the full lab catalog, because the repository artifacts show that live Azure setup, deployment, MCP, APIM, voice/phone, and failover continuity exceed the honest 390-minute completion budget.
+**Conditional go.** The event is ready if facilitators run the S0-S6 path above and preserve the optional cut. It is not ready if the event is marketed or facilitated as the full lab catalog, because live Azure setup, deployment, MCP, APIM, voice/phone, and failover continuity exceed the 465-minute event budget.

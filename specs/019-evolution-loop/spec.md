@@ -78,6 +78,19 @@ language, required safety gates, and active verification expectations.
   runbooks, and planning records MUST be removed.
 - **FR-005**: The Spec Kit Constitution, active spec, plan, tasks, and templates MUST
   define the current All Clear architecture and validation gates.
+- **FR-006**: Conversation history MUST fail closed until the backend can bind
+  records to a verified server-side owner; caller-supplied session IDs and hashes
+  MUST NOT authorize retrieval.
+- **FR-007**: Phone transcript delivery MUST be call-scoped and PII-redacted before
+  publication or logging, and MUST fail closed until call ownership and ACS ingress
+  are verifiable.
+- **FR-008**: Realtime sessions MUST use server-generated session IDs and the
+  server-owned safety prompt; the Lab 07 offline verifier MUST fail on tool errors.
+- **FR-009**: Both Lab 07 MCP variants MUST detect PII from original input at
+  the boundary, send only redacted text to models, logs, and storage, and pass the
+  trusted PII flag separately into Lab 05 deterministic routing. QueryAgent
+  output MUST NOT clear that flag; PII alone MUST trigger escalation for otherwise
+  benign requests without changing severity/SLA.
 
 ### Key Entities
 
@@ -94,3 +107,9 @@ language, required safety gates, and active verification expectations.
 - **SC-002**: Focused schema, safety, and voice endpoint tests pass.
 - **SC-003**: The primary frontend and all companion sites typecheck and build.
 - **SC-004**: A tracked-content scan returns zero retired-brand matches.
+- **SC-005**: Focused privacy/realtime tests and both offline Lab 07 MCP probe
+  variants pass; unauthenticated history, transcript, and ACS-ingress access is
+  rejected without contacting live services.
+- **SC-006**: Offline Lab 07 regression tests prove PII-triggered escalation
+  despite model `pii_detected=false`, redaction across model/log/storage/output
+  surfaces, and no PII false-positive from a literal redaction marker.

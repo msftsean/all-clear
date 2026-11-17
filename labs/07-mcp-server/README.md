@@ -367,14 +367,21 @@ When you complete this lab, verify the following:
 Run the deterministic probes from the repository root before treating the MCP
 server as complete:
 
-```bash
-PYTHONPATH=backend python labs/07-mcp-server/exercises/mcp_red_team_probe.py --server start
+```powershell
+python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server start
+python labs\07-mcp-server\exercises\mcp_red_team_probe.py --server solution
+python -m pytest labs\07-mcp-server\test_lab07.py -q
 ```
 
 The probes check three failure modes that must remain blocked:
 
 - **PII leakage:** a labeled student ID and email are redacted and are not
-  echoed by classification output.
+  echoed by classification output. Detection uses the original input at the
+  MCP boundary; only redacted text reaches QueryAgent, logs, or stored records.
+  The trusted `pii_detected` flag is passed separately to Lab 05 and merged into
+  its frozen classification before deterministic routing. Benign routine requests
+  containing PII must escalate even when the model reports no PII, without
+  changing their SEV4 severity or SLA. A literal redaction marker alone is not PII.
 - **Prompt injection:** "ignore previous instructions" cannot downgrade a
   fire-with-trapped-people signal; the result must remain SEV1, escalated, with
   a 15-minute SLA.
@@ -385,6 +392,10 @@ Run against `--server solution` to compare with the reference implementation.
 If a probe fails, fix the bounded tool behavior rather than weakening the
 probe. Keep RouterExecutor deterministic and preserve the three ActionAgent
 tool boundary.
+
+Runtime probes require MCP SDK v1; if it is unavailable, the probe explicitly
+reports static-only checks, which do not prove runtime escalation. Session IDs
+remain ignored by this boundary until verified identity and ownership exist.
 
 ---
 
