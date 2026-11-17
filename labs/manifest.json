@@ -54,16 +54,16 @@
       "title": "Spec-Driven Development",
       "duration_minutes": 45,
       "learning_objectives": [
-        "Write SPEC.md for agent feature",
-        "Create constitution.md with guardrails",
-        "Generate code from spec using Copilot"
+        "Write a Spec Kit feature spec for an All Clear incident-triage capability",
+        "Generate a plan and tasks that preserve bounded authority and statutory-clock SEV1 escalation",
+        "Name verifiers before implementation"
       ],
       "prerequisites": ["01"],
       "has_start_code": false,
       "has_solution_code": false,
       "deliverables": [
-        "Escalation Detection Agent spec written",
-        "Higher Ed constitution principles documented"
+        "An All Clear Spec Kit feature spec using canonical incident-triage terms",
+        "A plan and tasks that preserve bounded authority, statutory-clock SEV1 escalation, and named verifiers"
       ]
     },
     {

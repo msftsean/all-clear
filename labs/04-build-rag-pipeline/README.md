@@ -489,14 +489,28 @@ Please provide a helpful answer with citations."""
 
 ### 🔹 Step 6: Test Your RAG Pipeline
 
-Create a test script to verify your implementation:
+Run the offline citation-contract test against the local knowledge corpus:
 
 ```python
-# test_rag.py
+# from labs/04-build-rag-pipeline/
+python test_rag.py
+```
+
+This credential-free check verifies that citations map to corpus records with
+an article ID, title, and URL; that the expected queue appears among the
+sources; and that an unsupported question returns the exact escalation
+fallback with no sources.
+
+### Stretch: `my_live_rag_check.py`
+
+For a configured live RAG pipeline, copy this ad-hoc example into
+`my_live_rag_check.py` and adapt the client initialization:
+
+```python
 import asyncio
 from retrieve_agent import RetrieveAgent
 
-async def test_rag_pipeline():
+async def check_live_rag_pipeline():
     agent = RetrieveAgent(...)  # Initialize with your clients
 
     # 🧪 Test queries
@@ -518,13 +532,7 @@ async def test_rag_pipeline():
             print(f"  - [{source['id']}] {source['title']}")
 
 if __name__ == "__main__":
-    asyncio.run(test_rag_pipeline())
-```
-
-Run your tests:
-
-```bash
-python test_rag.py
+    asyncio.run(check_live_rag_pipeline())
 ```
 
 ---

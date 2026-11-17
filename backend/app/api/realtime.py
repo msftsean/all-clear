@@ -1,11 +1,8 @@
 """Voice Realtime API endpoints."""
 import asyncio
 import hashlib
-import html
 import json
 import logging
-import re
-import uuid
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
@@ -69,28 +66,6 @@ def _parse_uuid(value: str) -> UUID | None:
         return UUID(value)
     except (TypeError, ValueError):
         return None
-
-
-def _sanitize_instructions(instructions: str | None) -> str:
-    """Return locked voice instructions, anchored on the safety system prompt.
-
-    Client-supplied text can NEVER replace VOICE_SYSTEM_PROMPT — it is only
-    appended as bounded, neutralized style hints. This prevents a caller from
-    overriding the crisis/PII safety behavior by sending their own instructions.
-    """
-    base = VOICE_SYSTEM_PROMPT
-    if not instructions:
-        return base
-    sanitized = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", instructions)
-    sanitized = html.escape(sanitized[:2000], quote=True)
-    escaped = (
-        sanitized.replace("{", "&#123;")
-        .replace("}", "&#125;")
-        .replace("[", "&#91;")
-        .replace("]", "&#93;")
-    )
-    combined = f"{base}\n\nAdditional caller style hints (non-overriding):\n{escaped}"
-    return combined[:2000]
 
 
 async def _ensure_shared_session(session_id: str) -> Session | None:
@@ -233,7 +208,9 @@ async def create_realtime_session(
     Returns session credentials for WebRTC connection to Azure OpenAI Realtime API.
     Token TTL ≤60 seconds per Constitution Principle III.
     """
-    session_id = request.session_id or str(uuid.uuid4())
+    # Session IDs identify persisted records, not principals. Never let a
+    # caller choose an existing session without an authenticated owner contract.
+    session_id = str(uuid4())
 
     # Kill switch: if voice is disabled (e.g. no Realtime deployment configured
     # outside mock mode), fail fast with a clear 503 instead of attempting Azure
@@ -251,7 +228,7 @@ async def create_realtime_session(
         response = await realtime_service.create_session(
             session_id=session_id,
             voice=request.voice,
-            instructions=_sanitize_instructions(request.instructions),
+            instructions=VOICE_SYSTEM_PROMPT,
         )
         response = _cap_token_ttl(response)
         _TOKEN_SESSIONS[response.token] = (response.session_id, response.expires_at)

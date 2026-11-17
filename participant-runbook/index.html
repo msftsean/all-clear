@@ -4,13 +4,13 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>All Clear — Participant Workbook (Day 2 Build Lab)</title>
-<meta name="description" content="Participant workbook for the All Clear event path: six required blocks for setup, classification, specification, grounded retrieval, orchestration, and GitHub verification." />
+<meta name="description" content="Participant workbook for the All Clear event path: seven required blocks for setup, classification, specification, grounded retrieval, orchestration, GitHub verification, and pilot planning." />
 
 <!-- Open Graph / Twitter link-preview cards -->
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="All Clear" />
 <meta property="og:title" content="All Clear — Participant Workbook (Day 2 Build Lab)" />
-<meta property="og:description" content="Six required participant blocks for a bounded, mock-runnable All Clear incident-triage path." />
+<meta property="og:description" content="Seven required participant blocks for a bounded, mock-runnable All Clear incident-triage path." />
 <meta property="og:url" content="https://ashy-wave-04083e40f.7.azurestaticapps.net/" />
 <meta property="og:image" content="https://ashy-wave-04083e40f.7.azurestaticapps.net/og-cover.png" />
 <meta property="og:image:secure_url" content="https://ashy-wave-04083e40f.7.azurestaticapps.net/og-cover.png" />
@@ -20,7 +20,7 @@
 <meta property="og:image:alt" content="All Clear Participant Workbook — Day 2 Build Lab" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="All Clear — Participant Workbook (Day 2 Build Lab)" />
-<meta name="twitter:description" content="Six required participant blocks for the All Clear incident-triage event path." />
+<meta name="twitter:description" content="Seven required participant blocks for the All Clear incident-triage event path." />
 <meta name="twitter:image" content="https://ashy-wave-04083e40f.7.azurestaticapps.net/og-cover.png" />
 <meta name="color-scheme" content="dark light" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -284,6 +284,7 @@ html.js main section.in{opacity:1;transform:none}
       <a class="sec">Start here</a>
       <a href="#overview"><span class="n">▸</span>What you'll build<span class="tick">✓</span></a>
       <a href="#agenda"><span class="n">⏱</span>Day 2 agenda<span class="tick">✓</span></a>
+      <a href="#team-roles"><span class="n">👥</span>Team roles</a>
       <a class="sec">Required build path</a>
       <a href="#stage0"><span class="n">S0</span>Setup<span class="tick">✓</span></a>
       <a href="#stage1"><span class="n">S1</span>Classify signals<span class="tick">✓</span></a>
@@ -291,6 +292,7 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#stage3"><span class="n">S3</span>Ground responses<span class="tick">✓</span></a>
       <a href="#stage4"><span class="n">S4</span>Orchestrate a surge<span class="tick">✓</span></a>
       <a href="#stage5"><span class="n">S5</span>Verify on GitHub<span class="tick">✓</span></a>
+      <a href="#stage6"><span class="n">S6</span>Pilot plan and demos<span class="tick">✓</span></a>
       <a class="sec">Optional extensions</a>
       <a href="#extensions"><span class="n">+</span>Azure, deploy, MCP</a>
       <a class="sec">Reference</a>
@@ -298,7 +300,7 @@ html.js main section.in{opacity:1;transform:none}
       <a href="#phone"><span class="n">A2</span>Phone call-in</a>
       <a href="#finish"><span class="n">✓</span>Finish line</a>
     </nav>
-    <p class="railprog" id="railProg"><b>0</b> / 6 required blocks done</p>
+    <p class="railprog" id="railProg"><b>0</b> / 7 required blocks done</p>
   </aside>
 
   <main>
@@ -313,7 +315,7 @@ html.js main section.in{opacity:1;transform:none}
 
     <div class="audience">
       <span class="big" aria-hidden="true">🛠️</span>
-      <p><strong>This is the participant edition</strong> &mdash; a <em>hands-on build path</em>. Work in the repository, use the linked instructions, and verify each checkpoint before moving on. The event outcome is a bounded, mock-runnable pipeline; optional cloud extensions are not required to finish.</p>
+      <p><strong>This is the participant edition</strong> &mdash; a <em>hands-on build path</em>. This repository is the pro-dev track for developers and architects; business roles are in a separate no-code track run by a partner. Work in the repository, use the linked instructions, and verify each checkpoint before moving on. The event outcome is a bounded, mock-runnable pipeline; optional cloud extensions are not required to finish.</p>
     </div>
 
     <div class="toplinks">
@@ -326,7 +328,7 @@ html.js main section.in{opacity:1;transform:none}
     <section id="overview">
       <h2>What you're going to build</h2>
       <p class="lead">All Clear is an incident-triage pipeline: a signal comes in, QueryAgent classifies it, RouterExecutor makes a deterministic routing decision, and ActionAgent acts through bounded tools with grounded output.</p>
-      <p><strong>Six required blocks, one verifiable path.</strong> You will run the system in mock mode, inspect the authority boundaries, write one focused spec, ground retrieval, exercise a surge, and finish with a small GitHub workflow. No deployed URL is required.</p>
+      <p><strong>Seven required blocks, one verifiable path.</strong> You will run the system in mock mode, inspect the authority boundaries, write one focused spec, ground retrieval, exercise a surge, verify a bounded GitHub extension, and finish with a pilot plan and demos. No deployed URL is required.</p>
       <div class="grid2">
         <div class="card"><div class="eyebrow">the required proof</div><p style="margin:0">Every required block ends with an observable checkpoint: a command, a reviewed artifact, or a test result.</p></div>
         <div class="card"><div class="eyebrow">how you work</div><p style="margin:0">Use a Codespace or local checkout. The exact participant instructions live under <code class="mono">labs/</code>; this workbook is the timed map and checklist.</p></div>
@@ -335,32 +337,46 @@ html.js main section.in{opacity:1;transform:none}
     </section>
 
     <section id="agenda">
-      <h2>⏱ Event agenda <span class="pill">390 minutes including breaks</span></h2>
-      <p>The required path is <strong>315 minutes of working time</strong> plus <strong>75 minutes of breaks</strong>. The clock is honest: optional extensions do not displace a required block.</p>
+      <h2>⏱ Event agenda <span class="pill">465 minutes total</span></h2>
+      <p>Azure Days Arlington, Day 2 &mdash; Wednesday, November 18, 2026, 9:00 AM&ndash;4:45 PM ET. The path has <strong>375 minutes of working time</strong> plus <strong>90 minutes for breaks, buffer, and working lunch</strong>; optional extensions do not displace a required block.</p>
       <table>
         <tr><th>Stage</th><th>What you build</th><th>Time</th><th>Clock (ET)</th></tr>
-        <tr><td><strong>S0</strong></td><td>Setup and mock-mode baseline</td><td>30 min</td><td>11:00 &ndash; 11:30</td></tr>
-        <tr><td><strong>S1</strong></td><td>Signal classification and bounded authority</td><td>45 min</td><td>11:30 &ndash; 12:15</td></tr>
-        <tr><td><strong>Break</strong></td><td>Break</td><td>15 min</td><td>12:15 &ndash; 12:30</td></tr>
-        <tr><td><strong>S2</strong></td><td>Spec-driven capability</td><td>45 min</td><td>12:30 &ndash; 1:15</td></tr>
-        <tr><td><strong>S3</strong></td><td>Grounded retrieval and citations</td><td>60 min</td><td>1:15 &ndash; 2:15</td></tr>
-        <tr><td><strong>Lunch</strong></td><td>Lunch / reset</td><td>45 min</td><td>2:15 &ndash; 3:00</td></tr>
-        <tr><td><strong>S4</strong></td><td>Three-agent orchestration and surge replay</td><td>90 min</td><td>3:00 &ndash; 4:30</td></tr>
-        <tr><td><strong>Break</strong></td><td>Break</td><td>15 min</td><td>4:30 &ndash; 4:45</td></tr>
-        <tr><td><strong>S5</strong></td><td>GitHub workflow and bounded extension</td><td>45 min</td><td>4:45 &ndash; 5:30</td></tr>
+        <tr><td><strong>S0</strong></td><td>Setup and mock-mode baseline</td><td>30 min</td><td>9:00 &ndash; 9:30</td></tr>
+        <tr><td><strong>S1</strong></td><td>Signal classification and bounded authority</td><td>45 min</td><td>9:30 &ndash; 10:15</td></tr>
+        <tr><td><strong>Break</strong></td><td>Break</td><td>15 min</td><td>10:15 &ndash; 10:30</td></tr>
+        <tr><td><strong>S2</strong></td><td>Spec-driven capability</td><td>45 min</td><td>10:30 &ndash; 11:15</td></tr>
+        <tr><td><strong>S3</strong></td><td>Grounded retrieval and citations</td><td>60 min</td><td>11:15 &ndash; 12:15</td></tr>
+        <tr><td><strong>Buffer</strong></td><td>Buffer / table check</td><td>15 min</td><td>12:15 &ndash; 12:30</td></tr>
+        <tr><td><strong>Lunch</strong></td><td>Working lunch (optional glass-box audit)</td><td>45 min</td><td>12:30 &ndash; 1:15</td></tr>
+        <tr><td><strong>S4</strong></td><td>Three-agent orchestration and surge replay</td><td>90 min</td><td>1:15 &ndash; 2:45</td></tr>
+        <tr><td><strong>Break</strong></td><td>Break</td><td>15 min</td><td>2:45 &ndash; 3:00</td></tr>
+        <tr><td><strong>S5</strong></td><td>GitHub workflow and bounded extension</td><td>45 min</td><td>3:00 &ndash; 3:45</td></tr>
+        <tr><td><strong>S6</strong></td><td>30-day pilot plans (20 min) and demos (40 min)</td><td>60 min</td><td>3:45 &ndash; 4:45</td></tr>
       </table>
-      <div class="tip"><span class="eyebrow">Required vs optional</span><p style="margin:.4em 0 0">Complete S0&ndash;S5 in order. Each block links to its exact participant instructions. The <a href="#extensions"><strong>extensions</strong></a> are optional and are not part of the 390-minute completion check.</p></div>
+      <div class="tip"><span class="eyebrow">Required vs optional</span><p style="margin:.4em 0 0">Complete S0&ndash;S6 in order. Each build block links to its exact participant instructions. Labs 02, 06, 07, and 08 plus the other <a href="#extensions"><strong>extensions</strong></a> are optional and are not part of the required path.</p></div>
+    </section>
+
+    <section id="team-roles">
+      <h2>Working as a team of 3&ndash;4</h2>
+      <ul class="steps">
+        <li><strong>Driver:</strong> works in the repo and runs the change.</li>
+        <li><strong>Navigator/prompter:</strong> keeps the team on the README, spec, and Copilot prompt.</li>
+        <li><strong>Verifier:</strong> runs the checkpoint and checks the evidence.</li>
+        <li><strong>Storyteller:</strong> presents the S6 pilot plan and demo; combine roles in a team of three.</li>
+      </ul>
     </section>
 
     <section id="stage0">
       <h2>S0 &middot; Setup and mock baseline <span class="pill">30 min · required</span></h2>
       <p class="tag">Goal: a runnable workspace and a known-good mock-mode baseline.</p>
+      <p class="tag">Yesterday's 4:10&ndash;4:45 PM <em>Beyond Hours Saved: Finding Real ROI</em> session leads into S6: apply that ROI thinking to a 30-day pilot plan and one operational KPI.</p>
       <ol class="steps">
         <li>Open the project in a Codespace or local checkout and verify the available tooling.</li>
         <li>Run the environment check from Lab 00; use mock mode when Azure credentials are unavailable.</li>
         <li>Confirm the health check or verifier passes before continuing.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Lab 00's environment check passes, and you can run the pipeline in mock mode.</p></div>
+      <p class="tag"><strong>Done when:</strong> <code class="mono">cd labs/00-setup &amp;&amp; python verify_environment.py</code> passes and mock mode is runnable.</p>
       <p class="tag"><a href="../labs/00-setup/README.md">📖 Exact instructions: Lab 00 — Environment Setup</a></p>
     </section>
 
@@ -373,6 +389,14 @@ html.js main section.in{opacity:1;transform:none}
         <li>Record one example of what each stage must not do.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">You can explain the input and output of all three stages and complete Lab 01's classification checkpoint.</p></div>
+      <p class="tag"><strong>Done when:</strong> a sample signal produces typed <code class="mono">SignalClassification</code> output and you can explain each stage's authority.</p>
+      <details class="tip">
+        <summary><span class="eyebrow">Copilot prompts to try</span></summary>
+        <ol class="steps">
+          <li><pre><code>Read labs/01-understanding-agents/README.md and exercise 01a. Help me classify this sample incident signal into a typed SignalClassification. Keep QueryAgent classify-only, RouterExecutor deterministic with zero LLM calls, and ActionAgent limited to its approved tools. Show the output and how to verify it.</code></pre></li>
+          <li><pre><code>Review my Lab 01 classifier against the README's three-stage responsibilities. Identify any authority-boundary violation and suggest the smallest test-backed correction; do not broaden the feature.</code></pre></li>
+        </ol>
+      </details>
       <p class="tag"><a href="../labs/01-understanding-agents/README.md">📖 Exact instructions: Lab 01 — Understanding Agents</a></p>
     </section>
 
@@ -385,6 +409,14 @@ html.js main section.in{opacity:1;transform:none}
         <li>Use Exercise 03b to review a small implementation proposal; record gaps instead of assuming generated code is complete.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Your spec names the exact authority boundaries and a verifier; your review notes identify any unverified claims.</p></div>
+      <p class="tag"><strong>Done when:</strong> your All Clear Spec Kit feature spec, plan, and tasks preserve bounded authority, statutory-clock SEV1 escalation, and named verifiers.</p>
+      <details class="tip">
+        <summary><span class="eyebrow">Copilot prompts to try</span></summary>
+        <ol class="steps">
+          <li><pre><code>Use labs/03-spec-driven-development/README.md, CONTEXT.md, and .specify/memory/constitution.md to draft a Spec Kit spec for one bounded All Clear incident-triage capability. Include acceptance criteria, non-goals, and named verifiers.</code></pre></li>
+          <li><pre><code>Review my spec, plan.md, and tasks.md against Lab 03. Check bounded agent authority, mandatory statutory-clock SEV1 escalation, signal preservation, and verifier tasks before implementation. List gaps without implementing.</code></pre></li>
+        </ol>
+      </details>
       <p class="tag"><a href="../labs/03-spec-driven-development/README.md">📖 Lab 03 walkthrough</a> · <a href="../labs/03-spec-driven-development/exercises/03a-write-spec.md">Exercise 03a</a> · <a href="../labs/03-spec-driven-development/exercises/03b-generate-from-spec.md">Exercise 03b</a></p>
     </section>
 
@@ -397,6 +429,14 @@ html.js main section.in{opacity:1;transform:none}
         <li>Run the lab verifier and trace one citation back to a source record.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Lab 04's verifier passes, and a response claim can be tied to a cited source record.</p></div>
+      <p class="tag"><strong>Done when:</strong> <code class="mono">cd labs/04-build-rag-pipeline &amp;&amp; python test_rag.py</code> passes the offline citation contract.</p>
+      <details class="tip">
+        <summary><span class="eyebrow">Copilot prompts to try</span></summary>
+        <ol class="steps">
+          <li><pre><code>Read labs/04-build-rag-pipeline/README.md. Make the offline citation contract pass with python test_rag.py. Reuse _keyword_search and _load_local_corpus; do not change either shared helper.</code></pre></li>
+          <li><pre><code>Trace each [n] citation in my Lab 04 result to a corpus record with article_id, title, and url. Confirm the expected queue appears among the sources and that the no-match fallback has no sources.</code></pre></li>
+        </ol>
+      </details>
       <p class="tag"><a href="../labs/04-build-rag-pipeline/README.md">📖 Exact instructions: Lab 04 — Build RAG Pipeline</a></p>
     </section>
 
@@ -409,6 +449,14 @@ html.js main section.in{opacity:1;transform:none}
         <li>Check that RouterExecutor remains deterministic and that SEV1/statutory-clock cases escalate.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">The surge verifier passes and you can point to one OPEN_INCIDENT, one ATTACH_TO_INCIDENT, and one escalation decision.</p></div>
+      <p class="tag"><strong>Done when:</strong> the surge output shows the three Main St signals sharing one incident ID, the gas-leak signal opening a new SEV1 incident, and the Elm St inquiry as a SEV4 customer inquiry.</p>
+      <details class="tip">
+        <summary><span class="eyebrow">Copilot prompts to try</span></summary>
+        <ol class="steps">
+          <li><pre><code>Use labs/05-agent-orchestration/README.md and its surge scenario README to help me make the orchestration test pass. Preserve every signal as a report, keep RouterExecutor deterministic with zero LLM calls, and retain SEV1/statutory-clock escalation.</code></pre></li>
+          <li><pre><code>Review this Lab 05 surge output. Point to evidence for OPEN_INCIDENT, ATTACH_TO_INCIDENT, severity/SLA, escalation, and cited source records. Do not infer facts that the output does not show.</code></pre></li>
+        </ol>
+      </details>
       <p class="tag"><a href="../labs/05-agent-orchestration/README.md">📖 Exact instructions: Lab 05 — Agent Orchestration</a> · <a href="../labs/05-agent-orchestration/scenarios/surge/README.md">Surge scenario</a></p>
     </section>
 
@@ -421,7 +469,28 @@ html.js main section.in{opacity:1;transform:none}
         <li>Turn the starter test red → green and document what changed.</li>
       </ol>
       <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">The starter test is green in your fork, the extension is bounded, and RouterExecutor remains untouched.</p></div>
+      <p class="tag"><strong>Done when:</strong> <code class="mono">cd labs/09-github-in-the-lab &amp;&amp; python -m pytest -q test_starter_red_to_green.py</code> passes for the bounded extension.</p>
+      <details class="tip">
+        <summary><span class="eyebrow">Copilot prompts to try</span></summary>
+        <ol class="steps">
+          <li><pre><code>Read labs/09-github-in-the-lab/README.md and inspect participant_extension. Suggest one bounded ActionAgent tool or deterministic scenario-pack change; do not modify RouterExecutor.</code></pre></li>
+          <li><pre><code>Run the Lab 09 starter verifier. If it fails, explain the failing requirement and make the smallest change that passes without weakening the verifier or existing tests.</code></pre></li>
+        </ol>
+      </details>
       <p class="tag"><a href="../labs/09-github-in-the-lab/README.md">📖 Exact instructions: Lab 09 — GitHub-in-the-Lab</a></p>
+    </section>
+
+    <section id="stage6">
+      <h2>S6 &middot; Pilot plan and demos <span class="pill">60 min · required</span></h2>
+      <p class="tag">Goal: apply the Day 1 ROI discussion to a 30-day All Clear pilot and show the work your team completed.</p>
+      <ol class="steps">
+        <li>Use <code class="mono">docs/lab-to-production.md</code> to choose one domain pack and one operational KPI for the first 30 days.</li>
+        <li>Spend 20 minutes shaping the pilot plan; keep it tied to measurable operational value and the controls demonstrated in the labs.</li>
+        <li>Spend 40 minutes demoing the completed All Clear work and its verifier evidence.</li>
+      </ol>
+      <div class="expect"><span class="eyebrow">Check yourself</span><p style="margin:.4em 0 0">Your team can explain the pilot KPI and show the evidence behind its All Clear demo.</p></div>
+      <p class="tag"><strong>Done when:</strong> the team presents its 30-day pilot plan with one domain pack and operational KPI, then demos its completed All Clear evidence.</p>
+      <p class="tag"><a href="../docs/lab-to-production.md">📖 Lab-to-production handoff</a></p>
     </section>
 
     <section id="extensions">
@@ -497,7 +566,7 @@ html.js main section.in{opacity:1;transform:none}
 
     <section id="finish">
       <h2>✓ Finish line</h2>
-      <p>If you can tick all six of these, you've completed the required event path:</p>
+      <p>If you can tick all seven of these, you've completed the required event path:</p>
       <ul class="finish">
         <li><strong>S0</strong> &mdash; Lab 00's environment check passes and mock mode is runnable.</li>
         <li><strong>S1</strong> &mdash; I can explain the bounded QueryAgent → RouterExecutor → ActionAgent pipeline and classify a signal.</li>
@@ -505,9 +574,10 @@ html.js main section.in{opacity:1;transform:none}
         <li><strong>S3</strong> &mdash; Lab 04 returns grounded knowledge with a traceable citation.</li>
         <li><strong>S4</strong> &mdash; My surge replay shows dedup, severity/SLA, escalation, and citation-grounded action.</li>
         <li><strong>S5</strong> &mdash; My fork runs the bounded GitHub extension and the starter test is green.</li>
+        <li><strong>S6</strong> &mdash; My team presents a 30-day pilot plan with one domain pack and KPI, then demos the completed work.</li>
       </ul>
       <p style="margin:1.1em 0 0"><span class="eyebrow">Optional next step</span> &mdash; Use <a href="#extensions"><strong>Optional extensions</strong></a> only if the facilitator has time and the required path is complete.</p>
-      <div class="try"><span class="eyebrow">Nice work</span><p style="margin:.4em 0 0">You completed the event path with evidence for each required block. Use the <span class="pill">Mark done</span> buttons to track progress; the counter in the sidebar counts the six required blocks.</p></div>
+      <div class="try"><span class="eyebrow">Nice work</span><p style="margin:.4em 0 0">You completed the event path with evidence for each required block. Use the <span class="pill">Mark done</span> buttons to track progress; the counter in the sidebar counts the seven required blocks.</p></div>
       <p class="footer">All Clear &mdash; participant workbook, event path. This page lives in <code>participant-runbook/</code>.</p>
     </section>
   </main>

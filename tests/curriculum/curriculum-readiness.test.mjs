@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import { verifyCurriculum } from "../../scripts/curriculum-readiness.mjs";
+
+const CHECKER = fileURLToPath(new URL("../../scripts/curriculum-readiness.mjs", import.meta.url));
 
 function fixture(files) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "all-clear-readiness-"));
@@ -52,6 +56,23 @@ test("passes a complete curriculum fixture", () => {
     `,
   });
   assert.deepEqual(verifyCurriculum(root), []);
+});
+
+test("prints the readiness result when run directly on Windows paths", () => {
+  const root = fixture({
+    ...artifacts,
+    "participant-runbook/index.html": `
+      <section id="agenda">
+        <p>Seven blocks totalling <strong>465 minutes</strong> in a 9:00 AM - 4:45 PM window.</p>
+        <p>Break, buffer, and lunch: 90 minutes.</p>
+        <td>30 min</td><td>45 min</td><td>15 min</td><td>45 min</td><td>60 min</td>
+        <td>15 min</td><td>45 min</td><td>90 min</td><td>15 min</td><td>45 min</td><td>60 min</td>
+      </section>
+    `,
+  });
+  const result = spawnSync(process.execPath, [CHECKER, root], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Curriculum readiness PASSED/);
 });
 
 test("reports broken links, missing artifacts, stale workflows, and env gates", () => {

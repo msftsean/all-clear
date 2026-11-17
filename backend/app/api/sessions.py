@@ -1,66 +1,46 @@
-"""
-Session history API endpoints (019-conversation-persistence).
+"""Fail-closed conversation history endpoints.
 
-Provides read-only access to persisted conversation sessions:
-  GET /api/sessions/{session_id}    – retrieve a single session with full history
-  GET /api/sessions                 – list sessions for a student (by student_id_hash)
-
-Constitution Art. III: student_id_hash is the only student identifier accepted
-or returned; raw student IDs are never logged or stored here.
+History retrieval needs a server-verified principal-to-session ownership
+contract. The current API has no such contract, so these routes intentionally
+remain unavailable rather than trusting caller-supplied session IDs or hashes.
 """
 
 from __future__ import annotations
 
-from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-
-from app.core.dependencies import get_session_store
-from app.models.schemas import Session
-from app.services.interfaces import SessionStoreInterface
+from fastapi import APIRouter, HTTPException, status
 
 router = APIRouter(prefix="/sessions", tags=["Sessions"])
+
+_HISTORY_UNAVAILABLE = (
+    "Conversation history is unavailable until authenticated ownership is configured."
+)
 
 
 @router.get(
     "/{session_id}",
-    response_model=Session,
     summary="Get a single session with full conversation history",
 )
-async def get_session(
-    session_id: UUID,
-    store: SessionStoreInterface = Depends(get_session_store),
-) -> Session:
-    """Return the full session record including all conversation turns."""
-    session = await store.get_session(session_id)
-    if session is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session {session_id} not found.",
-        )
-    return session
+async def get_session(session_id: UUID) -> None:
+    """Reject access until a trusted owner can be established server-side."""
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=_HISTORY_UNAVAILABLE,
+    )
 
 
 @router.get(
     "",
-    response_model=list[Session],
-    summary="List sessions for a student",
+    summary="List sessions for an authenticated owner",
     description=(
-        "Returns sessions for the given student_id_hash, newest first. "
-        "student_id_hash must be a 64-character hex SHA-256 of the anonymous "
-        "browser identity token."
+        "Unavailable until the backend can derive session ownership from a "
+        "verified server-side identity. Caller-supplied hashes are not authorization."
     ),
 )
-async def list_sessions(
-    student_id_hash: str = Query(
-        ...,
-        min_length=64,
-        max_length=64,
-        description="SHA-256 hex of anonymous student identity token",
-    ),
-    limit: int = Query(default=20, ge=1, le=100),
-    store: SessionStoreInterface = Depends(get_session_store),
-) -> list[Session]:
-    """Return up to ``limit`` sessions for the given student, newest first."""
-    return await store.get_sessions_by_student(student_id_hash, limit=limit)
+async def list_sessions() -> None:
+    """Reject history listing until authenticated ownership is available."""
+    raise HTTPException(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        detail=_HISTORY_UNAVAILABLE,
+    )

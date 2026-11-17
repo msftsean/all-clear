@@ -2,7 +2,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -240,7 +240,11 @@ export function verifyCurriculum(root = DEFAULT_ROOT) {
   return errors;
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const invokedScript = process.argv[1]
+  ? pathToFileURL(path.resolve(process.argv[1])).href
+  : null;
+
+if (import.meta.url === invokedScript) {
   const root = path.resolve(process.argv[2] || DEFAULT_ROOT);
   const errors = verifyCurriculum(root);
   if (errors.length) {

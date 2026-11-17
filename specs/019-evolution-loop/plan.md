@@ -65,6 +65,9 @@ Constitution Check.
 | Surface | Command or check |
 |---|---|
 | Incident schema/safety/voice | `cd backend && PYTHONPATH=. python -m pytest tests/test_schemas.py tests/test_voice/test_safety_net.py tests/test_voice/test_endpoints.py -q` |
+| History/transcript/realtime privacy | `cd backend && PYTHONPATH=. python -m pytest tests/test_conversation_persistence.py tests/test_transcripts/test_transcript_bus.py tests/test_transcripts/test_sse_http.py tests/test_media_ws_security.py tests/test_voice/test_endpoints.py tests/test_voice/test_azure_realtime.py tests/test_voice/test_pii_filter.py tests/test_voice/test_safety_net.py -q` |
+| Lab 07 offline MCP probe | `python labs/07-mcp-server/exercises/mcp_red_team_probe.py --server start` and `--server solution` |
+| Lab 07 trusted PII and offline orchestration | `python -m pytest labs\07-mcp-server\test_lab07.py labs\05-agent-orchestration\test_lab05.py -q -k "not live_azure"` |
 | Primary web app | `cd frontend && npm run build` |
 | Workshop companion | `cd workshop-site && npm run typecheck && npm run build` |
 | Coach companion | `cd coach-site && npm run typecheck && npm run build` |
@@ -88,3 +91,21 @@ specs/019-evolution-loop/# Consolidation record
 **Structure Decision**: Keep the existing multi-surface structure because each
 site serves a distinct audience; all surfaces share the canonical All Clear
 domain language from `CONTEXT.md`.
+
+## Security Hardening Follow-up (2026-11-12)
+
+No verified end-user principal or ACS ingress identity is currently configured.
+Session-history and phone transcript routes therefore fail closed; the transcript
+bus supports per-call subscriptions and redacts event data, but the public stream
+will remain unavailable until the backend can authorize a call owner. Realtime
+uses server-generated session IDs and ignores client prompt overrides. Do not
+re-enable these routes based on caller-supplied hashes or IDs.
+
+Lab 07 derives trusted PII detection from redaction of original input before
+logging or invoking Lab 05. Its normal and fallback paths preserve escalation.
+Lab 05 accepts an optional keyword-only `pii_detected: bool = False`, merging
+it with QueryAgent detection via `dataclasses.replace` before RouterExecutor.
+Existing positional signal/session calls remain compatible; MCP still ignores
+caller-selected session IDs. No routing rules, auth mechanism, or live-service
+dependencies are added. Regression tests use a local model stand-in reporting
+no PII; both runtime probes also exercise the real credential-free pipeline.

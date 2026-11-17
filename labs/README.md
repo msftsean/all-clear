@@ -7,7 +7,7 @@
 > **Facilitators running a timed event:** the labs below are the full
 > catalog. The authoritative, timed event path is
 > [`docs/event-readiness/DELIVERY_PLAN.md`](../docs/event-readiness/DELIVERY_PLAN.md)
-> (required S0–S5 spine plus optional/coach-led extensions), and the Azure
+> (required S0–S6 path plus optional/coach-led extensions), and the Azure
 > preflight checklist is
 > [`docs/event-readiness/AZURE_PREFLIGHT.md`](../docs/event-readiness/AZURE_PREFLIGHT.md).
 
@@ -53,22 +53,23 @@ was built and how to extend it.
 
 ## 📚 The phases
 
-| Lab | Phase | What you build | Time |
-| --- | ----- | -------------- | ---- |
-| [00](00-setup/) | **Setup** | Get a working environment (Codespaces or `azd up`); run the full pipeline in **mock mode** offline | 30 min |
-| [01](01-understanding-agents/) | **Understanding agents** | Classify a raw signal into a typed `SignalClassification` (intent, entities, severity indicators, PII) | 45 min |
-| [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Wire Azure (OpenAI, AI Search, Container Apps) and drive it from your editor via MCP | 45 min |
-| [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to specify a new capability, then review implementation guidance | 45 min |
-| [04](04-build-rag-pipeline/) | **RAG / knowledge** | Index incident runbooks & SOPs; build the `search_knowledge` tool with grounded **citations** | 60 min |
-| [05](05-agent-orchestration/) | **Orchestration** | Assemble the QueryAgent → RouterExecutor → ActionAgent workflow; run a **surge** and watch dedup attach reports | 90 min |
-| [06](06-deploy-with-azd/) | **Deploy** | `azd up` All Clear to Azure Container Apps with Bicep infra | 60 min |
-| [07](07-mcp-server/) | **MCP server** | Expose All Clear's tools (`create_incident`, `search_knowledge`, `generate_sitrep`) as an MCP server | 60 min |
-| [09](09-github-in-the-lab/) | **GitHub-in-the-lab path** | Fork + run `smoke-test.yml` + complete one bounded Copilot extension behind a red-to-green starter test | 45 min |
+| Lab | Phase | What you build | Self-paced | Event block |
+| --- | ----- | -------------- | ---------- | ----------- |
+| [00](00-setup/) | **Setup** | Get a working environment (Codespaces or `azd up`); run the full pipeline in **mock mode** offline | 30 min | **S0 · 30 min** |
+| [01](01-understanding-agents/) | **Understanding agents** | Classify a raw signal into a typed `SignalClassification` (intent, entities, severity indicators, PII) | 90 min | **S1 · 45 min** |
+| [02](02-azure-mcp-setup/) | **Azure + MCP setup** | Wire Azure (OpenAI, AI Search, Container Apps) and drive it from your editor via MCP | 30 min | Optional |
+| [03](03-spec-driven-development/) | **Spec-driven development** | Use Spec Kit + the All Clear constitution to specify a new capability, then review implementation guidance | 45 min | **S2 · 45 min** |
+| [04](04-build-rag-pipeline/) | **RAG / knowledge** | Index incident runbooks & SOPs; build the `search_knowledge` tool with grounded **citations** | 120 min | **S3 · 60 min** |
+| [05](05-agent-orchestration/) | **Orchestration** | Assemble the QueryAgent → RouterExecutor → ActionAgent workflow; run a **surge** and watch dedup attach reports | 120 min | **S4 · 90 min** |
+| [06](06-deploy-with-azd/) | **Deploy** | `azd up` All Clear to Azure Container Apps with Bicep infra | 90 min | Optional |
+| [07](07-mcp-server/) | **MCP server** | Expose All Clear's tools (`create_incident`, `search_knowledge`, `generate_sitrep`) as an MCP server | 60 min | Optional |
+| [08](08-apim-gateway/) | **APIM gateway** | Put an APIM Consumption gateway in front of All Clear with token/rate limits, JWT validation, and telemetry | 60 min | Optional |
+| [09](09-github-in-the-lab/) | **GitHub-in-the-lab path** | Fork + run `smoke-test.yml` + complete one bounded Copilot extension behind a red-to-green starter test | 45 min | **S5 · 45 min** |
 
-**Recommended order:** 00 → 01 → 03 → 04 → 05 is the participant spine
-(setup, classify, specify, ground, orchestrate). Lab 02 is optional Azure MCP
-setup; Labs 06–09 are optional extensions for a longer session. Use mock mode
-when Azure credentials or deployment time are not available.
+**Recommended order:** 00 → 01 → 03 → 04 → 05 → 09 is the event build path
+(setup, classify, specify, ground, orchestrate, verify); S6 closes with pilot
+planning and demos. Labs 02, 06, 07, and 08 are optional extensions. Use mock
+mode when Azure credentials or deployment time are not available.
 
 ---
 

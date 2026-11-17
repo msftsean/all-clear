@@ -1,12 +1,12 @@
 """HTTP-level integration tests for the SSE transcript stream.
 
-Tests route registration, response headers, and verifies the SSE generator
-works at the full app level (not just in isolation).
+Tests route registration, the fail-closed HTTP contract, and the internal
+call-scoped generator.
 
 NOTE: httpx ASGITransport does not support true SSE streaming (it buffers
-the entire response). Generator-level streaming is tested in
-test_transcript_bus.py. Full end-to-end streaming is tested in the
-Playwright suite (live-transcript.spec.ts).
+the entire response). Generator-level behavior is tested in
+test_transcript_bus.py. Public streaming stays disabled until authenticated
+call ownership is configured.
 """
 
 import asyncio
@@ -52,26 +52,29 @@ class TestSSERouteConfiguration:
         assert "/api/phone/health" in phone_paths
 
 
-class TestSSEResponseHeaders:
-    """Verify the StreamingResponse returns correct SSE headers."""
+class TestSSEAccessGate:
+    """Verify transcript access fails closed until an owner can be verified."""
 
     @pytest.mark.asyncio
-    async def test_response_media_type_and_headers(self):
-        """Check that the SSE endpoint returns the correct content type and
-        anti-buffering headers (critical for nginx/proxy passthrough)."""
-        from unittest.mock import AsyncMock
+    async def test_route_rejects_without_authenticated_owner(self):
+        from fastapi import HTTPException
 
         from app.api.transcripts import stream_transcripts
 
-        mock_request = AsyncMock()
-        mock_request.is_disconnected.return_value = True  # disconnect immediately
+        with pytest.raises(HTTPException) as exc:
+            await stream_transcripts()
 
-        response = await stream_transcripts(mock_request)
+        assert exc.value.status_code == 503
+        assert "authenticated call ownership" in exc.value.detail
 
-        assert response.media_type == "text/event-stream"
-        assert response.headers.get("cache-control") == "no-cache"
-        assert response.headers.get("connection") == "keep-alive"
-        assert response.headers.get("x-accel-buffering") == "no"
+    def test_http_route_fails_closed(self):
+        from fastapi.testclient import TestClient
+
+        from app.main import app
+
+        response = TestClient(app).get("/api/phone/transcripts/stream")
+        assert response.status_code == 503
+        assert "authenticated call ownership" in response.json()["detail"]
 
 
 class TestSSEGeneratorIntegration:
@@ -89,7 +92,7 @@ class TestSSEGeneratorIntegration:
         mock_request = AsyncMock()
         mock_request.is_disconnected.return_value = False
 
-        gen = _event_generator(mock_request)
+        gen = _event_generator(mock_request, call_id="int-1")
         received: list[dict] = []
 
         test_events = [
@@ -139,7 +142,7 @@ class TestSSEGeneratorIntegration:
         mock_request = AsyncMock()
         mock_request.is_disconnected.return_value = False
 
-        gen = _event_generator(mock_request)
+        gen = _event_generator(mock_request, call_id="fmt-1")
         raw_chunks: list[str] = []
 
         async def _read():
