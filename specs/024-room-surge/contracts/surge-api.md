@@ -1,9 +1,28 @@
 # Phase 1 Contract: Room Surge API and UI
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R3, 2026-11-17 10:15 ET
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
 **Target**: 2026-11-17 13:00 Eastern | **Source**: current `api\surge.py`,
 `services\surge_room.py`, `frontend\src\allclear\surge\surgeApi.ts`
-**Status**: ✅ Existing repository contract; 🛑 live availability unverified
+**Status**: ✅ Deployed mock/browser/load contract PASS; ⛔ live AI/semantic NO-GO
+
+## Authorized fallback UI delta — deployed and verified
+
+Report/board/cards use runtime **GET `/api/health`** mode for explicit mock
+notices; footer must not unconditionally claim AI processing. In mock mode only,
+A–D **Use sample report** prepopulates that scene's actual wording into the
+normal report input. The existing POST/report contract and bounded pipeline
+remain unchanged; card ID does not group or route. Live mode retains own-word
+reporting without the mock-only button. **11 focused tests** including configured
+API-origin, Node22 build/typecheck and new-module/cards/tests strict lint pass.
+Deployed revision `allclear-sbuqtpuppifra-frontend--mocklabel1236` is Healthy/
+Running100%traffic, bundle `index-DVUyNrL6.js`; public mock40-request run passes:
+40 accepted→4 disjoint incidents/40devices, A–D10each, zero failures/blocks/
+rate limits, p95 all40=0.213s, wall0.380s. Keyless controls403.
+Two mobile-browser contexts and all3 runtime Mock labels/QRs/operator entry/
+public-call credential separation pass. Final protected CLOSED/zero reset
+retains domain reports/audit. Physical cellular scan is unverified.
+This does not replace failed live semantic acceptance. `/?demo=loaded` remains
+separately verified replay, not intake.
 
 ## Base and authorization
 

@@ -3,6 +3,8 @@ import { SEV } from "../components";
 import Qr from "./Qr";
 import { reportUrl } from "./cards";
 import { SurgeError, controlSurge, getSurgeState, type SurgeState, type SurgeTile } from "./surgeApi";
+import { SurgeModeNotice } from "./SurgeMode";
+import { useSurgeMode } from "./useSurgeMode";
 
 // Room display for the audience surge (024-room-surge). Shows counts and
 // machine-derived tiles only; raw attendee text is never on screen.
@@ -115,11 +117,13 @@ export function SurgeBoardView({
   joinUrl,
   stale,
   controls,
+  notice,
 }: {
   state: SurgeState;
   joinUrl: string;
   stale: boolean;
   controls?: ReactNode;
+  notice?: ReactNode;
 }) {
   const quiet = state.signals === 0 && state.blocked === 0;
   return (
@@ -141,6 +145,7 @@ export function SurgeBoardView({
           </span>
         </div>
       </header>
+      {notice && <div className="mt-4">{notice}</div>}
 
       <section className="mt-8 grid grid-cols-[auto_1fr] gap-10">
         <div className="flex flex-col items-center gap-3">
@@ -194,6 +199,7 @@ export function SurgeBoardView({
 }
 
 export default function SurgeBoard() {
+  const mode = useSurgeMode();
   const [state, setState] = useState<SurgeState>(EMPTY_STATE);
   const [stale, setStale] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -282,5 +288,10 @@ export default function SurgeBoard() {
     </footer>
   );
 
-  return <SurgeBoardView state={state} joinUrl={joinUrl} stale={stale} controls={controls} />;
+  return (
+    <SurgeBoardView
+      state={state} joinUrl={joinUrl} stale={stale} controls={controls}
+      notice={mode === "live" ? undefined : <SurgeModeNotice mode={mode} />}
+    />
+  );
 }

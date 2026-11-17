@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { SURGE_CARDS, findCard, type SurgeCard } from "./cards";
 import { SurgeError, deviceId, submitSurgeReport, type SurgeReportResult } from "./surgeApi";
+import { SurgeModeNotice } from "./SurgeMode";
+import { useSurgeMode } from "./useSurgeMode";
 
 // Mobile page an attendee opens from the QR code (024-room-surge).
 // No sign-in. One textarea. The phone keyboard's mic handles dictation.
@@ -46,6 +48,7 @@ export function resultDetail(r: SurgeReportResult): string {
 }
 
 export default function SurgeReport() {
+  const mode = useSurgeMode();
   const params = new URLSearchParams(window.location.search);
   const [card, setCard] = useState<SurgeCard | null>(() => findCard(params.get("card")));
   const [text, setText] = useState("");
@@ -54,7 +57,7 @@ export default function SurgeReport() {
 
   async function send() {
     const message = text.trim();
-    if (!message || phase.kind === "sending") return;
+    if (!message || phase.kind === "sending" || mode === "checking" || mode === "error") return;
     setPhase({ kind: "sending" });
     try {
       const result = await submitSurgeReport(message, device, card?.id ?? null);
@@ -74,6 +77,7 @@ export default function SurgeReport() {
         <div className="eyebrow text-midwarm">ALL CLEAR · ROOM SURGE</div>
         <h1 className="mt-1 font-display text-2xl font-semibold text-inkwarm">Report what you see</h1>
       </header>
+      <SurgeModeNotice mode={mode} />
 
       {card ? (
         <section className={`rounded-card border p-4 ${TONE[card.tone]}`} data-testid="surge-card">
@@ -85,7 +89,19 @@ export default function SurgeReport() {
           </div>
           <h2 className="mt-1 text-lg font-semibold text-inkwarm">{card.title}</h2>
           <p className="mt-1 text-[15px] leading-snug text-inkwarm">{card.scene}</p>
-          <p className="mt-2 text-sm text-midwarm">{card.prompt} Don't copy the card. Say it your way.</p>
+          {mode === "live" && (
+            <p className="mt-2 text-sm text-midwarm">{card.prompt} Don't copy the card. Say it your way.</p>
+          )}
+          {mode === "mock" && (
+            <p className="mt-2 text-sm text-midwarm">
+              Mock rehearsal: matching wording demonstrates grouping without live AI.
+            </p>
+          )}
+          {mode === "mock" && card.tone === "event" && (
+            <button className="mt-2 text-sm text-voice underline" onClick={() => setText(card.scene)}>
+              Use sample report
+            </button>
+          )}
         </section>
       ) : (
         <section aria-label="Pick your card" className="grid grid-cols-2 gap-2">
@@ -120,7 +136,7 @@ export default function SurgeReport() {
       <button
         data-testid="surge-send"
         onClick={send}
-        disabled={!text.trim() || phase.kind === "sending"}
+        disabled={!text.trim() || phase.kind === "sending" || mode === "checking" || mode === "error"}
         className="rounded-chip bg-cta px-5 py-3 text-base font-semibold text-ctaink shadow-antimetal-cta disabled:opacity-50"
       >
         {phase.kind === "sending" ? "Triaging…" : "Send report"}
@@ -149,7 +165,7 @@ export default function SurgeReport() {
 
       <footer className="mt-auto text-xs leading-snug text-midwarm">
         Demo at Azure Days Arlington. Don't include names, phone numbers or other personal details.
-        Your words are processed by AI and are never shown on the big screen.
+        Reports are processed by All Clear; your words are never shown on the big screen.
       </footer>
     </main>
   );

@@ -2,7 +2,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import QRCode from "qrcode";
 import SurgeBoard, { EMPTY_STATE, SurgeBoardView, prettyCategory } from "./SurgeBoard";
-import { resultDetail, resultHeadline } from "./SurgeReport";
+import SurgeReport, { resultDetail, resultHeadline } from "./SurgeReport";
+import SurgeCards from "./SurgeCards";
 import { SURGE_CARDS, findCard, reportUrl } from "./cards";
 import { submitSurgeReport } from "./surgeApi";
 import type { SurgeState } from "./surgeApi";
@@ -48,10 +49,12 @@ describe("Room surge board", () => {
   it("uses a masked operator key only for control requests", async () => {
     sessionStorage.clear();
     window.history.replaceState(null, "", "/surge");
-    const fetchMock = vi.fn().mockImplementation((_url, init) =>
+    const fetchMock = vi.fn().mockImplementation((url, init) =>
       Promise.resolve({
         ok: true,
-        json: async () => init?.method === "POST" && JSON.parse(init.body).message
+        json: async () => url.endsWith("/health")
+          ? { mock_mode: false }
+          : init?.method === "POST" && JSON.parse(init.body).message
           ? { accepted: true, outcome: "opened", incident_id: "AC-1", message: "" }
           : EMPTY_STATE,
       }),
@@ -75,7 +78,7 @@ describe("Room surge board", () => {
       expect(control[1].headers["X-Surge-Key"]).toBe("private-key");
       for (const [url, init] of calls.filter(([url]) => !url.endsWith("/control"))) {
         expect(url).not.toContain("private-key");
-        expect(JSON.stringify(init)).not.toContain("private-key");
+        expect(JSON.stringify(init ?? {})).not.toContain("private-key");
       }
       expect(screen.getByText(/\/report$/).textContent).not.toContain("private-key");
       expect(QRCode.toDataURL).toHaveBeenCalledWith(
@@ -107,6 +110,74 @@ describe("Room surge board", () => {
     expect(screen.getByText("reconnecting…")).toBeInTheDocument();
     expect(screen.getByTestId("surge-status")).toHaveTextContent("CLOSED");
     expect(screen.queryAllByTestId("surge-tile")).toHaveLength(0);
+  });
+});
+
+describe("Surge processing-mode disclosure", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("checks the same configured API origin used for report submission", async () => {
+    vi.stubEnv("VITE_API_BASE_URL", "https://api.example.test");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: true }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      render(<SurgeReport />);
+      expect(await screen.findByText(/MOCK REHEARSAL/)).toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledWith("https://api.example.test/api/health");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("labels mock reports and offers explicit repeated-wording input", async () => {
+    window.history.replaceState(null, "", "/report?card=A");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: true }),
+    }));
+    render(<SurgeReport />);
+    expect(await screen.findByText(/MOCK REHEARSAL/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Use sample report" }));
+    expect(screen.getByTestId("surge-input")).toHaveValue(SURGE_CARDS[0].scene);
+    expect(screen.queryByText(/processed by AI/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Don't copy the card/)).not.toBeInTheDocument();
+  });
+
+  it("preserves own-word instructions in verified live mode", async () => {
+    window.history.replaceState(null, "", "/report?card=A");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: false }),
+    }));
+    render(<SurgeReport />);
+    expect(await screen.findByText(/Don't copy the card/)).toBeInTheDocument();
+    expect(screen.queryByText(/MOCK REHEARSAL/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Use sample report" })).not.toBeInTheDocument();
+  });
+
+  it("surfaces an unverified mode instead of claiming live AI", async () => {
+    window.history.replaceState(null, "", "/report?card=A");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      render(<SurgeReport />);
+      expect(await screen.findByRole("alert")).toHaveTextContent(/Could not verify/);
+      fireEvent.change(screen.getByTestId("surge-input"), { target: { value: "A report" } });
+      expect(screen.getByTestId("surge-send")).toBeDisabled();
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("prints mock-specific instructions on the QR cards", async () => {
+    window.history.replaceState(null, "", "/surge/cards?only=ABCD");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({ mock_mode: true }),
+    }));
+    render(<SurgeCards />);
+    expect(await screen.findByText(/MOCK REHEARSAL/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Use sample report/)).toHaveLength(4);
+    expect(screen.queryByText(/Don't copy this card/)).not.toBeInTheDocument();
   });
 });
 

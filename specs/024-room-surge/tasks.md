@@ -1,7 +1,7 @@
 # Tasks: Room Surge recovery
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R4, 2026-11-17 11:27 ET
-**Deadline**: **2026-11-17 13:00 Eastern** | **Progress**: `████░░░░░` **4/9 gates**
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
+**Deadline**: **2026-11-17 13:00 Eastern** | **Progress**: `████░░░░░` **4/9 primary-live gates**
 **Sources**: [spec](spec.md), [plan/evidence/gates](plan.md), user live-test
 authorization; patch `e1eca20` on `7bed125`.
 
@@ -10,6 +10,14 @@ the prerequisite is evidenced. This pass edits documentation only; subsequent
 implementation/deployment belongs to the parent/assigned operator. Preserve
 zero-LLM routing, three action tools, PII/audit/SEV1/statutory escalation and
 every operational signal/report.
+
+**FINAL EVENT BOUNDARY**: primary live deployment/acceptance **BLOCKED / NO-GO**.
+12:10 cutoff passed; no further speculative infra before showcase. Corrective
+network succeeded but private backend terminal Failed; use T045–T049's bounded
+frontend-only authorized fallback. Live tasks remain unchecked, not “passed by mock.”
+**12:42 update**: fallback deployment/browser/40-report mock flow now **PASS**;
+T047–T049 complete. Physical cellular scan and primary live acceptance remain
+unchecked. Final protected CLOSED/zero cleanup confirmed.
 
 ## Phase 0 — Applied artifacts and observed baseline (retain completion)
 
@@ -207,11 +215,19 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   backend/frontend apps. Reuse audience models/Cosmos/Search/ACR and tested
   immutable images. Parent validates/previews before any execution.
   **Depends: T022 diagnosis**. Preserve initial apps and private redteam unchanged.
+  Preparation/network retry executed; approved provider feature registration
+  allowed network Succeeded. App completion remains failed; no further retry now.
 - [ ] **T041** After parent validation, deploy only isolated corrective
   network/identity resources and new apps; verify private Cosmos DNS/resolution,
   private connectivity and MI data-plane read/write/audit access; public and
   local-auth restrictions stay Disabled. Record revisions/traffic and
   first-release fallback. **Depends: T040 validated**.
+  **PARTIAL / TERMINAL APP FAILURE**: Cosmos SQL PE Approved; DNS10.77.2.4/.5;
+  UAI/bootstrap/AcrPull and DB-scoped data roles verified. At **12:17:52 ET**
+  `allclear-surge-live-backend` Failed (`ContainerAppOperationError`, empty
+  provider error), no revision/FQDN/log stream; private frontend never created.
+  Correlation **f851acdb-4556-456c-bbd4-71f5c7bd0a1e**. Network success is not
+  app success. Further speculative execution stopped before showcase.
 - [ ] **T042** Prove new frontend/proxy/new backend live mode, one replica,
   safe coach control, then **one synthetic report →valid receipt +board +
   durable report/incident/audit +knowledge flow**. Health alone is insufficient.
@@ -221,11 +237,50 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   the proven NEW audience frontend. Require all coverage/error/separation/
   semantic/latency gates; no selective-success p95. Record safe evidence and
   cleanup; only then close T021/T023 and G5/G6. **Depends: T042**.
-- [ ] **T044** At **12:10 ET**, choose live only if T043 passes with time for
+- [x] **T044** At **12:10 ET**, choose live only if T043 passes with time for
   human rehearsal/freeze; otherwise rehearse **loaded replay or explicitly
   labeled mock** on a working build. Keep 13:00 stage time. No policy exemption,
   public-Cosmos/local-auth re-enable, unsafe URL or untested live claim.
   **Depends: T040 attempted**; do not wait indefinitely for provisioning.
+  Decision boundary is in force: primary NO-GO; disclosed mock fallback and
+  replay verified. Final fallback handoff now recorded in T049; primary live
+  acceptance remains unchecked.
+
+## Phase 5c — Authorized bounded fallback, not live semantic acceptance
+
+- [x] **T045** Original public audience backend changed only **MOCK_MODE=true**;
+  protected key unchanged. **12:20:26** health mock=true and tally CLOSED/zero
+  confirmed. No new private URL available; keep public frontend
+  `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io`.
+- [x] **T046** Browser verified public **`/?demo=loaded` replay**. This is
+  replay, **not audience reporting**; do not count it as SC-001/002 or phone proof.
+- [x] **T047** Parent shipped **frontend only**: runtime health-driven
+  mock notices on report/board/cards, neutral no-AI footer, mock-only A–D
+  **Use sample report** prepopulating actual scene wording. Live own-word
+  behavior/pipeline unchanged; no card grouping/threshold shortcut.
+  **11 focused UI tests PASS** including configured API-origin; Node22
+  build/typecheck and new modules/cards/tests strict lint PASS. Existing
+  Board/Report HEAD baseline reproduced unchanged: four fast-refresh warnings,
+  one unused-disable error. Revision
+  **`allclear-sbuqtpuppifra-frontend--mocklabel1236` Healthy/Running /100% traffic**,
+  public bundle **`index-DVUyNrL6.js`**, immutable digest
+  **`sha256:9a7eb0ed665c595e59c7fb7f13e89554b196a9a9eddc463bc9bc91e48a60cb56`**.
+  **Depends: T045**.
+- [x] **T048** Independent deployed browser/mock-flow proof PASS: public frontend
+  **40 concurrent repeated-wording reports →40 accepted signals /4 disjoint
+  incidents /40 devices, A–D 10 each; failures/blocks/rate limits all0**;
+  **p95 all40 attempts0.213s, wall0.380s**; keyless control403.
+  Two isolated 390×844 Chromium contexts used generic `/report` →A →Use sample
+  report →send receipt; board polled **2 signals /1 incident /2 devices**.
+  Runtime Mock labels on all3 pages, neutral footer, one board +six printable
+  PNG QRs, masked Set key/Open, no key URL/public-call key leak, zero JS errors/
+  mobile overflow. Protected final reset **CLOSED/0signals/0incidents**;
+  reports/audit not deleted. **Mock flow only, not physical cellular or live
+  semantic acceptance. Depends: T047**.
+- [x] **T049** Final [five-line decision record](run-of-show.md#five-line-gono-go-record)
+  distinguishes **mock PASS** from **live AI/semantic NO-GO**, exact available
+  URL/operator/sample steps, closed/zero cleanup, replay and unverified physical
+  cellular scan. **Depends: T046, T048**. Parent publishes final checkpoint.
 
 ## Phase 6 — Human checks, cleanup, freeze (G7/G8)
 
@@ -249,6 +304,8 @@ grouping, threshold or mock changes. Kitty deployment/exposure waits for G3/G4.
   checkpoints. At 12:45 repeat safe closed-board, target version, QR, projector
   and fallback checks. **Depends: T007, T023, T032**. Unmet gate → verified
   fallback at **13:00**, not an unverified late live change.
+  Primary live remains NO-GO. Fallback freeze/decision uses T049 instead of
+  pretending T023/T024 passed; preserve these unmet primary completion gates.
 
 ## Checkpoint discipline
 

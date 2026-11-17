@@ -1,10 +1,10 @@
 # Implementation Plan: Room Surge recovery
 
 **Branch**: `event/arlington-2026-11-18` | **Feature**: `024-room-surge`
-**Revision**: R4, 2026-11-17 11:27 ET | **Spec**: [spec.md](spec.md)
+**Revision**: R6, 2026-11-17 12:42 ET | **Spec**: [spec.md](spec.md)
 **Event**: **2026-11-17 13:00 Eastern**, seven minutes
-**Status**: ⛔ Partial Azure deployment; live acceptance FAILED; private-network correction in progress
-**Progress**: `████░░░░░` **4/9 completion gates**
+**Status**: ✅ Deployed mock fallback browser/load PASS; ⛔ live AI/semantic NO-GO; physical cellular scan unverified
+**Progress**: `████░░░░░` **4/9 primary-live gates**; no fallback substitution for live acceptance
 **Sources**: Cowork patch `e1eca20` on `7bed125`; current repository; parent
 session verification; user's live-test authorization. No cloud changes in this pass.
 
@@ -12,7 +12,8 @@ session verification; user's live-test authorization. No cloud changes in this p
 `MCAPS-2026-segayle`, subscription `9f8986ed-ceb2-414d-8fcb-46d5cfc70618`,
 for today. Kitty owns read-only inventory and the local ignored
 [deployment plan](..\..\.azure\deployment-plan.md). Initial inventory/deployment
-completed; corrective network plan is pending parent validation. Historical
+completed; corrective network succeeded but private app rollout failed, and
+further speculative infrastructure is stopped before showcase. Historical
 corporate-tenant recovery is deferred until today's demo works. Concrete
 **Creation permission is now granted (10:15 ET)** for new separate audience
 resources and NEW app-scoped secrets, including coach key. User: “yes create
@@ -28,6 +29,37 @@ build path can proceed without a remote-build/default change. Image build,
 tests and deployment remain separate gates.
 
 ## Current Azure evidence — 11:27 ET (supersedes earlier pending entries)
+
+### Final event disposition — 12:42 ET (supersedes recovery instructions below)
+
+| Evidence | Confirmed result |
+|---|---|
+| Private network retry | **Succeeded** after approved `Microsoft.Network/AllowBringYourOwnPublicIpAddress` registration |
+| Cosmos private access preparation | SQL private endpoint **Approved**; private DNS **10.77.2.4 /10.77.2.5**; UAI/bootstrap, AcrPull and Cosmos **DB-scoped** data roles verified |
+| Corrected app rollout | Terminal **Failed, 12:17:52 ET**: `ContainerAppOperationError` for `allclear-surge-live-backend`, empty provider error; **no revision/FQDN/log stream**. Private frontend **never created** |
+| Correlation | `f851acdb-4556-456c-bbd4-71f5c7bd0a1e` |
+| Freeze decision | **12:10 cutoff passed: no more speculative infrastructure before showcase.** Networking success did not produce a usable live app |
+| Authorized original-backend fallback | Only `MOCK_MODE=true` changed; protected coach key unchanged. **12:20:26** health confirms `mock_mode=true`, tally **CLOSED/zero** |
+| Available public frontend | `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io` |
+| Verified fallback | Browser verified **`/?demo=loaded` replay**, not audience reporting |
+| Deployed fallback frontend | **`allclear-sbuqtpuppifra-frontend--mocklabel1236` Healthy/Running, 100% traffic**; actual public index bundle **`index-DVUyNrL6.js`** |
+| Immutable frontend | **`sha256:9a7eb0ed665c595e59c7fb7f13e89554b196a9a9eddc463bc9bc91e48a60cb56`** |
+| Runtime disclosure/sample behavior | Report/board/cards show runtime Mock label; neutral footer; mock-only A–D **Use sample report** prepopulates actual scene wording; live own-word behavior preserved, no pipeline/dedup shortcut |
+| Local fallback validation | **11 focused Surge UI tests PASS**, including configured API-origin; Node22 build/typecheck PASS; new modules/cards/tests strict lint PASS. Board/Report baseline **4 fast-refresh warnings +1 unused-disable error** reproduced unchanged from HEAD |
+| Actual public-frontend mock concurrency | **40 concurrent repeated-wording attempts**, **40 accepted signals →4 incidents**, **40 devices**, **A–D 10 each**, four pairwise-disjoint events, **0 failures /blocks /rate limits**; **p95 all 40 attempts 0.213s**, **wall 0.380s**; keyless controls **403**. **Mock flow PASS, not live semantic acceptance** |
+| Actual deployed Chromium proof | **2 isolated 390×844 mobile-browser contexts**, generic `/report` →choose A →Use sample report →send receipt; board poll **2 signals →1 incident /2 devices**. All three Surge pages show runtime Mock label; **1 board PNG QR +6 printable PNG QRs**; masked password/Set key/Open works; no key URL/public-API key leak, **0 JS errors, no mobile overflow** |
+| Final cleanup | Protected reset **CLOSED /0 signals /0 incidents**; domain reports/audit not deleted |
+| Still unverified | **Physical cellular scan**, full accessibility/projection/show rehearsal, live AI semantic/load acceptance. The original **43 failures /45 live attempts** and private app terminal failure remain primary NO-GO |
+
+**Execution boundary now**: stop the private-infrastructure retry loop. Parent
+shipped only the bounded tested fallback frontend; independent deployed browser
+and mock concurrency checks now pass as recorded above. A–D samples are actual
+scene text sent through the normal pipeline, not card-ID routing. Keep intake
+closed except during deliberate verification/show windows; close/drain/reset
+afterward and preserve incident/report/audit data. Use the verified loaded replay
+if mock flow fails at stage. Original 45-attempt/43-failure live evidence below
+remains unchanged. Use the exact
+[five-line GO/NO-GO record](run-of-show.md#five-line-gono-go-record) for handoff.
 
 **Published candidate**: `00141cd` includes application code, IaC and minimal
 **88-package Linux npm lock**. Isolated full backend **375 PASS**; production-
@@ -53,20 +85,21 @@ application-template bug or live semantic-dedup failure**. Do not enable public
 Cosmos access, turn local auth back on, request an exemption, or weaken policy.
 Initial health and two blocked probes are not an audience-ready URL.
 
-**Bounded correction (Kitty prepares; parent validates before execution)**:
+**Historical bounded correction (now STOPPED before showcase)**:
 new VNet-integrated ACA environment; Cosmos private endpoint plus private DNS;
 managed-identity **SQL Built-in Data Contributor** access; NEW backend/frontend
 apps using the current audience-owned models, Cosmos, Search and ACR. Preserve
 initial apps and private redteam adapter unchanged. Reuse tested immutable images
 unless a separately evidenced code defect requires a tested new candidate.
-No new usable audience URL is yet verified.
+No usable private audience URL was produced; terminal app failure is recorded above.
 
-Validate/preview the isolated network/identity resource delta first, then deploy
+The recovery sequence was to validate/preview the isolated resource delta, then deploy
 new apps, prove private Cosmos DNS/connectivity and managed-identity data access,
 and require a successful single-report receipt plus board/persistence/audit
 before rerunning the identical 45-request/40-worker fixture. Reset/close after
 each controlled test window. If this path misses the decision window, use only a
 rehearsed loaded replay or labeled mock fallback; never claim partial health as GO.
+That decision window has now passed; do not resume these infra steps before stage.
 
 **Execution coordination, 10:18 ET**: Forge owns only the known rehearsal
 false-pass fixes, protected `--key-env` credential intake, and small masked
@@ -341,15 +374,15 @@ above remain checked; reruns below certify **future** code changes.
 
 | Gate | State | Completion evidence / stop condition |
 |---|---|---|
-| G0 Spec Kit alignment | ✅ | Parent context update succeeded; code/IaC/lock checkpoint `00141cd` published; R4 records actual failure/corrective gates |
+| G0 Spec Kit alignment | ✅ | Base checkpoint `00141cd`; R6 records exact fallback runtime revision/digest, observed mock PASS and unchanged primary live NO-GO; parent publication follows |
 | G1 Local baseline | ✅ | Observed 15 + 364 backend, 5 UI, build, browser flow and closed/zero cleanup; **not** live semantic proof |
-| G2 Audience target/config plan | 🟨 | Initial target/inventory/19-resource preview complete; corrective VNet/private-endpoint/DNS/MI plan requires parent validation before execution |
+| G2 Audience target/config plan | 🟨 | Approved target/network/identity work evidenced; primary app rollout terminal Failed. Further speculative infrastructure stopped for showcase |
 | G3 Trustworthy verifier + private control | ✅ | 11 new verifier tests /26 focused passes; protected `--key-env`; 6 UI passes, typecheck/build; actual keyed mock browser verifies masked entry, 403 without key, authorized Open, public-request credential separation and cleanup |
-| G4 Tested release checkpoint | ✅ | `00141cd`: isolated backend 375, production-image Surge 26, UI 6, Node 22.23.5 build, Linux lock and immutable image build/push pass |
-| G5 Deployed candidate | 🟨 | Initial images deployed/models Succeeded/MI role/one replica/live-mode health/keyless 403 verified, but report 503: no working Cosmos network/data path. Replacement deployment and successful report/persistence/audit required |
+| G4 Tested release checkpoint | ✅ | Base backend 375/production-image Surge 26; fallback UI11/API-origin, Node22 build/typecheck and new-module strict lint PASS; deployed fallback revision/digest recorded |
+| G5 Deployed candidate | ⛔ | Private backend Failed 12:17:52 with no revision/FQDN/logs; private frontend absent. Original backend now mock; it cannot satisfy primary live deployment |
 | G6 Live semantic/load | ⛔ | FAILED: 45 attempts, 0 accepted, 0 incidents, 2 blocked, 43 failed; 2.75s p95 on two responses invalid. Identical full successful rerun required |
-| G7 Cleanup + human rehearsal | 🟨 | Failed-run reset CLOSED/zero confirmed; replacement cleanup, real phones/accessibility/projection and seven-minute/fallback run remain |
-| G8 Freeze / final GO | ⬜ | Parent records exact tested/deployed checkpoint, fallback artifact and presenter/operator GO; any unknown safety/privacy gate = NO-GO |
+| G7 Cleanup + human rehearsal | 🟨 | Mock concurrency +2 mobile-browser contexts PASS; final protected CLOSED/zero reset, reports/audit retained. Physical cellular scan/accessibility/projection/full show rehearsal unverified |
+| G8 Freeze / final GO | ⛔ live / ✅ mock fallback | Primary live NO-GO; disclosed mock deployment/browser/40-report flow PASS, replay verified, exact runtime revision/digest and five-line decision recorded; no physical-phone certification |
 
 ### Today-only decision checkpoints (ET; targets, not promises)
 
@@ -359,9 +392,11 @@ above remain checked; reruns below certify **future** code changes.
 | 10:50 | G3/G4 verifier + tested candidate; avoid feature expansion |
 | 11:27 actual | Initial deployment partial; live run FAILED; policy root cause confirmed; private-network correction preparing, not executed |
 | 11:45 target | Corrective preview/validation and private network/MI canary decision; if delayed, prepare tested loaded replay/mock in parallel |
-| 12:10 | Hard live-vs-verified-fallback decision based on working canary plus full live acceptance; no policy bypass or unproven URL |
-| 12:30 | G7/G8 freeze: real phones, projection, rehearsal, cleanup and rollback/fallback proven |
-| 12:45 | Closed-board/fallback/QR final check; no unverified late changes |
+| 12:10 cutoff passed | Primary live NO-GO; no additional speculative infra before showcase |
+| 12:17:52 actual | Corrected private backend terminal Failed; private frontend absent |
+| 12:20:26 actual | Original backend mock=true, key preserved, CLOSED/zero |
+| 12:42 actual | Mock fallback deployed/browser/40-report PASS; final protected CLOSED/zero reset; live AI NO-GO and physical cellular scan unverified |
+| 12:45 | Repeat mode/revision/closed-board/fallback/QR readiness check; no unverified late changes or infrastructure |
 | **13:00** | Showcase; these checkpoints do not move the stage time |
 
 ## Risks, rollback and scope discipline
@@ -371,6 +406,9 @@ above remain checked; reruns below certify **future** code changes.
   MI SQL role need parent validation and proof. Initial resources/key/models
   exist; their health did not establish report acceptance. Never bypass policy
   or touch initial apps/private redteam to make the new path work.
+  Private network/PE/DNS/roles subsequently succeeded, but corrected app rollout
+  terminally failed. Further speculative infrastructure is stopped before stage;
+  no new app availability is inferred from successful network resources.
 - **Semantic/latency uncertainty**: use live evidence and fixed fixture; mock
   fragmentation and fast mock p95 cannot predict live success. Do not weaken
   dedup correctness or lock protection to improve counts/timing.

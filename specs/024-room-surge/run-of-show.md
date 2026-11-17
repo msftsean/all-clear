@@ -1,87 +1,100 @@
-# Run of show: Room Surge — seven minutes
+# Run of show: disclosed fallback — seven minutes
 
 **Stage**: **TODAY 2026-11-17 13:00 Eastern**
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R4, 2026-11-17 11:27 ET
-**Source**: [spec](spec.md), [plan/gates](plan.md), observed local evidence
-**Status**: ⛔ `████░░░░░` **4/9 gates**; initial deployment partial, live run **FAILED**
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
+**Source**: [spec](spec.md), [plan/evidence/gates](plan.md), confirmed parent observations
+**Status**: ✅ Disclosed mock reporting/browser/load PASS; ⛔ live AI/semantic NO-GO; physical cellular scan unverified
+**Primary readiness**: `████░░░░░` **4/9**; fallback does not pass live gates.
+
+## Five-line GO/NO-GO record
+
+1. **MOCK FLOW: PASS** — 40 concurrent repeated-wording attempts, 40 accepted signals→4 disjoint incidents, A–D10 each, 40devices, zero failures/blocks/rate limits; p95 all40=0.213s, wall0.380s; not live semantics.
+2. **LIVE AI/SEMANTICS: NO-GO** — original45 attempts: zero accepted, 2blocked, 43failed; selective2-response p95 invalid. Corrected private backend Failed12:17:52; no private frontend.
+3. **BOARD/REVISION:** `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge` — mock=true; `allclear-sbuqtpuppifra-frontend--mocklabel1236` Healthy/Running,100%traffic; deployed browser proof PASS.
+4. **READY TO TEST:** operator privately retrieves existing key from original audience backend Azure Portal Secrets, never URL; Set key/Open; attendees scan `/report`, choose A–D, use matching sample/Send; cards `/surge/cards?only=ABCD`.
+5. **CLEANUP/LIMITS:** final protected CLOSED/0signals/0incidents, reports/audit retained; physical cellular scan NOT VERIFIED; no more infra; verified replay `/?demo=loaded` if mock flow fails.
+
+Keep this five-line handoff intact: mock PASS never supersedes primary live NO-GO.
+
+## Ready-to-test mock instructions
+
+1. Open the board URL above; verify the visible **Mock** label and CLOSED state.
+2. On the operator's private device, obtain the **existing coach key** from the
+   **original audience backend →Azure Portal →Secrets**. Never place it in a
+   URL, QR, slide, chat, shell recording or screenshot. Enter masked **Coach key
+   →Set key →Open** under Operator controls.
+3. Attendees scan the board QR, land on generic `/report`, choose **A–D**,
+   select matching **Use sample report**, then **Send**. Disclose that repeated
+   sample wording uses mock token-overlap dedup, not live model inference.
+4. For printed/screen cards use
+   `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge/cards?only=ABCD`.
+   Actual physical cellular scanning remains unverified despite PNG QR/browser proof.
+5. Close/drain/reset/close after the window; confirm zero tally. Replay:
+   `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/?demo=loaded`.
+
+**Deployment proof**: actual public bundle `index-DVUyNrL6.js`; immutable digest
+`sha256:9a7eb0ed665c595e59c7fb7f13e89554b196a9a9eddc463bc9bc91e48a60cb56`.
+Two isolated 390×844 Chromium contexts used generic report→A→sample→receipt;
+board polled2 signals→1incident/2devices, all3 Surge pages labeled Mock, one
+board +six printable PNG QRs, masked operator flow, zero JS errors/mobile
+overflow and no URL-key/public-API key leak. This is browser proof, not physical
+cellular, live AI, full accessibility or projector certification.
+
+## Why the live path is closed for this showcase
+
+Inherited policy correctly disables Cosmos public access/local auth. Private
+network retry Succeeded after approved
+`Microsoft.Network/AllowBringYourOwnPublicIpAddress` registration; SQL PE
+Approved, DNS10.77.2.4/.5 and managed-identity roles verified. Nevertheless,
+`allclear-surge-live-backend` terminal Failed at **12:17:52 ET**:
+`ContainerAppOperationError`, empty provider error, no revision/FQDN/log stream;
+private frontend never created. Correlation
+`f851acdb-4556-456c-bbd4-71f5c7bd0a1e`.
+The 12:10 cutoff passed. Do not debug/provision more infrastructure, bypass
+policy or imply successful networking produced a usable live app.
 
 ## Before projection
 
-**Current reality, 11:27 ET**: candidate `00141cd` tested/published, immutable
-images deployed in `rg-allclear-surge-20261117`; live-mode health and keyless403
-passed, but **45 live attempts produced zero accepted signals/incidents,
-2 safety blocks and 43 failures**. p95 2.75s measures only two responses and
-is **not** a latency pass. Tally reset CLOSED/zero. No new usable URL yet.
-
-Inherited policy disables Cosmos public access/local auth; initial ACA lacks
-VNet/private endpoint access. Kitty prepares NEW private-networked apps/
-Cosmos PE/DNS/MI access, parent validates first; never bypass policy or alter
-initial apps/private redteam. Search seed 12/12 is complete, not report-path proof.
-Require successful canary **and full live rerun** before live GO; if not ready
-by **12:10 ET**, use a rehearsed loaded replay/labeled mock. Keep 13:00 stage time.
-
-- Operator and presenter must record G2–G8 before calling this a live GO.
-  Live testing and MCAPS 2026 separate-audience subscription choice are
-  authorized, and NEW audience resource/app-secret creation is approved.
-  Initial inventory/build/deployment and publication are complete, but live
-  report processing failed; replacement networking/deployment and acceptance
-  remain unverified. Historical corporate-tenant login is
-  not today's path; existing secrets/private redteam remain untouched.
-- By 12:10 choose live vs verified fallback; by 12:30 freeze tested revision,
-  run-through, safe reset/closed board, real phones and fallback.
-- At 12:45 check correct frontend/revision and join origin; projector displays
-  `/surge` **CLOSED**, no raw text. Operator privately controls the same backend.
-  No key-bearing URL in slides, QR, chat, shell recording, screenshots or links.
-  Use the implemented/tested Operator controls → Coach key → Set key path;
-  URL stripping/sessionStorage alone is not secure delivery.
-- Cards A–D span tables; one E/R as appropriate. Scan actual printed cards.
-  Pre-open and test a replay (`/?demo=loaded`) or sanitized capture on a known
-  working build, preferably local if venue/cloud reliability is uncertain.
-  Backup voice/multilingual demo is optional only if independently rehearsed.
+- The disclosed **mock audience flow is verified** by T047/T048; use the exact
+  sample steps above. Keep loaded replay ready, explicitly labeled replay;
+  do not invite submissions merely because a replay renders.
+- Mock report/board/cards must visibly disclose runtime mock mode from
+  `/api/health`; use the neutral footer, not an unqualified AI-processing claim.
+  A–D **Use sample report** prepopulates the actual scene text. Explain that
+  repeated wording exercises offline token-overlap dedup; it does not prove
+  semantic grouping of attendees' own paraphrases.
+- Confirm exact frontend revision/mode and selected fallback at 12:45.
+  Board CLOSED, no raw attendee text. Use masked Operator controls →Coach key
+  →Set key privately; no key URL/QR/chat/log/screenshot. Protected key unchanged.
+- Physical phone, projection/accessibility and full run-through passes are not
+  certified by this document. Do not tick them from browser or unit results.
 
 ## Show clock (13:00–13:07 ET)
 
-| Elapsed | Beat / operator | Presenter wording |
+| Elapsed | Default: verified replay | Optional mock interaction, only after deployed proof |
 |---|---|---|
-| 0:00–0:45 | Problem; board closed | “Forty people can report the same event. We keep every report while showing responders the underlying incidents.” |
-| 0:45–1:15 | Explain cards and privacy | “Same events, your own words. No names, phone numbers or personal details. This is a demo, not an emergency service.” |
-| 1:15–2:30 | Operator opens; audience reports for about 60s | “Scan and report now.” Let counts build; if coaches seed, disclose it. |
-| 2:30–3:15 | Explain actual observed counts | “These signals became these incident tiles. Each attached report remains attributable.” Do not promise four incidents regardless of outcome. |
-| 3:15–4:00 | Red-card/authority beat | “Some inputs may be blocked; others still take the normal rules-based route. Severity, SLA and escalation are deterministic—not granted by a prompt.” Describe only the actual result. |
-| 4:00–5:00 | Operator closes; inspect pre-reviewed safe decision receipt | Show severity, SLA, rules, escalation/approval and source citations. No attendee text or PII on screen. |
-| 5:00–6:30 | Value | “The payoff is a clear operational picture without throwing reports away.” Distinguish room report counts from persistent incident magnitude. |
-| 6:30–7:00 | Bridge | “Tomorrow you can build this.” Leave intake closed. |
+| 0:00–0:45 | “This is a replay of the incident-triage flow; live Azure acceptance did not pass today.” | “This is mock mode, not live model inference or semantic acceptance.” |
+| 0:45–1:15 | Explain many signals vs underlying incidents. No audience reporting invitation. | Explain A–D sample button; no names/phone numbers/personal details. |
+| 1:15–2:30 | Run loaded replay and describe only visible fixture behavior. | Open deliberately; attendees use sample wording. Disclose repeated/mock/seeded inputs. |
+| 2:30–3:15 | Show replay signal/incident counts, explicitly fixture counts. | Read actual observed room counts; never promise four incidents or invent missing metrics. |
+| 3:15–4:00 | Explain zero-LLM RouterExecutor and three bounded action tools. | Same authority explanation; R is not guaranteed universally blocked. |
+| 4:00–5:00 | Show only pre-reviewed safe decision evidence with source citations. | Close intake; use a pre-reviewed safe receipt, no raw attendee text/PII. |
+| 5:00–6:30 | Explain value and remaining live validation honestly. | Explain mock flow limitation; no live throughput/semantic claim. |
+| 6:30–7:00 | Bridge to tomorrow; leave intake closed. | Same; leave intake closed. |
 
-## Honesty and stage stop conditions
+## Stop conditions and cleanup
 
-- Card letters **never** reach routing. No card buckets or global threshold
-  manipulation; collapse must come from actual classification/embeddings and
-  deterministic dedup.
-- R does not guarantee a safety block. Do not fake blocked outcomes; fixed
-  routing authority must hold whether content safety blocks or allows a probe.
-- Crisis/no-incident escalation appears in the global person counter;
-  incident-bearing escalation is marked on its tile. Do not claim the global
-  counter covers every escalation.
-- Joined receipts can refer to retained rehearsal incidents. Reset clears only
-  room tallies, never incidents/reports/audit. State this if relevant.
-- If health/proxy/model access fails, replica changes, responses stall past
-  measured acceptance, or unsafe/raw output appears: **close and switch**.
-  Do not debug Azure or change safety/settings in front of the room.
+If frontend disclosure/revision/mode is uncertain, sample flow fails, requests
+error/stall, or unsafe/raw output appears: close and switch to verified replay.
+If replay fails, explain from verified artifacts; never claim failed live
+acceptance succeeded or promise an untested voice/multilingual backup.
 
-## Fallback ladder (must be tested before freeze)
+Card ID never controls routing. Samples are ordinary submitted text; no
+threshold change/card buckets/pipeline shortcut. Existing crisis/SEV1/statutory/
+PII escalation, audit and report preservation remain mandatory.
 
-1. Confirmed live audience deployment, only if all release gates pass.
-2. Verified replay on working build (`/?demo=loaded`) or sanitized capture.
-   Say “This is the replay,” and disclose any seeded reports.
-3. Offline mock flow with near-duplicate wording, explicitly labeled offline;
-   broad paraphrases do not collapse with bag-of-words mocks.
-4. If none works, explain architecture using verified artifacts; do not claim
-   an untested outbound/multilingual demo or failed live surge succeeded.
-
-## After rehearsal and after show
-
-Close → drain admitted/in-flight work → reset tally → close → confirm repeated
-`open=false`, zero counters and empty tiles on stable replica. Preserve all
-operational records. Clear private coach session on shared devices. Record
-sanitized results and selected fallback/version in [tasks.md](tasks.md);
-do not reopen intake unless deliberately running another authorized window.
+After each mock verification/show window: close →drain admitted work →reset
+tally →close →repeated closed/zero checks. Reset never deletes incidents,
+reports or audit; mock state is process-local, not proof of durable live records.
+Clear private operator session on shared devices. Record exact frontend
+revision, actual mock results and cleanup in [tasks.md](tasks.md).

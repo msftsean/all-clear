@@ -1,14 +1,29 @@
 # Feature Specification: Room Surge
 
 **Feature ID**: `024-room-surge` | **Working branch**: `event/arlington-2026-11-18`
-**Created**: 2026-11-08 | **Revision**: R4, 2026-11-17 11:27 ET
+**Created**: 2026-11-08 | **Revision**: R6, 2026-11-17 12:42 ET
 **Target**: **TODAY, Tuesday 2026-11-17, 13:00 Eastern**, seven-minute showcase
-**Status**: ⛔ Azure images deployed, live run failed; policy-compliant network correction in progress
-**Readiness**: `████░░░░░` **4/9 gates**; G5 partial, G6 failed ([gate definitions](plan.md#completion-gates))
+**Status**: ✅ Disclosed mock fallback deployed/browser/load PASS; ⛔ live AI/semantic acceptance NO-GO; physical cellular scan unverified
+**Readiness**: `████░░░░░` **4/9 primary-live gates**; G5 blocked, G6 failed; fallback does not satisfy live acceptance ([gates](plan.md#completion-gates))
 **Source**: msftsean request and live-test follow-up; Cowork patch commit `e1eca20`
 on `7bed125`; repository inspection and observed tests in [plan.md](plan.md).
 
 ## Objective and scope lock
+
+**Final event decision, 12:42 ET**: the 12:10 live/fallback cutoff passed.
+Corrected private backend rollout terminally failed at 12:17:52 ET; no usable
+private revision/FQDN or frontend exists. No more speculative infrastructure
+before the 13:00 showcase. Preserve policy, existing secrets and private redteam.
+The original public backend is now intentionally **MOCK_MODE=true**, coach key
+unchanged; at 12:20:26 health confirmed mock mode and CLOSED/zero tally.
+`/?demo=loaded` is browser-verified **replay, not audience reporting**.
+Mock audience fallback is now deployed and independently verified: **40 concurrent
+repeated-wording reports →40 accepted signals /4 disjoint incidents**, zero
+failures/blocks/rate limits, p95 **0.213s across all 40 attempts**, wall **0.380s**.
+This is mock flow, not semantic acceptance. Two isolated mobile-browser contexts
+also passed the sample/report/receipt/board path; physical cellular scan remains
+unverified. Final protected reset confirmed CLOSED/zero without deleting reports/audit.
+See the [five-line decision record](run-of-show.md#five-line-gono-go-record).
 
 The audience supplies the surge: many signals, few incidents, one clear board.
 An admission/tally wrapper and three pages exercise the existing bounded
@@ -131,6 +146,14 @@ Print only after the actual public join origin and real-phone scanning work.
   infrastructure after preview/approval. Verify image/revision and traffic,
   public health/routes, authorized live 40-worker rehearsal, reset/closed state,
   real phones, seven-minute run-through, and a tested fallback.
+- **FR-010 — disclosed mock fallback**: Report/board/cards read runtime
+  `/api/health` mode and disclose mock/replay honestly; use a neutral footer
+  without an unconditional AI-processing claim. Only in mock mode, A–D may offer
+  **Use sample report**, prepopulating the actual scene wording for deterministic
+  token-overlap flow. The resulting text still follows normal admission and
+  pipeline processing; no card-based server grouping, dedup/threshold change or
+  hidden shortcut. Live own-word behavior remains unchanged. This demonstrates
+  repeated-wording mock flow, **not live semantic acceptance**.
 
 ### Incident-triage and safety constraints
 
@@ -176,6 +199,15 @@ See [data-model.md](data-model.md) and [API contract](contracts/surge-api.md).
 - **SC-005**: Confirmed audience deployment serves that candidate; live gates,
   real-phone/accessibility/projection checks, cleanup, rehearsal, and fallback
   are recorded before the freeze. Unknowns block live GO.
+
+**Current disposition**: SC-001/002 live acceptance remains failed/unproven.
+Fallback **11 focused UI tests** (including configured API-origin), Node22
+build/typecheck, new-module/cards/tests strict lint and deployed browser/mock
+flow checks passed. Frontend revision
+`allclear-sbuqtpuppifra-frontend--mocklabel1236` is Healthy/Running, 100% traffic,
+bundle `index-DVUyNrL6.js`. Physical cellular scan, full accessibility/projection
+and live semantic/load criteria remain unverified/NO-GO; original 43 failures
+in 45 live attempts are not superseded by mock success.
 
 ## Out of scope
 

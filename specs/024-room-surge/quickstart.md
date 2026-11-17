@@ -1,9 +1,51 @@
 # Phase 1 Quickstart: Verify, release, rehearse
 
-**Branch**: `event/arlington-2026-11-18` | **Revision**: R3, 2026-11-17 10:15 ET
+**Branch**: `event/arlington-2026-11-18` | **Revision**: R6, 2026-11-17 12:42 ET
 **Target**: **TODAY 2026-11-17 13:00 Eastern**
-**Status**: 🟨 Local baseline ready; 🛑 separate audience deployment not verified
+**Status**: ✅ Deployed mock fallback PASS; ⛔ live AI/semantic NO-GO; physical cellular scan unverified
 **Source**: [plan](plan.md), [tasks](tasks.md), observed parent verification
+
+## Final stage instructions — supersede cloud/rehearsal setup below
+
+The 12:10 cutoff passed; corrected private backend terminal Failed at 12:17:52,
+no revision/FQDN/log stream; private frontend absent. **No more speculative
+infrastructure before showcase.** Original public backend is now mock=true,
+protected key unchanged, CLOSED/zero confirmed at 12:20:26.
+
+Use `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/?demo=loaded`
+for browser-verified **replay**, not audience reporting. The bounded fallback
+frontend is now deployed Healthy/Running at100%traffic, revision
+`allclear-sbuqtpuppifra-frontend--mocklabel1236`, public bundle `index-DVUyNrL6.js`,
+digest `sha256:9a7eb0ed665c595e59c7fb7f13e89554b196a9a9eddc463bc9bc91e48a60cb56`.
+Runtime mock notices/neutral footer/mock-only sample prefill are verified;
+**11 UI tests, Node22 build/typecheck, new-module/cards/tests strict lint PASS**.
+Unchanged Board/Report HEAD lint baseline is four fast-refresh warnings plus one
+unused-disable error, not a new clean-baseline claim.
+
+**Actual mock proof**: 40 concurrent repeated-wording requests through public
+frontend →40 accepted signals/4 disjoint incidents/40devices, A–D10 each;
+zero failures/blocks/rate limits; p95 all40 **0.213s**, wall **0.380s**.
+Two isolated390×844 Chromium contexts passed report→A→sample→receipt and
+board2signals/1incident/2devices; all3 pages Mock-labeled, QR PNGs generated,
+safe masked controls, no public-call key leak/JS errors/mobile overflow.
+Final protected reset CLOSED/zero, reports/audit retained.
+**Physical cellular scan unverified; original live AI semantic NO-GO unchanged.**
+
+### Ready-to-test mock flow
+
+1. Board: `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge`.
+2. Operator privately retrieves **existing coach key** from **original audience
+   backend →Azure Portal →Secrets**; never put it in a URL. Enter **Coach key
+   →Set key →Open** under Operator controls.
+3. Attendees scan board QR→generic `/report`→choose **A–D**→matching **Use sample
+   report**→**Send**. Explain mock/repeated wording, not live AI paraphrases.
+4. Print/screen cards:
+   `https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge/cards?only=ABCD`.
+5. Close/drain/reset/close after the window. Replay remains `/?demo=loaded`.
+
+Follow the [five-line final decision record](run-of-show.md#five-line-gono-go-record).
+The older sections below remain recovery/reference instructions, not authority
+to resume infrastructure or live load before today's stage.
 
 This is the **future operator sequence**, not evidence that these steps ran.
 The current assignment changes docs only. Stay on the event branch; do not rerun

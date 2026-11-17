@@ -1,10 +1,13 @@
 # Room Surge Azure preflight
 
-**Revision:** 2026-11-17 / 02
+**Revision:** 2026-11-17 / 04
 
-**Status:** Corrective private-path preflight PASS; initial live test FAILED
-**Branch:** `event/arlington-2026-11-18`  
-**Target:** MCAPS-2026-segayle, `rg-allclear-surge-20261117`, East US 2  
+**Status:** 🟨 MOCK FALLBACK VERIFIED | ⛔ LIVE AI NO-GO
+
+**Branch:** `event/arlington-2026-11-18`
+
+**Target:** MCAPS-2026-segayle, `rg-allclear-surge-20261117`, East US 2
+
 **Scope:** New audience resources only. Private red-team and other applications untouched.
 
 ## Summary
@@ -91,3 +94,63 @@ ACR Pull propagation before deploying apps.
 The same tested immutable images are retained. The new Search index is seeded
 with all 12 All Clear articles and 1536-dimensional embeddings. Live acceptance
 must be repeated after the private path works; fallback decision is 12:10 ET.
+
+The private environment's first asynchronous creation failed on the missing
+subscription feature `Microsoft.Network/AllowBringYourOwnPublicIpAddress`, which
+ARM preview did not detect. It is now Registered on MCAPS and Microsoft.Network
+registration was refreshed; the unchanged network template then Succeeded.
+Identity bootstrap and live ACR Pull/Cosmos role checks passed. Do not equate
+registered prerequisites or healthy public routes with passing live acceptance.
+
+## ⛔ Final private application failure
+
+At 12:17:52 ET, `allclear-surge-live-backend` failed to provision a revision:
+`ContainerAppOperationError`, with no additional provider explanation. No revision
+or FQDN exists; the private frontend was never created. Correlation:
+`f851acdb-4556-456c-bbd4-71f5c7bd0a1e`. The network/private endpoint/DNS and role
+bootstrap succeeded; the remaining revision failure is not explained by that
+success and was not a user cancellation. Stop speculative infrastructure changes
+after the fallback cutoff. Do not relax governance or claim live semantic success.
+
+## ✅ Deployed, explicitly labelled mock fallback
+
+Only the original audience backend's `MOCK_MODE` flag changed to true; its existing
+coach key, image and safety controls were preserved. Runtime mode disclosures now
+appear on `/report`, `/surge` and `/surge/cards`. Mock A-D cards offer explicit
+sample wording; live own-word instructions remain unchanged. Actual report text
+still traverses the normal pipeline: no card-based grouping or changed thresholds.
+
+| Final check | Verified result |
+|---|---|
+| Focused frontend tests / TypeScript / Node22 production build | 11 passed / PASS / PASS |
+| New modules, cards and tests: strict targeted ESLint | PASS |
+| Existing board/report strict lint baseline | Four fast-refresh warnings and one unused-disable error reproduced from HEAD; not introduced or suppressed |
+| New frontend revision | `allclear-sbuqtpuppifra-frontend--mocklabel1236`, Healthy/Running, 100% traffic |
+| Deployed immutable frontend digest | `sha256:9a7eb0ed665c595e59c7fb7f13e89554b196a9a9eddc463bc9bc91e48a60cb56` |
+| Repeated-wording mock load, concurrency40 | 40 accepted Signals → 4 disjoint Incidents, 40 devices, A-D10 each, zero failures |
+| Mock p95 across all40 attempts / wall | 0.213s / 0.380s |
+| Actual public mobile-browser flow | Two isolated390×844 contexts, sample input/receipt, board polling2 Signals →1 Incident |
+| QR / processing disclosure / key handling | Board PNG + six card PNGs; all three pages labelled mock; masked control key, no public API or URL key |
+| Browser errors / mobile horizontal overflow | Zero / none |
+| Final protected reset | CLOSED, zero Signals/Incidents; domain reports/audit not deleted |
+| Physical cellular QR scan | NOT VERIFIED |
+| Original live semantic acceptance | FAILED; mock results do not replace it |
+
+The fresh validation workflow completed before the frontend-only image update.
+No infrastructure template was applied. A read-only existing-network Provider
+preview showed zero resource Create/Delete, three Modify, three NoChange and
+thirteen Ignore. The helper's text-marker counts included nested property
+removals and must not be reported as resource deletions. The existing frontend
+registry secret/proxy/environment/ingress were preserved; no role or secret changed.
+
+**Board:** https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge
+
+**Mock A-D cards:** https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge/cards?only=ABCD
+
+**Replay, not audience reporting:** https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/?demo=loaded
+
+Retrieve the existing coach secret from the original audience backend's Azure
+Portal Secrets view; enter it under Operator controls → Coach key → Set key.
+Open the board, then scan on a physical phone, choose A-D, use the sample and send.
+Reset after testing. Mock grouping demonstrates repeated wording, not live AI;
+mock domain data is in memory and disappears on app restart.
