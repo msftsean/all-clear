@@ -1,115 +1,185 @@
-# Feature Specification: Room Surge (audience-sourced live surge)
+# Feature Specification: Room Surge
 
-**Feature Branch**: `024-room-surge`
-**Created**: 2026-11-08
-**Status**: Draft, with an untested head-start patch (see plan.md, "Verification status")
-**Target event**: Azure Days Arlington, Day 1 Use Case Showcase (Tue Nov 17, 12:45), about 7 minutes
-**Input**: "I'd like something dramatic for the showcase." The audience *is* the surge.
-The backup demo (outbound approval call + multilingual caller) is a separate spec.
+**Feature ID**: `024-room-surge` | **Working branch**: `event/arlington-2026-11-18`
+**Created**: 2026-11-08 | **Revision**: R3, 2026-11-17 10:15 ET
+**Target**: **TODAY, Tuesday 2026-11-17, 13:00 Eastern**, seven-minute showcase
+**Status**: 🟨 Local baseline verified; Azure audience readiness **BLOCKED / NOT CERTIFIED**
+**Readiness**: `███░░░░░░` **3/9 gates** ([gate definitions](plan.md#completion-gates))
+**Source**: msftsean request and live-test follow-up; Cowork patch commit `e1eca20`
+on `7bed125`; repository inspection and observed tests in [plan.md](plan.md).
 
-## Why
+## Objective and scope lock
 
-The single rehearsed call-in shows the pipeline but never shows the payoff the
-slide promises: *many signals, few incidents, one clear board*. With one call,
-deduplication is invisible. With the room reporting at once, the collapse from
-dozens of Signals to a handful of Incidents happens live, from the audience's own
-words, on their own phones.
+The audience supplies the surge: many signals, few incidents, one clear board.
+An admission/tally wrapper and three pages exercise the existing bounded
+pipeline. Recover, verify, deploy a **separate audience app in the user-approved
+`MCAPS-2026-segayle` subscription `9f8986ed-ceb2-414d-8fcb-46d5cfc70618`**,
+rehearse, reset/close, and freeze before 13:00. Do not treat local mock results
+as live semantic-dedup evidence.
 
-## User Scenarios & Testing *(mandatory)*
+This refresh is **documentation only**. No branch switch, runtime change,
+deployment, Azure setting/secret change, or commit/push is performed by this
+planning pass. The parent owns agent-context refresh and checkpoints. The user's
+follow-up authorizes a live Azure test **after** target/access/configuration
+gates pass; it does not authorize changing secrets or using the private redteam
+deployment. [Tasks](tasks.md) are the executable recovery backlog, not completed
+implementation merely because they are written.
 
-### User Story 1: An attendee reports from their phone (P1)
+**Target decision update**: Today's subscription choice is confirmed; Kitty's
+read-only inventory will determine exact audience resources/FQDN and populate
+the local, ignored [deployment plan](..\..\.azure\deployment-plan.md).
+Do not require historical corporate-tenant sign-in for today; that path is
+deferred until today's demo works. Never reuse the private redteam adapter.
+**Creation permission granted, 10:15 ET**: User said “yes create away. the goal
+is to get this complete,” explicitly authorizing new separate audience resources
+and NEW app-scoped secrets, including the coach key, in that subscription.
+No further elicitation is needed for ordinary isolated creation within this
+scope. Never modify/rotate existing app secrets or reuse the private redteam
+adapter. Parent must publish this Spec Kit checkpoint to GitHub **first**;
+implementation and validated deployment follow. Technical preflight/preview
+gates remain, not a renewed generic permission request.
 
-An attendee scans the QR code on their table card (or on screen), lands on a
-mobile page with no sign-in, reads their scenario, types (or dictates with the
-phone keyboard) what they see, and submits. Within a few seconds the page tells
-them whether their report opened a new Incident or joined an existing one, and
-how many people in the room reported the same thing.
+## User Scenarios & Testing
 
-**Independent test**: Open `/report?card=A` on a phone-sized viewport, submit a
-report while the surge is open, and see an acknowledgment with the Incident id
-and the room report count.
+### US1 — Report from a phone (P1)
 
-**Acceptance scenarios**
-1. Given the surge is open, when an attendee submits a 1 to 500 character report,
-   then it runs through the unchanged three-agent pipeline (channel `report`) and
-   the page shows `opened` or `joined`, the Incident id, and the room report count.
-2. Given the surge is closed, when an attendee submits, then the page says the
-   surge has not started or has ended (HTTP 409) and nothing is processed.
-3. Given a device has already sent 3 reports in the last 60 seconds, when it sends
-   another, then it is refused with HTTP 429 and a friendly message.
-4. Given the content-safety filter blocks the text, then the attendee sees
-   "Blocked by the safety filter" and the board's *blocked by safety* counter
-   increments. Nothing is created.
-5. Given a harm/crisis signal, then the existing crisis safety net escalates it to
-   a human. The board counts it under *escalated to a person* and shows no text.
+An attendee scans a card, opens `/report?card=A` without sign-in, and types or
+uses the phone keyboard's dictation. Acknowledgment identifies an opened/joined
+incident and its **room** report count, or truthfully reports a blocked,
+escalated, received, or failed outcome.
 
-### User Story 2: The room watches the surge collapse on the big screen (P1)
+**Independent test**: A phone-sized browser submits while open; receipt and board
+agree. A real-phone cellular check remains required.
 
-The presenter puts `/surge` on the room display. It shows the QR code and short
-URL, two large counters (Signals in, Incidents out), the collapse ratio, the
-number of participating devices, *blocked by safety*, *escalated to a person*,
-and one tile per Incident sized by its room report count and coloured by severity.
-Tiles visibly grow as reports join.
+1. A valid 1–500 character message uses `process_signal(channel="report")`.
+2. Closed intake returns 409 without processing; the fourth attempt by one device
+   within the default 60-second/three-report window returns 429.
+3. If the content-safety service actually blocks, receipt says blocked and only
+   the blocked tally increments; no incident is created for that attempt.
+4. A crisis/harm signal follows the existing human-escalation safety net.
+5. Red-card input is **not guaranteed to be blocked in live mode**. Inspect the
+   actual safety/routing outcome; no rule, severity, SLA, or tool authority may
+   be overridden. Never fabricate a refusal for the stage.
 
-**Independent test**: With the surge open, submit 20 reports from 3 scenarios;
-`/surge` updates within about 1.5 seconds per report, and tiles show the counts.
+### US2 — Watch the room board (P1)
 
-**Acceptance scenarios**
-1. The board never displays raw attendee text. Tiles show only machine-derived
-   fields: Incident id, severity, queue, category and a PII-redacted, length-capped
-   location extracted by QueryAgent.
-2. The board polls `GET /api/surge/state` about once a second and degrades
-   gracefully (keeps the last good state and shows "reconnecting") if a poll fails.
+`/surge` shows a locally generated QR, join URL, signals/incidents, ratio,
+participating devices, safety blocks, no-incident human escalations, and incident
+tiles weighted by room reports. Incident-bearing escalations are marked on tiles;
+the current global escalation counter is not a count of every escalation.
 
-### User Story 3: The presenter controls the surge (P1)
+**Independent test**: Submit near-duplicates and observe counts update on the
+approximately one-second poll. Keep the last good state and show reconnecting
+when polling fails. Projection readability, contrast, and keyboard accessibility
+require separate verification; browser route smoke alone does not certify them.
 
-The presenter (or a coach) opens, closes and resets the surge from the board using
-a coach key. Attendees cannot control it.
+Tiles contain only incident ID, severity, queue, category, redacted/capped
+machine-extracted location, escalation flag, room reports, and magnitude. No raw
+attendee text or device identifiers appear in public state.
 
-**Acceptance scenarios**
-1. `POST /api/surge/control` with `open`, `close` or `reset` requires header
-   `X-Surge-Key` equal to `SURGE_COACH_KEY`. In live mode an unset key means control
-   is disabled (fail closed, HTTP 403). Mock mode allows control without a key.
-2. `reset` clears the room tally only. It never deletes Incidents, Reports or
-   audit entries (Signals are never deleted, CONTEXT.md).
+### US3 — Coach controls and safe reset (P1)
 
-### User Story 4: Printable table cards (P2)
+`POST /api/surge/control` accepts `open`, `close`, or `reset` with `X-Surge-Key`.
+Live mode with missing/wrong key returns 403; mock mode permits a missing key
+only when no key is configured. Hiding controls is not authorization.
+Masked **Operator controls → Coach key → Set key** is now implemented/tested.
+Use that non-URL entry path; legacy URL ingestion is not safe credential delivery.
 
-`/surge/cards` renders printable cards, each with a scenario and a QR code that
-opens `/report?card=<id>`. Scenarios A to D are four shared real-world events
-around Arlington, E is "your own small issue" (shows distinct SEV4 Incidents), and
-R is the red card ("try to trick All Clear"), which feeds the safety and
-deterministic-router talking points.
+**Independent test**: Verify unauthenticated control fails and authorized control
+works on the confirmed live target; reset, then read `open=false`, all tally
+counters zero, and no tiles. Incidents, reports, and audit records remain intact.
+Wait for in-flight reports to finish before resetting; close alone does not
+cancel already admitted work.
 
-## Requirements *(mandatory)*
+### US4 — Distribute truthful scenario cards (P2)
 
-- **FR-001** Audience reports go through `AllClearPipeline.process_signal`
-  unchanged. No new routing, severity or dedup logic. The card id is used
-  for the room tally only and never influences routing (say this on stage).
-- **FR-002** RouterExecutor stays zero-LLM. PII filtering, the crisis safety net,
-  escalation and audit are untouched.
-- **FR-003** Per-device rate limit: default 3 reports per 60 seconds
-  (`SURGE_REPORTS_PER_WINDOW`, `SURGE_WINDOW_SECONDS`). The device id is a random
-  id from the phone's localStorage. It is not an identity and is never shown.
-- **FR-004** `GET /api/surge/state` returns counts and tiles only, never raw text.
-- **FR-005** Mock mode stays viable: every endpoint works offline. Note: mock
-  embeddings are bag-of-words, so free-typed paraphrases will NOT collapse in mock
-  mode. The audience surge must run against the live deployment, and mock mode is
-  the rehearsal and replay fallback.
-- **FR-006** The room tally is per process. For the event, pin the backend
-  container app to one replica (see plan.md). `state` reports a `replica` id so a
-  split is visible.
+`/surge/cards` prints A–D (four Arlington events), E (distinct small issues), and
+R (guardrail probes). QR opens the matching report page. E does not force SEV4;
+severity always follows deterministic rules. Card letters never affect routing.
+Print only after the actual public join origin and real-phone scanning work.
 
-## Success criteria
+## Requirements
 
-- **SC-001** 40 simultaneous reports across scenarios A to D collapse to at most
-  6 Incidents in the live deployment (target: 4 plus the E-card singles).
-- **SC-002** p95 report-to-acknowledgment under 8 seconds at 40 concurrent reports.
-- **SC-003** Zero raw attendee text on the board (checked by test).
-- **SC-004** The full existing backend suite and frontend build stay green.
+- **FR-001**: All accepted reports use the unchanged bounded pipeline. Card ID
+  affects tally only; no card-based grouping or demo-only routing.
+- **FR-002**: Preserve zero-LLM RouterExecutor, ActionAgent's exact three tools
+  (`create_incident`, `search_knowledge`, `generate_sitrep`), PII filtering,
+  audit, crisis/SEV1/statutory and other mandatory human escalation.
+- **FR-003**: Preserve per-device admission defaults (three reports / 60 seconds).
+  LocalStorage device ID is rate-limit metadata, not authenticated identity.
+- **FR-004**: Public state is counts and safe tiles only. Evidence must exclude
+  raw attendee text, device/session IDs, secrets, and coach-key URLs.
+- **FR-005**: Mock mode stays viable offline. Bag-of-words embeddings do not
+  collapse broad free-typed paraphrases; use near-duplicates for offline dedup
+  flow tests and **live semantic embeddings** for semantic acceptance.
+- **FR-006**: One backend replica **and one serving process** for the in-process
+  tally; inspect actual scale/revision traffic and repeated replica IDs.
+  Repository defaults are not deployed-state proof.
+- **FR-007**: Confirm exact subscription/resource group/apps, accessible public
+  frontend with `/api` proxy, `mock_mode=false`, operational chat/embedding,
+  stores/knowledge/audit dependencies, quota, and authorized coach control
+  before live load. Use masked non-URL coach entry and private script credential
+  intake, not key URLs/arguments. Creating a NEW audience-app coach key is
+  approved; changing existing secrets is not. Do not publish keyless mock
+  controls as a live deployment.
+- **FR-008**: Harden rehearsal verification before using its exit code as a gate:
+  full fixture coverage, no request/network errors or server failures,
+  positive incident coverage, and no A–D cross-event merges. Preserve the
+  45-request fixture and documented latency denominator; record actual red-card
+  outcomes without requiring universal blocking.
+- **FR-009**: Deploy only a tested, checkpointed candidate through existing
+  infrastructure after preview/approval. Verify image/revision and traffic,
+  public health/routes, authorized live 40-worker rehearsal, reset/closed state,
+  real phones, seven-minute run-through, and a tested fallback.
+
+### Incident-triage and safety constraints
+
+**Authority/escalation**: QueryAgent classifies only; RouterExecutor decides
+dedup/severity/SLA/escalation; ActionAgent cannot bypass decisions. No safety
+trigger is weakened to pass a demo. Every processed signal remains attributable;
+dedup creates a report, never deletes a signal. Safety-blocked attempts do not
+become incidents; tally reset never erases operational records.
+
+**Data/external services**: Existing classification/content-safety flow is
+unchanged. Pipeline redacts downstream text before embedding/persistence;
+public location is redacted again and capped to 40 characters. Live mode uses
+the existing Azure integration design; approved audience resource provisioning
+may be needed, but no new model architecture, data retention scheme, platform, or
+telemetry payload is introduced. Tally/rate metadata is process-local.
+
+**Grounding**: Board facts come from pipeline results, not raw submissions.
+Sitreps retain source-record citations; never project an unreviewed receipt or
+claim observed live behavior without an evidence record.
+
+### Key entities
+
+Signal → report → incident remain canonical. SurgeRoom observes results, not
+authority; its incident tile is a room projection, not a second incident store.
+See [data-model.md](data-model.md) and [API contract](contracts/surge-api.md).
+
+## Success criteria and release evidence
+
+- **SC-001**: In a live 40-worker rehearsal, all 40 A–D fixture reports (10/card)
+  receive accepted incident-bearing receipts. Their union is **4–6 incidents**
+  (target four), each card has coverage, and card incident sets are pairwise
+  disjoint. Zero incidents or cross-event merging is a failure, not a collapse.
+  Three E fixtures remain distinct from one another and A–D; R outcomes are
+  assessed separately.
+- **SC-002**: p95 report-to-acknowledgment <8 seconds at concurrency 40.
+  Preserve the existing HTTP-200 latency population (including safety blocks)
+  and percentile calculation for comparability; report all 45 request outcomes
+  and require zero errors/failed before calling it a pass.
+- **SC-003**: Zero raw attendee text on board/state; PII, authority, severity/SLA,
+  audit, and escalation regression tests stay green.
+- **SC-004**: Focused/full mock backend tests, Surge UI tests, frontend typecheck
+  and production build pass on the release candidate with aligned npm lock.
+- **SC-005**: Confirmed audience deployment serves that candidate; live gates,
+  real-phone/accessibility/projection checks, cleanup, rehearsal, and fallback
+  are recorded before the freeze. Unknowns block live GO.
 
 ## Out of scope
 
-- Outbound calling and multilingual call-in (backup demo, separate spec).
-- Cross-replica room tally (pin to one replica instead).
-- Changes to the Day 2 lab.
+Day 2 curriculum changes; outbound/multilingual backup implementation; broad
+refactors; cross-replica tally; new platforms; hardcoded card grouping; blanket
+threshold lowering. Alternate demos are fallback candidates only if independently
+verified, not assumed available.
