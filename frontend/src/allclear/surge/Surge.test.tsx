@@ -1,12 +1,14 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import { EMPTY_STATE, SurgeBoardView, prettyCategory } from "./SurgeBoard";
+import QRCode from "qrcode";
+import SurgeBoard, { EMPTY_STATE, SurgeBoardView, prettyCategory } from "./SurgeBoard";
 import { resultDetail, resultHeadline } from "./SurgeReport";
 import { SURGE_CARDS, findCard, reportUrl } from "./cards";
+import { submitSurgeReport } from "./surgeApi";
 import type { SurgeState } from "./surgeApi";
 
 vi.mock("qrcode", () => ({
-  default: { toDataURL: () => Promise.resolve("data:image/png;base64,AAAA") },
+  default: { toDataURL: vi.fn(() => Promise.resolve("data:image/png;base64,AAAA")) },
 }));
 
 const LIVE: SurgeState = {
@@ -43,6 +45,49 @@ const LIVE: SurgeState = {
 };
 
 describe("Room surge board", () => {
+  it("uses a masked operator key only for control requests", async () => {
+    sessionStorage.clear();
+    window.history.replaceState(null, "", "/surge");
+    const fetchMock = vi.fn().mockImplementation((_url, init) =>
+      Promise.resolve({
+        ok: true,
+        json: async () => init?.method === "POST" && JSON.parse(init.body).message
+          ? { accepted: true, outcome: "opened", incident_id: "AC-1", message: "" }
+          : EMPTY_STATE,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    try {
+      render(<SurgeBoard />);
+      await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+      expect(screen.queryByRole("button", { name: "Open" })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText("Operator controls"));
+      const input = screen.getByLabelText("Coach key");
+      expect(input).toHaveAttribute("type", "password");
+      fireEvent.change(input, { target: { value: "private-key" } });
+      fireEvent.click(screen.getByRole("button", { name: "Set key" }));
+      expect(input).toHaveValue("");
+      fireEvent.click(screen.getByRole("button", { name: "Open" }));
+      await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => url.endsWith("/control"))).toBe(true));
+      await submitSurgeReport("test report", "test-device", "A");
+      const calls = fetchMock.mock.calls;
+      const control = calls.find(([url]) => url.endsWith("/control"))!;
+      expect(control[1].headers["X-Surge-Key"]).toBe("private-key");
+      for (const [url, init] of calls.filter(([url]) => !url.endsWith("/control"))) {
+        expect(url).not.toContain("private-key");
+        expect(JSON.stringify(init)).not.toContain("private-key");
+      }
+      expect(screen.getByText(/\/report$/).textContent).not.toContain("private-key");
+      expect(QRCode.toDataURL).toHaveBeenCalledWith(
+        expect.not.stringContaining("private-key"), expect.any(Object),
+      );
+      expect(window.location.href).not.toContain("private-key");
+    } finally {
+      vi.unstubAllGlobals();
+      sessionStorage.clear();
+    }
+  });
+
   it("shows counters, ratio and one tile per incident", () => {
     render(<SurgeBoardView state={LIVE} joinUrl="https://allclear.example/report" stale={false} />);
     expect(screen.getByTestId("surge-signals")).toHaveTextContent("43");

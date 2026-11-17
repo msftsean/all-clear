@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { SEV } from "../components";
 import Qr from "./Qr";
 import { reportUrl } from "./cards";
@@ -34,9 +34,13 @@ function takeCoachKey(): string | null {
     const url = new URL(window.location.href);
     const fromUrl = url.searchParams.get("key");
     if (fromUrl) {
-      sessionStorage.setItem(KEY_STORE, fromUrl);
       url.searchParams.delete("key");
       window.history.replaceState(null, "", url.toString());
+      try {
+        sessionStorage.setItem(KEY_STORE, fromUrl);
+      } catch {
+        // Keep the key in memory when tab storage is unavailable.
+      }
       return fromUrl;
     }
     return sessionStorage.getItem(KEY_STORE);
@@ -195,13 +199,14 @@ export default function SurgeBoard() {
   const [msg, setMsg] = useState<string | null>(null);
   const keyRef = useRef<string | null>(null);
   const [coach, setCoach] = useState(false);
+  const [keyInput, setKeyInput] = useState("");
 
   const params = new URLSearchParams(window.location.search);
   const joinUrl = params.get("join") || reportUrl(window.location.origin);
 
   useEffect(() => {
     keyRef.current = takeCoachKey();
-    setCoach(Boolean(keyRef.current) || params.get("coach") === "1");
+    setCoach(Boolean(keyRef.current));
     let alive = true;
     const tick = async () => {
       try {
@@ -232,23 +237,50 @@ export default function SurgeBoard() {
     }
   }
 
-  const controls = coach ? (
-    <footer className="fixed bottom-4 right-4 flex items-center gap-2 rounded-chip border border-nline bg-panel/90 px-3 py-2 text-sm">
-      {msg && <span className="text-sev2">{msg}</span>}
-      <button className="rounded-chip bg-clear/20 px-3 py-1 text-clear" onClick={() => act("open")}>
-        Open
-      </button>
-      <button className="rounded-chip bg-sev2/20 px-3 py-1 text-sev2" onClick={() => act("close")}>
-        Close
-      </button>
-      <button className="rounded-chip bg-nline px-3 py-1 text-ndim" onClick={() => act("reset")}>
-        Reset
-      </button>
-      <a className="px-2 text-ndim underline" href="/?demo=loaded">
-        Replay fallback
-      </a>
+  function saveCoachKey(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const key = keyInput.trim();
+    keyRef.current = key || null;
+    try {
+      if (key) sessionStorage.setItem(KEY_STORE, key);
+      else sessionStorage.removeItem(KEY_STORE);
+    } catch {
+      // The key remains available in memory if storage is unavailable.
+    }
+    setCoach(Boolean(key));
+    setKeyInput("");
+    setMsg(null);
+  }
+
+  const controls = (
+    <footer className="fixed bottom-4 right-4 rounded-chip border border-nline bg-panel/90 px-3 py-2 text-sm">
+      <details>
+        <summary className="cursor-pointer text-ndim">Operator controls</summary>
+        <form className="mt-2 flex items-end gap-2" onSubmit={saveCoachKey}>
+          <label className="flex flex-col gap-1 text-ndim">
+            Coach key
+            <input
+              type="password"
+              autoComplete="off"
+              value={keyInput}
+              onChange={(event) => setKeyInput(event.target.value)}
+              className="rounded-chip border border-nline bg-panel px-2 py-1 text-nink"
+            />
+          </label>
+          <button type="submit" className="rounded-chip bg-nline px-3 py-1 text-nink">Set key</button>
+        </form>
+        {coach && (
+          <div className="mt-2 flex items-center gap-2">
+            <button className="rounded-chip bg-clear/20 px-3 py-1 text-clear" onClick={() => act("open")}>Open</button>
+            <button className="rounded-chip bg-sev2/20 px-3 py-1 text-sev2" onClick={() => act("close")}>Close</button>
+            <button className="rounded-chip bg-nline px-3 py-1 text-ndim" onClick={() => act("reset")}>Reset</button>
+          </div>
+        )}
+        {msg && <span role="alert" className="text-sev2">{msg}</span>}
+        <a className="mt-2 inline-block text-ndim underline" href="/?demo=loaded">Replay fallback</a>
+      </details>
     </footer>
-  ) : null;
+  );
 
   return <SurgeBoardView state={state} joinUrl={joinUrl} stale={stale} controls={controls} />;
 }
