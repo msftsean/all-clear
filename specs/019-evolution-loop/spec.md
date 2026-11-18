@@ -124,6 +124,14 @@ language, required safety gates, and active verification expectations.
   attached-report totals from incident/report outcomes rather than a misleading
   browser-local signal/incident subtraction. It MUST NOT claim a sitrep is ready
   when the current action returns `sitrep:null`.
+- Participant installation MUST pin the reviewed source snapshot and the
+  Search SDK version already verified by its lock/image, and install reviewed
+  requirements after checkout/source verification inside an activated isolated
+  venv rather than relying on another branch's existing dependencies.
+  Dependency setup MUST be excluded from the stated deployment estimate.
+  A manifest/test-only
+  reproducibility correction MUST NOT be represented as a new deployed
+  application version or proof that pending remote CI has passed.
 
 ### Key Entities
 

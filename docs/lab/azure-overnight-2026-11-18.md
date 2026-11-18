@@ -7,7 +7,7 @@ Live URLs:
 
 | check | result | time (ET) | note |
 |---|---|---|---|
-| Current functional status | **LIVE API/SAFETY/DESKTOP ALL PASS**; full request qualified | Final health **01:51:15.229** | **5/9 deployments, 10 authorized signal POSTs; apps running**. Corrected desktop and preserved/clean audience queue pass. Authenticated portal rendering and a measured clean passing participant run remain unproven. |
+| Current functional status | **LIVE API/SAFETY/DESKTOP ALL PASS**; full request qualified | Final read-only health **02:05:13.231** | **5/9 deployments, 10 authorized signal POSTs; apps running**. Corrected desktop passed; clean audience queue verified at 01:51. Authenticated portal rendering and a measured clean passing participant run remain unproven. |
 | Identity / scope | PASS | Initially 23:36; reconfirmed 01:23 | p29; subscription `0e1d648b-17c8-4724-9405-8e84b4c565c4`; only existing `rg-allclear-p29`. No account switch, login, role/policy/provider/app-registration writes. |
 | Attempt 1 | CLI FAIL; ARM PASS | 23:47:40.545 start | CLI failed in **87.6847s**, `npm error Exit handler never called!`; ARM continued, actual duration **PT17M50.9427648S**, error null. Observed successful at 00:06:26. |
 | Attempt 2 | FAIL before cloud writes | 00:06:59.560–00:07:01.506 | **1.9457583s**; `azure.yaml line 27: cannot unmarshal !!map into []osutil.ExpandableString`. Counted against cap; corrected map to supported list. |
@@ -33,6 +33,8 @@ Live URLs:
 | Local preparation / regression | PASS with existing warnings | Before attempt 1; 00:20 rerun | Preview 42s, 12 displayed rows including two model deployments (database/secret children not individually displayed); no new roles. Initial 85 tests/7.23s; frontend build/7.01s. Final **92 tests/11.79s**, six verifier tests. Existing Bicep/CSS/dependency/lint warnings remain. |
 | Backend pytest against live config | SKIPPED, unsupported | Verified source | `backend/tests/conftest.py` forces `ENVIRONMENT=test`, `MOCK_MODE=true`; dedicated live verifier used instead. |
 | Clean passing participant end-to-end timing | **NOT MEASURED** | One-stack constraint | Cold stages and later successful recovery were observed separately, not a clean-from-empty successful rerun. **35–45 minutes is a planning estimate**, not measured proof. |
+| Participant branch / final public checks | **PASS** | 02:05 | Normal non-force branch-only publication verified at report commit `1ccb40e`; main unchanged. Frontend HTTP 200, backend healthy/live/Cosmos, active/last-served GPT-5.1/no failover and exact served UI bundle hash rechecked. **Zero additional POSTs**. |
+| Fresh-install source correction | **LOCAL + BOTH ACTUAL LINUX CI PASS** | Published `3827b2d`, 02:14:37.245 | Initial CI397/two failures cleared by manifest/test-only pin matching deployed Search **11.7.0b2**. Fresh install118 packages; **399 backend/18.10s**, eval **60/60,1.000≥0.90**, frontend **22/5.11s**; Ruff/focused4 pass. [Backend CI44257347609](https://github.com/msftsean/all-clear/actions/runs/44257347609) success (pytest+eval); [Offline Smoke44257347515](https://github.com/msftsean/all-clear/actions/runs/44257347515) success, offline gate **1m45s/exit0**. Both source3827b2d; no Azure deployment/POST. |
 
 **Total deploy time / participant estimate.** Initial start → deployed stack:
 **21m30.246s**; → seed-ready: **22m10.115s**; → original failed acceptance:
@@ -51,13 +53,14 @@ second stack merely to measure it would violate the one-stack rule.
 For planning, reserve **35–45 minutes after tools/login/quota are ready**,
 based on the observed approximately 22-minute infrastructure/build path plus
 preview, seed, acceptance and portal/network contingency; this is a conservative
-estimate, **not an achieved completion guarantee**. Excludes tool installation,
-login renewal, capacity waits, unavailable package feeds and unverified portal
-access. Never advertise warm backend-only seconds as full participant timing.
+estimate, **not an achieved completion guarantee**. Excludes tool/dependency
+installation, login renewal, capacity waits, unavailable package feeds and
+unverified portal access. Never advertise warm backend-only seconds as full
+participant timing.
 
 **Status:** 🟩 live API · 🟩 desktop · 🟩 real models/traces · 🟨 portal · 🟨 clean-run timing
 
-**Report revision:** `2026-11-18-r2` · runtime source `b26e397` · latest health 01:51:15 ET.
+**Report revision:** `2026-11-18-r4` · serving frontend `b26e397` / backend `207b457` · reviewed participant snapshot `3827b2d` · latest read-only health 02:05:13 ET.
 
 ## Changes and safe merge after the event
 
@@ -68,7 +71,7 @@ Stage only task-owned files; existing dirty `.squad` work, other azd environment
 and the other two lab reports are unrelated.
 
 **Inventory scope:** task-owned changes from baseline `8ae9276`
-(`207b457`, `b26e397`, final docs), **not the whole branch diff against main**.
+(`207b457`, `b26e397`, `3827b2d`, dated docs), **not the whole branch diff against main**.
 Remote `origin/main` `16caa52` differs from local main `091953`; before our task
 commits, GitHub comparison already showed baseline diverged **31 ahead/3 behind**.
 Those pre-existing commits were already server-visible, not newly authored or
@@ -76,15 +79,22 @@ reviewed here. After the event, review/cherry-pick the task-owned commits and
 revalidate the target; **do not wholesale merge/rebase this diverged branch**.
 No main writes or fetch-merges occurred.
 
-**Participant delivery planned, not yet verified published:** after the final
-documentation commit, the coordinator intends a normal non-force push of only
-this branch to existing `msftsean/all-clear`. No PR/merge/main push or main merge
-into the tested branch. Coordinator reviewed the exact origin, already-published
-base and workflows: Azure SWA push deployments filter main only; this branch's
-push CI uses mock mode/no Azure deployment credentials. The checkout recipe
-below requires confirmed branch publication; do not claim that push has happened
-until the coordinator verifies the remote ref.
-**Normal non-force push occurs after the report commit; main is not pushed.**
+**Participant branch published:** at 02:05 ET a normal non-force push created
+only `refs/heads/azure/overnight-2026-11-18` in existing `msftsean/all-clear`;
+its remote SHA was verified against report commit
+`1ccb40ee57ef0e44b2b5936dbf240f8bd96002f4`. This receipt changes documentation
+only; reviewed runtime source remains `b26e397`.
+No PR/merge/main push or main merge into the tested branch.
+Coordinator reviewed the exact fetch/push origin, already-published base and
+workflows: Azure SWA push deployments filter main only; this branch's push CI
+uses mock mode/no Azure deployment credentials. Local main remained
+`091953751907fa05832e49382d5eccbf1a55c511`.
+The checkout recipe can fetch the published branch; no main update is required.
+The subsequent manifest/test-only participant snapshot
+`3827b2df4a237d3278ba6184b62216534257abf2` was normally pushed and its exact
+remote ref verified at **02:14:37.245 ET**. Actual Linux Backend CI (pytest/eval)
+and Offline Smoke both passed. This newer receipt does not change
+the working Azure images or the preserved initial 02:05 publication receipt.
 
 | Files | Why | Merge disposition |
 |---|---|---|
@@ -94,6 +104,7 @@ until the coordinator verifies the remote ref.
 | `frontend/src/allclear/{BriefingRoom.tsx,BriefingRoom.test.tsx,Canvas.tsx,Canvas.test.tsx,types.ts}` | Desktop real IncidentCard/receipt access; actual ATTACH counter with both resets; optional `attached_signals`/`sitrep_available` preserve demo/API compatibility and honest null-sitrep labeling. | Commit `b26e397500bc00f465a025363d17c548801a93cb`: red reproduction then **6 tests PASS**, build PASS, five-file ESLint zero warnings. No backend/infra/API/dependency changes or redesign. Matching deployed asset hashes and actual three-send desktop acceptance PASS. |
 | `backend/app/agents/router_agent.py` | One-line deterministic life-safety term addition for `sparking` and explicit `electrical arcing`. | Bounded tested fix. No generic `downed` trigger, category-wide elevation, LLM/raw-text classification or PII/audit/dedup change. Recovery deployment status must follow live evidence. |
 | `backend/tests/test_router_no_llm.py`; `backend/tests/test_pipeline_e2e.py`; `backend/tests/test_routes.py` | Exact typed failure, case-insensitive terms, ordinary-field-hazard negatives, preserved duplicate/report/audit behavior; strengthened stale sparking-line assertions. | Safe with fix. Red reproduction 4 failed/3 passed; focused 23 passed; integrated 92 passed. No lowered acceptance threshold. |
+| `backend/requirements.txt`; `backend/tests/test_voice_tool_path.py` | Commit `3827b2df4a237d3278ba6184b62216534257abf2` aligns manifest Search SDK to **11.7.0b2**, already used since baseline in the unchanged lock/deployed image; strengthens voice SEV1/escalation/duplicate assertions, removes unused import/wrap lint. | Minimal participant reproducibility correction, not a beta upgrade or new production logic. Fresh manifest install/full399 backend/eval60/full22 frontend and both actual Linux CI workflows pass. No Azure redeploy needed or performed. |
 | `scripts/verify_live_demo.py`; `scripts/test_verify_live_demo.py` | Explicit-opt-in, exactly-three, no-retry live acceptance; rejects observed unsafe result. | Review as operational tooling. Offline tests must never contact Azure or submit live signals. |
 | `specs/019-evolution-loop/{spec,plan,tasks}.md`; this report | Current requirements, recovery authorization, evidence, recipe and cleanup. | Safe dated evidence; do not describe unresolved gates as complete. |
 
@@ -310,6 +321,11 @@ allowlist, discover deletion targets by wildcard/tag, or force past a failure.
   aggregate zero and unconditional Sitrep ready were reproduced then fixed and
   verified by actual desktop Sends. Current receipt/counter/null-sitrep copy pass;
   old screenshots and mobile workaround are historical, not current defects.
+- **Source-only CI follow-up:** initial post-publication failures were the stale
+  voice SEV2 assertion and Search vector-query TypeError/fallback under freshly
+  resolved SDK 12.1.0. Committed manifest/test-only fix matches proven SDK
+  11.7.0b2; fresh local install/full tests/eval and both actual Linux Backend CI
+  and Offline Smoke pass. Serving images and application code are unchanged.
 - **Storage evidence limit:** an incident's origin summary/citations represent
   its first signal; the `reports` array contains attached duplicate text, not
   every original raw signal. Original AC-0001 magnitude=2/reports length=1;
@@ -322,8 +338,13 @@ allowlist, discover deletion targets by wildcard/tag, or force past a failure.
 
 ## Participant Bash recipe — one stack, guarded scope
 
-Run in Bash from a **clean reviewed clone**, with az/azd/Docker/Python/backend
-dependencies installed and existing login valid. Never rerun fresh-environment
+Run in Bash from a **clean reviewed clone**, with az/azd/Docker/Python installed,
+an existing **clean isolated Python venv activated**, and existing login valid.
+Do not overwrite another environment or install into global Python. Backend
+dependencies are installed **after selecting the reviewed source below**,
+even if another branch's dependencies were installed earlier. This setup is
+excluded from the 35–45 minute estimate; it is not cold Azure deployment proof.
+Never rerun fresh-environment
 steps against the running demo. A different participant must replace **identity,
 RG and environment together** with their assigned values. Cohort budget:
 six participant embedding deployments plus this demo, not extra test stacks.
@@ -332,18 +353,17 @@ Sources: [domain](../../CONTEXT.md), [azd](../../azure.yaml),
 [Bicep](../../infra/main.bicep), [parameters](../../infra/main.parameters.json),
 [seeder](../../scripts/seed_search_index.py), [plan](../../specs/019-evolution-loop/plan.md).
 
-### 1. Guard identity; select branch; create one environment
+### 1. Guard identity; select source; install dependencies; create one environment
 
 ```bash
 set -euo pipefail
 set +x
-workflow_start=$(date -u +%FT%TZ); workflow_seconds=$SECONDS
 SUB='0e1d648b-17c8-4724-9405-8e84b4c565c4'
 EXPECTED_USER='azuredays-arl26-allclear-p29@establishedcorp.com'
 RG='rg-allclear-p29'
 ENV_NAME='p29-demo'
 BRANCH='azure/overnight-2026-11-18'
-SOURCE_COMMIT='b26e397500bc00f465a025363d17c548801a93cb'
+SOURCE_COMMIT='3827b2df4a237d3278ba6184b62216534257abf2'
 EXPECTED_SCOPE="/subscriptions/$SUB/resourceGroups/$RG"
 test "$(az account show --query user.name -o tsv)" = "$EXPECTED_USER"
 test "$(az account show --query id -o tsv)" = "$SUB"
@@ -356,7 +376,7 @@ case "$(git remote get-url origin)" in
   https://github.com/msftsean/all-clear.git|https://github.com/msftsean/all-clear|git@github.com:msftsean/all-clear.git) ;;
   *) echo 'STOP: expected canonical msftsean/all-clear origin.'; exit 1 ;;
 esac
-git fetch origin  # only after the coordinator confirms branch publication
+git fetch origin  # branch exists; require the reviewed SOURCE_COMMIT to be published
 if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   git switch "$BRANCH"
   git merge --ff-only "origin/$BRANCH"
@@ -366,6 +386,11 @@ fi
 test "$(git branch --show-current)" = "$BRANCH"
 # Allow later report-only commits, but require identical reviewed runtime inputs.
 git diff --exit-code "$SOURCE_COMMIT" -- backend frontend infra scripts azure.yaml
+python -c "import sys; assert sys.prefix != sys.base_prefix, 'STOP: activate a clean isolated Python venv first.'"
+python -m pip install -r backend/requirements.txt
+# Uses the default package index (normally public PyPI); if blocked, use your
+# approved Microsoft PyPI mirror with --index-url, never disable TLS checks.
+workflow_start=$(date -u +%FT%TZ); workflow_seconds=$SECONDS
 azd env new "$ENV_NAME" --subscription "$SUB" --location eastus2 --no-prompt
 for setting in "AZURE_SUBSCRIPTION_ID=$SUB" "AZURE_LOCATION=eastus2" \
   "AZURE_RESOURCE_GROUP=$RG" "MOCK_MODE=false" "DEPLOY_PHONE=false" \
@@ -533,6 +558,11 @@ minute labels are notes, not additional precision claims.
 | D66 / 01:51:04–15 | Final AC-0005/6 status-only CAS retirement passed; all other fields and old AC-0001–4 full docs/ETags preserved, full counter6 unchanged. Six resolved/zero active/audit12; final health/frontend passed 01:51:15.229. Leave apps running, teardown NOT RUN, 10 POSTs/5 of 9 deployments; next audience AC-0007/8 expected, not submitted. |
 | D67 / Planned publication | Coordinator plans a guarded normal branch-only push after final docs commit so participants can fetch tested fixes. Exact existing origin/base/workflows reviewed; no main push/merge/PR, no force and no Azure push deployment on this branch. Publication remains pending verified remote ref; recipe handles tracking-new versus existing local branch without reset or merging main. |
 | D68 / Merge-safety scope | Inventory means task-owned delta from 8ae9276, not all changes against main. Remote main16caa52/local main091953 differ; baseline was already server-visible and diverged31ahead/3behind before task commits. Publish the night branch for participant access only; after-event review/cherry-pick scoped task commits, never blindly merge/rebase the pre-existing divergent history. |
+| D69 / 02:05 delivery receipt | Normal non-force push published only the overnight branch and verified remote SHA equals report commit `1ccb40e`; no main/PR/merge/tag/submodule push. Fresh read-only public checks passed frontend200, backend healthy/live/Cosmos, GPT-5.1 active/last-served/no failover and exact served UI content hash at 02:05:13.231 ET. Zero extra POSTs, no Azure authentication/configuration writes or deployment attempts. Publish this documentation-only receipt on the same branch; no runtime source change. |
+| D70 / Initial post-publication CI | 397 passed/two failed: `tests/test_voice_tool_path.py::test_voice_analyze_routes_through_pipeline` retained SEV2 versus correctly fixed SEV1; `tests/test_azure_knowledge_service.py::test_vector_query_uses_supported_k_and_logs_no_signal_text` encountered vector-query TypeError/keyword fallback with SDK12.1.0 from unbounded `>=11.4`. Production knowledge code and baseline/current lock were unchanged; deployed/local SDK remains11.7.0b2. |
+| D71 / Source-only correction | Commit3827b2df4a237d3278ba6184b62216534257abf2 changes only requirements Search pin to existing11.7.0b2 and stronger voice SEV1/escalation/duplicate test/format cleanup. New isolated manifest install resolves118packages: full399 backend PASS18.10s, post-format4 PASS7.10s, Ruff format/check PASS; unchanged evaluation60/60 accuracy1.000≥0.90; fullfrontend22 PASS5.11s. No production application-code/image/lock/Azure deployment/POST changes. Recipe pins this participant snapshot, distinct from serving207/b26; actual CI rerun/publication verification pending. |
+| D72 / 02:14:37 publication; both actual CI PASS | Normal branch-only push of3827b2d exact remote verified, main/apps unchanged. Actual Linux Backend CI44257347609 completed success (full pytest/eval); Offline Smoke44257347515 success, offline gate1m45s/commandexit0. Both original CI failures resolved for382 without Azure deployment. Only attached gh watch, no manual dispatch/Azure/POSTs; five of nine deployments/ten signal POSTs unchanged. |
+| D73 / Participant setup ordering | Require an already activated clean isolated venv, then reinstall reviewed backend/requirements.txt after branch checkout/source382 guard. Prevent a preinstalled main-branch SDK12.1 environment bypassing the pin; do not overwrite another venv or global Python. Start deployment/workflow timer after dependency setup;35–45min estimate excludes installation and still is not clean cold-run proof. |
 
 Nonsecret local evidence lives under session
 `bf916367-8877-4639-a05a-4b90d955b6db`, `files/`:

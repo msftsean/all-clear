@@ -131,6 +131,31 @@ reset, not yet submitted. Final desktop calls also have fresh real-model/
 embedding HTTP correlation proof. Ten total signal POSTs, five of nine
 deployment attempts used; apps remain running for 9:00 AM.
 
+After publication of the tested night branch (verified ref `1ccb40e` at 02:05
+ET), eligible offline CI found 397 passing tests and two failures. One voice
+tool-path test retained the stale SEV2 expectation for the now-correct sparking
+hazard. The Search vector-query fallback failure used newly resolved SDK
+12.1.0 from the unbounded `>=11.4` manifest, while baseline/current lock,
+deployed image and local passing tests use 11.7.0b2. Manifest/test-only commit
+`3827b2df4a237d3278ba6184b62216534257abf2` strengthens the coupled voice
+SEV1/escalation/duplicate assertions and pins the manifest to
+`azure-search-documents==11.7.0b2`. Production knowledge code, lock and serving
+images remain unchanged. A new isolated requirements install resolved 118
+packages: full backend suite 399 passed in 18.10s, post-format focused four
+passed in 7.10s, Ruff format/check passed; unchanged evaluation 60/60,
+accuracy 1.000 against threshold 0.90; full frontend suite 22 passed in 5.11s.
+The participant recipe pins this reviewed snapshot, distinct from serving
+backend `207b457`/frontend `b26e397`. Source3827b2d normal branch publication was
+verified at 02:14:37.245 ET; actual Linux Backend CI44257347609 passed full
+pytest/eval. Actual Linux Offline Smoke44257347515 also passed, offline gate
+1m45s/command exit0. Recipe requires an activated clean isolated venv and
+reinstalls reviewed requirements after checkout/source verification; dependency
+setup precedes the timer and is excluded from the 35–45 minute estimate.
+This is participant
+installation reproducibility/manifest-lock alignment, not an Azure runtime
+change: no deployment, login or signal writes; budgets remain five of nine
+deployments and ten signal POSTs.
+
 ## Verification Matrix
 
 | Surface | Command or check |

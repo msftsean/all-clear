@@ -110,6 +110,22 @@ description: "Completed task ledger for All Clear consolidation"
   passed. Final six resolved/zero active/counter6/audit12 and health/frontend HTTP
   200 verified 01:51:15.229 ET; 10 signal POSTs/five of nine deployments used.
   Next audience AC-0007/8 expected, not executed; backend/infra unchanged.
+- [x] T510 Resolve the two post-publication offline CI failures with the
+  smallest coupled changes: strengthen the stale sparking voice-tool expectation
+  to SEV1/escalation and pin `azure-search-documents==11.7.0b2` to the unchanged
+  proven lock/image. Verify a fresh isolated manifest install with full backend
+  tests/offline evaluation and actual CI after normal branch publication.
+  Initial CI was 397 passed/two failed; no production knowledge-code change,
+  Azure operation, redeployment or extra signal POST is authorized or required.
+  Manifest/test-only fix committed `3827b2df4a237d3278ba6184b62216534257abf2`.
+  Fresh isolated requirements install: 118 packages; full backend 399 passed
+  in 18.10s; post-format focused four passed in 7.10s; Ruff format/check passed;
+  unchanged eval 60/60/accuracy1.000 and full frontend 22 passed in 5.11s.
+  Normal branch publication verified 02:14:37.245 ET; actual Linux Backend
+  CI44257347609 passed full pytest/eval. Actual Linux Offline Smoke44257347515
+  also passed, offline gate1m45s/command exit0. Require reviewed requirements
+  installation after checkout/source verification in an activated clean
+  isolated venv; setup excluded from the deployment estimate.
 
 ## Post-Consolidation Privacy Hardening (2026-11-12)
 
