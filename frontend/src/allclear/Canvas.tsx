@@ -296,12 +296,15 @@ function countsForSignals(board: DemoClearBoard, signalsReceived?: number): numb
 function boardAtSignalCount(board: DemoClearBoard, signalsReceived?: number): DemoClearBoard {
   if (signalsReceived == null) return board;
   const counts = countsForSignals(board, signalsReceived);
+  const totalSignals = Math.min(Math.floor(signalsReceived), board.total_signals);
+  const incidents = board.incidents
+    .map((incident, i) => ({ ...incident, report_count: counts[i] }))
+    .filter((incident) => incident.report_count > 0);
   return {
     ...board,
-    total_signals: Math.min(Math.floor(signalsReceived), board.total_signals),
-    incidents: board.incidents
-      .map((incident, i) => ({ ...incident, report_count: counts[i] }))
-      .filter((incident) => incident.report_count > 0),
+    total_signals: totalSignals,
+    attached_signals: Math.max(0, totalSignals - incidents.length),
+    incidents,
   };
 }
 
@@ -395,7 +398,8 @@ function HeroRatioCard({
   finalIncidents: number;
 }) {
   const incidentCount = board.incidents.length;
-  const duplicateSignals = Math.max(0, board.total_signals - incidentCount);
+  // Prerecorded demo boards infer this; live sessions count routing outcomes.
+  const duplicateSignals = board.attached_signals ?? Math.max(0, board.total_signals - incidentCount);
   const progress = finalSignals ? Math.min(100, (board.total_signals / finalSignals) * 100) : 0;
   const hasFinalTarget = finalSignals !== board.total_signals || finalIncidents !== incidentCount;
   return (
@@ -417,7 +421,7 @@ function HeroRatioCard({
             <div className="h-full bg-clear transition-all duration-100" style={{ width: `${progress}%` }} />
           </div>
         </div>
-        <div className="rounded-card border border-clear/30 bg-clear/10 px-4 py-3 text-right">
+        <div data-testid="attached-signals" className="rounded-card border border-clear/30 bg-clear/10 px-4 py-3 text-right">
           <div className="font-mono text-[24px] text-clear">{duplicateSignals.toLocaleString()}</div>
           <div className="eyebrow text-clear/80">Signals attached as Reports</div>
           <div className="mt-1 font-mono text-[10px] text-clear/70">0 Signals discarded</div>
@@ -451,18 +455,27 @@ function HeroIncidentCard({ incident }: { incident: DemoClearBoardIncident }) {
         <MonoPill>{incident.status}</MonoPill>
         <MonoPill>SLA {incident.sla_minutes}m</MonoPill>
         <MonoPill>sim {incident.dedup_similarity.toFixed(2)}</MonoPill>
-        <MonoPill>Sitrep ready</MonoPill>
+        <MonoPill>{incident.sitrep_available ? "Sitrep ready" : "No sitrep returned"}</MonoPill>
       </div>
     </Card>
   );
 }
 
-function HeroClearBoard({ board, signalsReceived }: { board: DemoClearBoard; signalsReceived?: number }) {
+function HeroClearBoard({
+  board,
+  signalsReceived,
+  children,
+}: {
+  board: DemoClearBoard;
+  signalsReceived?: number;
+  children?: React.ReactNode;
+}) {
   const projected = boardAtSignalCount(board, signalsReceived);
   const finalIncidentCount = board.incidents.length;
   return (
     <div data-testid="hero-clearboard" className="grid grid-cols-2 gap-[14px] p-5">
       <HeroRatioCard board={projected} finalSignals={board.total_signals} finalIncidents={finalIncidentCount} />
+      {children}
       <CompactClusterMap incidents={projected.incidents} />
       {projected.incidents.map((incident) => (
         <HeroIncidentCard key={incident.incident_id} incident={incident} />
@@ -647,7 +660,11 @@ export function Canvas({
     return <HeroClearBoard board={demoBoard} signalsReceived={demoSignalsReceived} />;
   }
   if (clearBoard) {
-    return <HeroClearBoard board={clearBoard} />;
+    return (
+      <HeroClearBoard board={clearBoard}>
+        {result ? <IncidentCard r={result} onOpenReceipt={onOpenReceipt} /> : null}
+      </HeroClearBoard>
+    );
   }
   if (!result || demoBlank) {
     return (

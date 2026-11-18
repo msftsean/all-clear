@@ -42,7 +42,7 @@ describe("Canvas demo board", () => {
     expect(screen.getByText(/clean slate before the signal surge/i)).toBeInTheDocument();
   });
 
-  it("renders a real-session ClearBoard from submitted signal results", () => {
+  it.each([true, false])("renders a real-session ClearBoard with sitrep available: %s", (sitrepAvailable) => {
     render(
       <Canvas
         result={null}
@@ -50,6 +50,7 @@ describe("Canvas demo board", () => {
         clearBoard={{
           mode: "loaded",
           total_signals: 2,
+          attached_signals: 1,
           headline: "Live ClearBoard",
           subhead: "Live Signals are preserved as Reports.",
           incidents: [
@@ -64,6 +65,7 @@ describe("Canvas demo board", () => {
               dedup_similarity: 0.94,
               status: "attached",
               summary: "Two real Signals attached to one Incident.",
+              sitrep_available: sitrepAvailable,
               sample_signals: ["line down", "same line sparking"],
             },
           ],
@@ -74,5 +76,7 @@ describe("Canvas demo board", () => {
     expect(screen.getByText(/2 SIGNALS/i)).toBeInTheDocument();
     expect(screen.getByText(/1 INCIDENTS/i)).toBeInTheDocument();
     expect(screen.getByText(/Oak St · Magnitude 2/i)).toBeInTheDocument();
+    expect(screen.queryByText("Sitrep ready") !== null).toBe(sitrepAvailable);
+    expect(screen.queryByText("No sitrep returned") !== null).toBe(!sitrepAvailable);
   });
 });

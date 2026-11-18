@@ -119,12 +119,14 @@ export interface DemoClearBoardIncident {
   dedup_similarity: number;
   status: string;
   summary: string;
+  sitrep_available?: boolean;
   sample_signals: string[];
 }
 
 export interface DemoClearBoard {
   mode: "blank" | "loaded";
   total_signals: number;
+  attached_signals?: number;
   incidents: DemoClearBoardIncident[];
   headline: string;
   subhead: string;

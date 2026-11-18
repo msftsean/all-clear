@@ -185,6 +185,7 @@ export default function BriefingRoom() {
   );
   const [demoSurgeRun, setDemoSurgeRun] = useState(0);
   const [signalCount, setSignalCount] = useState(0);
+  const [attachedSignalCount, setAttachedSignalCount] = useState(0);
   const [clearBoardIncidents, setClearBoardIncidents] = useState<
     Record<string, DemoClearBoard["incidents"][number]>
   >({});
@@ -275,6 +276,7 @@ export default function BriefingRoom() {
     if (dcwRunning) return;
     setClearBoardIncidents({});
     setSignalCount(0);
+    setAttachedSignalCount(0);
     setLatest(null);
     setReceiptOpen(false);
     setPublished(new Set());
@@ -295,6 +297,7 @@ export default function BriefingRoom() {
     if (demoMode) setDemo(null);
     setClearBoardIncidents({});
     setSignalCount(0);
+    setAttachedSignalCount(0);
     setLatest(null);
     setPublished(new Set());
     setDcwProgress(0);
@@ -365,6 +368,9 @@ export default function BriefingRoom() {
     const incidentId = r.action.incident_id;
     const location = r.classification.entities?.location?.trim() || incidentId;
     setSignalCount((n) => n + 1);
+    if (r.routing.outcome === "ATTACH_TO_INCIDENT") {
+      setAttachedSignalCount((n) => n + 1);
+    }
     setClearBoardIncidents((prev) => {
       const existing = prev[incidentId];
       const magnitude = Math.max(existing?.report_count || 0, r.routing.magnitude || 1);
@@ -381,6 +387,7 @@ export default function BriefingRoom() {
           dedup_similarity: r.routing.dedup_similarity ?? existing?.dedup_similarity ?? 0,
           status: r.action.status,
           summary: r.action.sitrep?.summary || r.action.user_message,
+          sitrep_available: Boolean(r.action.sitrep),
           sample_signals: [...(existing?.sample_signals || []), r.signal_text].slice(-3),
         },
       };
@@ -427,6 +434,7 @@ export default function BriefingRoom() {
       ? {
           mode: "loaded",
           total_signals: signalCount,
+          attached_signals: attachedSignalCount,
           headline: "Live ClearBoard",
           subhead:
             "Live Signals are preserved as Reports; dedup attaches Reports to the same Incident and raises Magnitude.",
