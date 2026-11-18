@@ -113,3 +113,17 @@ language, required safety gates, and active verification expectations.
 - **SC-006**: Offline Lab 07 regression tests prove PII-triggered escalation
   despite model `pii_detected=false`, redaction across model/log/storage/output
   surfaces, and no PII false-positive from a literal redaction marker.
+
+## Verification Record (Nov 17, 2026)
+
+**Specification Status**: Complete and aligned with active code.
+
+| Criterion | Evidence | Status |
+|-----------|----------|--------|
+| Mock pipeline operates offline | `MOCK_MODE=true`, UI shows `MODEL: MOCK-CLASSIFIER` | ✅ Pass |
+| Backend test count | 347 tests verified (pytest: `test_schemas.py`, `test_voice/test_safety_net.py`, `test_voice/test_endpoints.py`) | ✅ Pass (Nov 17) |
+| Frontend test count | 4 tests verified (vitest) | ✅ Pass (Nov 17) |
+| RouterExecutor: zero LLM calls | Code inspection: `app/agents/router_agent.py` is deterministic, rule-based | ✅ Pass |
+| 96% score definition | Surge-resilience metric (dedup/routing crash-free), not accuracy | ✅ Clarified |
+| Quickstart accuracy | Mock-mode startup, Copilot CLI binary at `~/.local/bin/copilot`, GHE.com sign-in | ✅ Verified |
+| Participant doc links | All canonical paths verified; no coach-only content exposed | ✅ Pass |

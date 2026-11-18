@@ -6,6 +6,72 @@ A cheat sheet of commonly used commands, file locations, and reference tables.
 
 ## Key Commands
 
+### Backend (Mock Mode)
+
+```bash
+# Start backend with mock services (no Azure credentials needed)
+cd backend
+ENVIRONMENT=test MOCK_MODE=true python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Check mock mode is active
+curl http://127.0.0.1:8000/api/health
+# Response must include: "mock_mode": true
+
+# Run tests in mock mode (347 backend tests verified Nov 17)
+PYTHONPATH=. python -m pytest tests/test_schemas.py tests/test_voice/test_safety_net.py tests/test_voice/test_endpoints.py -q
+```
+
+### Frontend (No Azure)
+
+```bash
+cd frontend
+
+# Install dependencies (Node 18)
+npm install
+
+# Start dev server
+npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+
+# Open in browser
+# http://127.0.0.1:5173
+# UI should show MODEL: MOCK-CLASSIFIER in top-right
+
+# Build for production
+npm run build
+
+# Run frontend tests (4 tests verified Nov 17)
+npm test
+```
+
+### Copilot CLI Setup (GitHub Enterprise)
+
+```bash
+# Install Copilot CLI binary (npm requires Node 22+, so we use binary)
+curl -fsSL https://gh.io/copilot-install | bash
+
+# Binary location
+~/.local/bin/copilot --version
+
+# Sign in with GitHub Enterprise (never default GitHub or PAT)
+copilot login --host established-corp-emu-enterprise.ghe.com
+# Choose: "Open in VS Code Desktop" if browser auth appears
+# Never paste a personal access token
+
+# Verify login
+copilot chat "explain my project"
+```
+
+### VS Code Copilot Settings
+
+Ensure `.vscode/settings.json` has:
+
+```json
+{
+  "github-enterprise.uri": "established-corp-emu-enterprise.ghe.com",
+  "github.copilot.advanced.authProvider": "github-enterprise"
+}
+```
+
 ### Git
 
 ```bash
@@ -29,76 +95,17 @@ git pull origin main
 git checkout -b feature/my-feature
 ```
 
-### Docker
+### Docker (Optional for local compose exercises)
 
 ```bash
-# Build and start all services
+# Build and start services (optional; devcontainer has backend/frontend)
 docker compose up --build
-
-# Start in background
-docker compose up -d
-
-# Stop all services
-docker compose down
 
 # View running containers
 docker ps
 
-# View logs
-docker compose logs -f
-
-# Rebuild a specific service
-docker compose build backend
-```
-
-### Azure CLI (az)
-
-```bash
-# Login to Azure
-az login
-
-# Set subscription
-az account set --subscription "<subscription-id>"
-
-# List resource groups
-az group list --output table
-
-# Create a resource group
-az group create --name <name> --location eastus
-
-# List Azure OpenAI deployments
-az cognitiveservices account deployment list \
-  --resource-group <rg> --name <account> --output table
-
-# Get Azure OpenAI endpoint
-az cognitiveservices account show \
-  --resource-group <rg> --name <account> \
-  --query "properties.endpoint" --output tsv
-```
-
-### Azure Developer CLI (azd)
-
-```bash
-# Login
-azd auth login
-
-# Initialize project
-azd init
-
-# Deploy to Azure
-azd up
-
-# Deploy only infrastructure
-azd provision
-
-# Deploy only application
-azd deploy
-
-# View environment variables
-azd env get-values
-
-# Tear down resources
-azd down
+# Stop all services
+docker compose down
 ```
 
 ### Python / pip
@@ -132,13 +139,13 @@ ruff check .
 ### Node.js / npm
 
 ```bash
-# Install dependencies
+# Install dependencies (Node 18 in devcontainer)
 npm install
 
 # Start development server
-npm run dev
+npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
 
-# Run tests
+# Run tests (4 frontend tests verified Nov 17)
 npm test
 
 # Build for production
@@ -150,7 +157,98 @@ npm run lint
 
 ---
 
-## Voice & Phone Quick Reference
+## Mock Mode Reference
+
+**Mock mode** runs the entire pipeline offline without Azure credentials.
+
+### Environment Variables
+
+```bash
+# Activate mock mode (whole lab offline)
+export ENVIRONMENT=test
+export MOCK_MODE=true
+
+# Start backend
+cd backend && python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Start frontend
+cd frontend && npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+```
+
+### Health Endpoints
+
+```bash
+# Backend mock health check
+curl http://127.0.0.1:8000/api/health
+# Response: {"status": "ok", "mock_mode": true, ...}
+
+# Frontend
+# http://127.0.0.1:5173
+# ClearBoard should display: MODEL: MOCK-CLASSIFIER
+```
+
+### Test Coverage
+
+| Coverage | Count | Verified |
+|----------|-------|----------|
+| Backend tests (pytest) | 347 | Nov 17 |
+| Frontend tests (vitest) | 4 | Nov 17 |
+| **96% score** | Surge resilience (dedup/routing without crashes) | Not accuracy |
+
+**Routing Decision**: Zero LLM calls by design. RouterExecutor is deterministic and rule-based.
+
+---
+
+## Azure (Optional Stretch Goal)
+
+The lab runs fully in mock mode. Azure deployment is optional and uses resource group naming convention `rg-allclear-pNN` in East US 2 (max 6 participant deployments + 1 demo). Embeddings: Standard tier.
+
+### Azure CLI (Optional)
+
+```bash
+# Login to Azure
+az login
+
+# Create resource group
+az group create --name rg-allclear-pNN --location eastus2
+
+# View resource group
+az group show --name rg-allclear-pNN --output table
+
+# List subscriptions
+az account list --output table
+
+# Set subscription
+az account set --subscription "<subscription-id>"
+
+# Search for available Azure OpenAI deployments
+az cognitiveservices account list --query "[].{name:name, endpoint:properties.endpoint}" --output table
+```
+
+### Azure Developer CLI (Optional)
+
+```bash
+# Login
+azd auth login
+
+# Initialize project
+azd init
+
+# Deploy to Azure (infrastructure + application)
+azd up
+
+# Deploy only infrastructure (Bicep)
+azd provision
+
+# Deploy only application code
+azd deploy
+
+# View environment variables
+azd env get-values
+
+# Tear down resources
+azd down
+```
 
 ### Voice Health Check
 ```bash
