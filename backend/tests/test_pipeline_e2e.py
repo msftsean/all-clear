@@ -21,11 +21,14 @@ from app.agents.schemas import (
     PipelineResult,
     Queue,
     RoutingOutcome,
+    Severity,
     SignalCategory,
     SignalClassification,
     SignalEntities,
 )
 from app.core.config import Settings
+from app.models.enums import Sentiment
+from app.services.mock.embeddings import mock_embed
 from app.services.mock.incident_store import MockIncidentStore
 from app.services.mock.knowledge_service import MockKnowledgeService
 from app.services.transcript_bus import transcript_bus
@@ -41,7 +44,10 @@ async def test_process_signal_returns_pipeline_result() -> None:
     assert isinstance(result, PipelineResult)
     assert result.classification.intent_category is SignalCategory.FIELD_HAZARD
     assert result.routing.outcome is RoutingOutcome.OPEN_INCIDENT
-    assert result.action.status is ActionStatus.OPENED
+    assert result.routing.severity is Severity.SEV1
+    assert result.routing.sla_minutes == 15
+    assert result.routing.escalate is True
+    assert result.action.status is ActionStatus.ESCALATED
     assert result.action.incident_id is not None
     assert result.processing_ms is not None and result.processing_ms >= 0
 
@@ -87,6 +93,59 @@ async def test_dedup_attaches_second_similar_signal() -> None:
     assert first.routing.outcome is RoutingOutcome.OPEN_INCIDENT
     assert second.routing.outcome is RoutingOutcome.ATTACH_TO_INCIDENT
     assert second.action.status is ActionStatus.ATTACHED
+
+
+async def test_sparking_field_hazard_and_duplicate_preserve_sev1_escalation() -> None:
+    classification = SignalClassification(
+        intent="report_field_hazard",
+        intent_category=SignalCategory.FIELD_HAZARD,
+        target_queue=Queue.FIELD_OPERATIONS,
+        confidence=0.95,
+        entities=SignalEntities(
+            system="power line",
+            severity_indicators=["downed", "sparking"],
+        ),
+        requires_escalation=False,
+        sentiment=Sentiment.URGENT,
+    )
+
+    class FixedClassifier:
+        async def run(self, _text: str, **_kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(value=classification)
+
+    settings = Settings()
+    store = MockIncidentStore()
+    pipeline = AllClearPipeline(
+        FixedClassifier(),  # type: ignore[arg-type]
+        RouterExecutor(mock_embed, store, settings),
+        ActionExecutor(
+            ActionToolbox(store, MockKnowledgeService(), mock_embed, settings),
+            store,
+        ),
+        store=store,
+        bus=None,
+    )
+    text = "There's a downed power line sparking on Oak Street near the school."
+    first = await pipeline.process_signal(text, session_id="electrical-first")
+    duplicate = await pipeline.process_signal(text, session_id="electrical-duplicate")
+
+    assert first.routing.outcome is RoutingOutcome.OPEN_INCIDENT
+    assert duplicate.routing.outcome is RoutingOutcome.ATTACH_TO_INCIDENT
+    assert duplicate.action.incident_id == first.action.incident_id
+    assert duplicate.routing.magnitude == 2
+    assert duplicate.routing.dedup_similarity == 1.0
+    for result in (first, duplicate):
+        assert result.routing.severity is Severity.SEV1
+        assert result.routing.sla_minutes == 15
+        assert result.routing.escalate is True
+    record = await store.get_incident(first.action.incident_id)
+    assert record is not None
+    assert record.severity is Severity.SEV1
+    assert record.sla_minutes == 15
+    assert record.escalated is True
+    assert record.magnitude == 2
+    assert store.report_count(record.incident_id) == 1
+    assert len(store.audit) == 2
 
 
 async def test_text_pipeline_redacts_pii_before_return_and_attach_persistence() -> None:

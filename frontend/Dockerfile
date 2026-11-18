@@ -8,7 +8,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+ARG NPM_CONFIG_REGISTRY
+RUN npm ci --registry="${NPM_CONFIG_REGISTRY:-https://registry.npmjs.org/}" --no-audit --no-fund
 
 # Copy source code
 COPY . .

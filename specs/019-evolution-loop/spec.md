@@ -92,6 +92,26 @@ language, required safety gates, and active verification expectations.
   output MUST NOT clear that flag; PII alone MUST trigger escalation for otherwise
   benign requests without changing severity/SLA.
 
+### Restricted participant deployment (2026-11-18)
+
+- Live chat and embedding dedup MUST be deployable to an existing participant
+  resource group without creating role assignments, changing subscription
+  configuration, or registering an application.
+- Managed identity remains the default. Explicit key authentication MUST keep
+  model credentials in Azure Container Apps secrets, never deployment outputs,
+  local environment files, telemetry, or documentation.
+- Application Insights export is opt-in through its connection-string environment
+  variable, with local offline export storage disabled. Mock mode remains offline.
+- The prescribed downed/sparking power-line acceptance signal MUST open a SEV1
+  incident with mandatory escalation; its exact duplicate MUST attach to that
+  incident without suppressing severity or escalation. A successful deployment
+  and working dedup do not satisfy readiness if this safety gate fails.
+- Deterministic life-safety matching MUST recognize `sparking` and explicit
+  `electrical arcing` severity indicators case-insensitively. Generic `downed`,
+  fallen-tree or empty indicators MUST NOT elevate every field hazard to SEV1.
+  A locally tested source correction MUST NOT be described as deployed or as
+  retroactively correcting an existing incident.
+
 ### Key Entities
 
 - **Signal**: An attributable inbound report received from any supported channel.

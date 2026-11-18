@@ -29,6 +29,7 @@ from app.agents.schemas import (
     SignalEntities,
 )
 from app.core.config import Settings
+from app.models.enums import Sentiment
 from app.services.mock.embeddings import mock_embed
 from app.services.mock.incident_store import MockIncidentStore
 
@@ -121,6 +122,55 @@ async def test_outage_is_sev2_engineering() -> None:
     assert decision.sla_minutes == 60
     assert decision.target_queue is Queue.ENGINEERING
     assert decision.escalate is False
+
+
+@pytest.mark.parametrize(
+    "indicators",
+    [["downed", "sparking"], ["electrical arcing"], ["SPARKING"]],
+)
+async def test_electrical_life_safety_field_hazard_is_sev1(
+    indicators: list[str],
+) -> None:
+    cls = _classify(
+        SignalCategory.FIELD_HAZARD,
+        queue=Queue.FIELD_OPERATIONS,
+        severity_indicators=indicators,
+    )
+    cls.entities.system = "power line"
+    cls.sentiment = Sentiment.URGENT
+    router = _router(MockIncidentStore())
+    text = "There's a downed power line sparking on Oak Street near the school."
+
+    decision, _ = await router.decide(text, cls)
+    repeated, _ = await router.decide(text, cls)
+
+    assert repeated == decision
+    assert decision.outcome is RoutingOutcome.OPEN_INCIDENT
+    assert decision.target_queue is Queue.FIELD_OPERATIONS
+    assert decision.severity is Severity.SEV1
+    assert decision.sla_minutes == 15
+    assert decision.escalate is True
+    assert decision.escalation_reason is EscalationReason.SEV1_INCIDENT
+    assert "sev1_life_safety" in decision.routing_rules_applied
+
+
+@pytest.mark.parametrize("indicators", [[], ["downed"], ["fallen tree", "blocked sidewalk"]])
+async def test_non_life_safety_field_hazard_remains_sev2(
+    indicators: list[str],
+) -> None:
+    cls = _classify(
+        SignalCategory.FIELD_HAZARD,
+        queue=Queue.FIELD_OPERATIONS,
+        severity_indicators=indicators,
+    )
+    decision, _ = await _router(MockIncidentStore()).decide(
+        "A downed tree is blocking the sidewalk.", cls
+    )
+
+    assert decision.severity is Severity.SEV2
+    assert decision.sla_minutes == 60
+    assert decision.escalate is False
+    assert decision.escalation_reason is None
 
 
 async def test_human_request_escalates_sev3() -> None:

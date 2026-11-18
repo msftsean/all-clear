@@ -53,6 +53,7 @@ CATEGORY_TO_QUEUE: dict[SignalCategory, Queue] = {
 _LIFE_SAFETY_TERMS = (
     "fire", "smoke", "gas leak", "injured", "trapped", "explosion",
     "collapse", "unconscious", "bleeding", "death", "danger", "life",
+    "sparking", "electrical arcing",
 )
 
 # PII types that warrant a human handoff (Constitution Art. I: protect sensitive data).

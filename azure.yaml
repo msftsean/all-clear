@@ -23,6 +23,8 @@ services:
     docker:
       path: Dockerfile
       remoteBuild: false
+      buildArgs:
+        - NPM_CONFIG_REGISTRY=${NPM_CONFIG_REGISTRY}
 
 # Azure infrastructure
 infra:

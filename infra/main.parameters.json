@@ -2,6 +2,8 @@
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "createRoleAssignments": { "value": "${CREATE_ROLE_ASSIGNMENTS=true}" },
+    "openAiKeyAuth": { "value": "${OPENAI_KEY_AUTH=false}" },
     "resourcePrefix": { "value": "allclear" },
     "location": { "value": "eastus2" },
     "cosmosLocation": { "value": "eastus2" },

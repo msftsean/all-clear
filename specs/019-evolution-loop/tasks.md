@@ -55,6 +55,28 @@ description: "Completed task ledger for All Clear consolidation"
 - [x] T392 Confirm `CONTEXT.md`, the Constitution, this spec pack, and active
   templates use the same incident-triage vocabulary.
 
+## Restricted participant deployment (2026-11-18)
+
+- [x] T501 Add explicit RG scope and opt-in no-role/key-auth parameters without
+  changing the default managed-identity path.
+- [x] T502 Add Azure Monitor export and workspace-based Application Insights,
+  keeping credentials out of outputs and local telemetry storage.
+- [x] T503 Verify Bicep preview, telemetry tests, existing safety/pipeline
+  regressions, and frontend production build.
+- [ ] T504 Deploy one p29 stack (maximum three attempts), prove the requested
+  live signals and model/telemetry behavior, and commit the timed morning report.
+- [x] T505 Reproduce the live downed/sparking FIELD_HAZARD safety failure and
+  add bounded deterministic `sparking`/`electrical arcing` matching, ordinary
+  field-hazard negatives, and duplicate/report/audit regressions. Focused
+  router/pipeline suites: 23 passed; strengthen the directly coupled API route
+  expectation and pass the combined 92-test regression suite.
+  **Tested locally, not deployed**.
+- [ ] T506 Obtain separate authorization before future deployment or live
+  revalidation of the local safety fix; account for existing unsafe incident
+  state without deleting reports. Current attempt/write budgets remain closed,
+  live safety acceptance failed, and authenticated Foundry portal rendering
+  remains unverified.
+
 ## Post-Consolidation Privacy Hardening (2026-11-12)
 
 - [x] T401 Fail closed on session-history retrieval until a verified

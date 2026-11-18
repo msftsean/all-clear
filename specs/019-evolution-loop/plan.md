@@ -60,6 +60,33 @@ Constitution and replace the active spec, plan, and task ledger with this
 consolidation record. Update templates so future work performs the current
 Constitution Check.
 
+### Restricted participant deployment (2026-11-18)
+
+Keep the existing resource-group Bicep entry point, explicitly declare its scope,
+and parameterize role-assignment creation and OpenAI key authentication while
+preserving their managed-identity defaults. The p29 environment disables role
+assignments and optional phone/realtime, enables live services, and passes the
+OpenAI key only through ARM secret expressions. Add workspace-based Application
+Insights and opt-in Azure Monitor SDK export with no local offline buffer.
+Validate the Bicep build and own-RG preview, focused telemetry/safety/pipeline
+tests, frontend production build, and the three live signals. Record actual
+timings and portal-verification limitations in
+`docs/lab/azure-overnight-2026-11-18.md`.
+
+The live Oak Street signal exposed FIELD_HAZARD under-triage: downed/sparking
+indicators produced SEV2 without escalation. Add only `sparking` and explicit
+`electrical arcing` to the existing deterministic life-safety terms, not generic
+`downed` or a category-wide elevation. Reproduce the exact typed classification,
+test ordinary field hazards remain unchanged, and prove a fresh first/duplicate
+pair retains SEV1, escalation, reports and audit records offline. The focused
+router/pipeline suites passed 23 tests after a red reproduction. This fix is
+also covered by the final integrated telemetry/schema/API/pipeline/router/voice
+suite: 92 passed after strengthening the existing sparking-powerline route-test
+expectation to SEV1/15m/escalation. It remains
+**tested locally, not deployed**; the three-attempt cap and live safety failure
+remain. Any future deployment, existing-incident remediation and live
+revalidation require separate authorization and must preserve every report.
+
 ## Verification Matrix
 
 | Surface | Command or check |

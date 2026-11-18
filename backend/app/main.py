@@ -1,5 +1,7 @@
 """FastAPI application entry point for All Clear incident triage."""
 
+import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -21,6 +23,12 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan handler for startup/shutdown."""
     # Startup
     settings = get_settings()
+    if os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+        logging.getLogger("allclear").warning(
+            "All Clear telemetry started; mock_mode=%s; model=%s",
+            settings.use_mock_services,
+            settings.azure_openai_deployment,
+        )
     print(f"Starting {settings.app_name} v{settings.app_version}")
     print(f"Environment: {settings.environment}")
     print(f"Mock mode: {settings.use_mock_services}")
@@ -48,6 +56,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
     settings = get_settings()
+
+    if os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING"):
+        from azure.monitor.opentelemetry import configure_azure_monitor
+
+        configure_azure_monitor(
+            logger_name="allclear",
+            enable_live_metrics=False,
+            disable_offline_storage=True,
+        )
 
     app = FastAPI(
         title=settings.app_name,

@@ -170,9 +170,12 @@ def test_submit_signal_returns_pipeline_result(client: TestClient) -> None:
     body = resp.json()
     assert body["classification"]["intent_category"] == "FIELD_HAZARD"
     assert body["routing"]["outcome"] == "OPEN_INCIDENT"
-    assert body["routing"]["severity"] == "SEV2"
+    assert body["routing"]["severity"] == "SEV1"
+    assert body["routing"]["sla_minutes"] == 15
+    assert body["routing"]["escalate"] is True
+    assert body["routing"]["escalation_reason"] == "sev1_incident"
     assert body["action"]["incident_id"].startswith("AC-")
-    assert body["action"]["status"] == "opened"
+    assert body["action"]["status"] == "escalated"
 
 
 def test_public_safety_signal_escalates(client: TestClient) -> None:

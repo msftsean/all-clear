@@ -1,6 +1,14 @@
 // All Clear incident-triage application - Azure Infrastructure
 // Deploy with: azd provision
 
+targetScope = 'resourceGroup'
+
+@description('Create resource-scoped managed-identity role assignments. Disable for restricted participant deployments.')
+param createRoleAssignments bool = true
+
+@description('Use an Azure-resident OpenAI API-key secret when role assignments are prohibited.')
+param openAiKeyAuth bool = false
+
 @description('Name prefix for all resources')
 param resourcePrefix string = 'allclear'
 
@@ -81,7 +89,7 @@ resource openAi 'Microsoft.CognitiveServices/accounts@2023-10-01-preview' = {
   properties: {
     customSubDomainName: '${prefix}-openai'
     publicNetworkAccess: 'Enabled'
-    disableLocalAuth: true // Managed identity only - no API key auth
+    disableLocalAuth: !openAiKeyAuth
   }
 }
 
@@ -287,6 +295,17 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   }
 }
 
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: '${prefix}-insights'
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-08-01-preview' = {
   name: '${prefix}-env'
   location: location
@@ -382,6 +401,10 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
       }
       secrets: concat([
         {
+          name: 'applicationinsights'
+          value: appInsights.properties.ConnectionString
+        }
+        {
           name: 'acr-password'
           value: containerRegistry.listCredentials().passwords[0].value
         }
@@ -393,7 +416,12 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
           name: 'search-api-key'
           value: searchService.listAdminKeys().primaryKey
         }
-      ], deployPhone ? [
+      ], openAiKeyAuth ? [
+        {
+          name: 'openai-api-key'
+          value: openAi.listKeys().key1
+        }
+      ] : [], deployPhone ? [
         {
           name: 'acs-connection-string'
           // Container Apps rejects empty-string secret values (ContainerAppSecretInvalid);
@@ -423,6 +451,14 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
           name: 'backend'
           image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           env: concat([
+            {
+              name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+              secretRef: 'applicationinsights'
+            }
+            {
+              name: 'OTEL_SERVICE_NAME'
+              value: 'allclear-backend'
+            }
             {
               name: 'MOCK_MODE'
               value: string(mockMode)
@@ -485,7 +521,12 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
             } : {
               secretRef: 'surge-coach-key'
             })
-          ], deployPhone ? [
+          ], openAiKeyAuth ? [
+            {
+              name: 'AZURE_OPENAI_API_KEY'
+              secretRef: 'openai-api-key'
+            }
+          ] : [], deployPhone ? [
             {
               name: 'AZURE_ACS_ENDPOINT'
               value: !deployPhone || mockMode ? '' : 'https://${acs!.properties.hostName}'
@@ -527,7 +568,7 @@ resource backendContainerApp 'Microsoft.App/containerApps@2023-08-01-preview' = 
 var cognitiveServicesOpenAIUserRoleId = '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'
 
 // Grant backend container app access to Azure OpenAI via managed identity
-resource backendOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource backendOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (createRoleAssignments) {
   name: guid(openAi.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
   scope: openAi
   properties: {
@@ -541,7 +582,7 @@ resource backendOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@20
 }
 
 // Grant backend container app access to the realtime OpenAI account via managed identity
-resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployRealtime) {
+resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployRealtime && createRoleAssignments) {
   name: guid(openAiRealtime.id, backendContainerApp.id, cognitiveServicesOpenAIUserRoleId)
   scope: openAiRealtime
   properties: {
@@ -556,7 +597,7 @@ resource backendRealtimeOpenAIRoleAssignment 'Microsoft.Authorization/roleAssign
 
 // Grant backend container app Contributor access to ACS via managed identity
 var acsContributorRoleId = 'b24988ac-6180-42a0-ab88-20f7382dd24c'
-resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployPhone) {
+resource backendACSRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deployPhone && createRoleAssignments) {
   name: guid(acs.id, backendContainerApp.id, acsContributorRoleId)
   scope: acs
   properties: {
