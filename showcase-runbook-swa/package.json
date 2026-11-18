@@ -1,0 +1,8 @@
+{
+  "name": "allclear-showcase-runbook",
+  "private": true,
+  "version": "1.4.0",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

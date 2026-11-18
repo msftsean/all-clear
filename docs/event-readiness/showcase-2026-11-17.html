@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>All Clear | Ten-minute audience demo cue sheet</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("scoutTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:112px}
+body{margin:0;background:var(--cp-bg);color:var(--cp-text);font:17px/1.6 "Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif}
+.wrap{max-width:1080px;margin:auto;padding:0 28px}
+a{color:var(--cp-link);text-underline-offset:3px}
+button,input{font:inherit}
+button{cursor:pointer;border:1px solid var(--cp-border-strong);border-radius:.625rem;padding:8px 14px;background:var(--cp-surface);color:var(--cp-text)}
+button:hover{border-color:var(--cp-accent)}
+:focus-visible{outline:3px solid var(--cp-accent);outline-offset:3px}
+code,.mono,.eyebrow,th,.id small{font-family:Consolas,"Courier New",Courier,monospace}
+code{overflow-wrap:anywhere}
+.bar{position:sticky;top:0;z-index:5;background:var(--cp-bg-elevated);border-bottom:1px solid var(--cp-border)}
+.bar .wrap{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-top:12px;padding-bottom:12px}
+.timer{font:700 28px/1 Consolas,"Courier New",Courier,monospace;color:var(--cp-accent);min-width:5ch}
+.bar nav{display:flex;gap:16px;margin-left:auto;font-size:14px}
+.bar progress{display:block;width:100%;height:4px;accent-color:var(--cp-accent)}
+.hero{padding:56px 0 36px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--cp-text-muted)}
+h1{font-size:clamp(42px,6.8vw,76px);line-height:1.04;letter-spacing:-.05em;max-width:17ch;margin:20px 0}
+h1 em{font-style:normal;color:var(--cp-accent)}
+.lede{font-size:22px;max-width:62ch}
+.contract,.handoff{border-left:4px solid var(--cp-accent);padding:16px 20px;background:var(--cp-accent-soft);border-radius:0 .625rem .625rem 0}
+.alert{border:1px solid var(--cp-warning);border-radius:.625rem;padding:16px 20px;background:var(--cp-surface);margin:24px 0}
+.alert strong{color:var(--cp-text)}
+.badge{font:600 12px Consolas,"Courier New",Courier,monospace;color:var(--cp-accent);letter-spacing:.04em}
+section{padding:36px 0;border-top:1px solid var(--cp-border)}
+h2{font-size:32px;line-height:1.15;letter-spacing:-.025em;margin:0 0 12px}
+h3{font-size:23px;margin:0 0 8px;line-height:1.25}
+h4{font-size:17px;margin:20px 0 8px}
+.sub,.note{color:var(--cp-text-muted)}
+.note{font-size:14px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;background:var(--cp-surface);font-size:15px}
+th,td{text-align:left;padding:12px 16px;border:1px solid var(--cp-border);vertical-align:top}
+th{font-size:12px;text-transform:uppercase;color:var(--cp-text-muted)}
+td:first-child{font-weight:600;white-space:nowrap}
+.lanes{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--cp-border);border-radius:16px;overflow:hidden;background:var(--cp-surface);margin:20px 0}
+.lane{padding:24px}.lane+.lane{border-left:1px solid var(--cp-border)}
+.check{list-style:none;padding:0;display:grid;gap:12px}
+.check li{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:.625rem}
+.check label{flex:1}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--cp-success);flex:none;margin-top:3px}
+.check li.on{border-color:var(--cp-success)}
+.cue{display:grid;grid-template-columns:80px 1fr;background:var(--cp-surface);border:1px solid var(--cp-border);border-radius:16px;margin:24px 0;overflow:hidden}
+.id{background:var(--cp-surface-soft);border-right:1px solid var(--cp-border);display:flex;flex-direction:column;align-items:center;padding-top:24px;gap:8px}
+.id span{font-size:40px;font-weight:700;line-height:1}.id small{font-size:11px;text-align:center}
+.star{border:2px solid var(--cp-accent)}.star .id{background:var(--cp-accent);color:var(--cp-accent-fg)}
+.body{padding:24px}
+.proves{margin:4px 0 16px;color:var(--cp-text-muted)}
+.say,.wait,.appears{margin:16px 0;padding:16px 20px;border-radius:.625rem}
+.say{background:var(--cp-accent-soft);border-left:4px solid var(--cp-accent);font-size:19px}
+.wait{background:var(--cp-surface-soft);border-left:4px solid var(--cp-warning)}
+.appears{border:1px solid var(--cp-border)}
+.say b,.wait b,.appears b{display:block;font:600 11px Consolas,"Courier New",Courier,monospace;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;color:var(--cp-text-muted)}
+.say p,.wait p{margin:0 0 12px}.say p:last-child,.wait p:last-child{margin-bottom:0}
+.cmd{display:flex;gap:8px;align-items:stretch;margin:12px 0}
+.cmd code{display:block;flex:1;background:var(--cp-surface-soft);padding:14px;border:1px solid var(--cp-border);border-radius:.625rem;white-space:pre-wrap;font-size:14px;min-width:0}
+.copy{font-size:13px;font-weight:600;color:var(--cp-accent);min-width:72px}
+.done-row{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cp-text-muted)}
+.origin-form{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.origin-form label{width:100%;font-weight:600}
+.origin-form input{flex:1;min-width:200px;border:1px solid var(--cp-border-strong);border-radius:.625rem;background:var(--cp-surface);color:var(--cp-text);padding:10px}
+.tabs{display:flex;gap:16px;flex-wrap:wrap}
+.tabs a:not([href]){color:var(--cp-text-muted);text-decoration:none}
+details{border:1px solid var(--cp-border);border-radius:.625rem;padding:16px 20px;margin-top:16px;background:var(--cp-surface)}
+summary{cursor:pointer;font-weight:600}
+.status{min-height:1.5em;color:var(--cp-text-muted);font-size:14px}
+footer{padding:28px 0 56px;color:var(--cp-text-muted);font-size:13px;border-top:1px solid var(--cp-border)}
+body.script-only .prep,body.script-only .note,body.script-only .proves,body.script-only .appears,body.script-only .done-row,body.script-only .cue .cmd{display:none}
+body.script-only .cue{margin:12px 0}
+@media(max-width:720px){.wrap{padding-left:16px;padding-right:16px}.bar nav{margin-left:0;gap:12px;flex-wrap:wrap}.lanes{grid-template-columns:1fr}.lane+.lane{border-left:0;border-top:1px solid var(--cp-border)}.cue{grid-template-columns:1fr}.id{flex-direction:row;padding:8px 16px;border:0;gap:12px}.id span{font-size:26px}.cmd{flex-direction:column}.body{padding:18px}td:first-child{white-space:normal}}
+@media print{.bar,.copy,.origin-form,.tabs,.status,.done-row{display:none!important}.wrap{max-width:none;padding:0}body{font-size:11pt}section{padding:16px 0}.hero{padding:0 0 16px}h1{font-size:32pt;max-width:none}.cue{break-inside:avoid}.say{font-size:12pt}.prep{display:block!important}body.script-only .note,body.script-only .proves,body.script-only .appears,body.script-only .cue .cmd{display:block}details{break-inside:avoid}a{color:var(--cp-text)}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="wrap">
+  <span class="timer" id="clock" role="timer" aria-label="Demo elapsed time">00:00</span>
+  <button id="timer-toggle" type="button">Start 10 min</button>
+  <button id="timer-reset" type="button">Reset timer</button>
+  <button id="script-toggle" type="button" aria-pressed="false">Script only</button>
+  <nav aria-label="Runbook sections"><a href="#ros">Clock</a><a href="#setup">Setup</a><a href="#cues">A–D</a><a href="#close">Close</a><a href="#break">Fallback</a></nav>
+</div><progress id="elapsed" max="600" value="0" aria-label="Ten-minute demo progress"></progress></div>
+<main class="wrap">
+<header class="hero">
+  <p class="eyebrow">Presenter copy · Azure Days Arlington · before the participant lab</p>
+  <h1>Less noise.<br><em>Not less human judgment.</em></h1>
+  <p class="lede">One operational story. Four proof points: <strong>the room reports → All Clear groups → Foundry makes AI inspectable → GitHub Copilot helps engineers verify the boundaries.</strong></p>
+  <p class="contract"><strong>Keep the product contract straight:</strong> “Foundry is the AI platform. GitHub Copilot is the development assistant. Our application code enforces the operating rules.”</p>
+  <div class="alert prep">
+    <strong>🟨 Audience participation: real phone submissions, mock processing. Run the private go/no-go check first.</strong>
+    <p>The deployed board, phone sample form and fixture replay loaded on Nov 18. The board was CLOSED and empty. The previous mock rehearsal handled 40 submissions across four cards as four incidents; that is not proof of today's operator access or cellular connection. Use only the sample wording; live AI/semantic grouping is not part of this room demo.</p>
+    <div class="tabs">
+      <a data-path="/surge" href="https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/surge" target="_blank" rel="noopener">Audience board</a>
+      <a data-path="/report" href="https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/report" target="_blank" rel="noopener">Phone join link</a>
+      <a data-path="/?demo=loaded" href="https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io/?demo=loaded" target="_blank" rel="noopener">Synthetic replay</a>
+      <a href="#handoff">Participant handoff</a>
+    </div>
+  </div>
+  <p class="badge">v1.4 · Nov 18, 2026 · board / phone form / replay checked · private rehearsal required</p>
+</header>
+
+<section id="ros">
+  <h2>01 / Run of show</h2>
+  <p class="sub prep">Carry forward the original ten-minute segment and start at your actual handoff. These are speaking budgets, not measured execution times.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Elapsed</th><th>Screen / cue</th><th>Non-negotiable payoff</th></tr></thead>
+    <tbody>
+      <tr><td>00:00–01:30</td><td>A · Closed board + QR / scenario instructions</td><td>Connect to this morning’s trust concerns. Participation is optional.</td></tr>
+      <tr><td>01:30–03:30</td><td>B ★ · Open, collect for 60 sec, close, read board</td><td>Many signals, fewer incidents, no reports discarded.</td></tr>
+      <tr><td>03:30–06:00</td><td>C · Prepared Foundry tabs + application boundary</td><td>Model deployment; quality/safety evaluation; deterministic policy in code.</td></tr>
+      <tr><td>06:00–08:30</td><td>D · Copilot + repository instructions + tests</td><td>A bounded request with file/test evidence, not “trust my prompt.”</td></tr>
+      <tr><td>08:30–09:30</td><td>Return to board · mission and pilot</td><td>Operational measures, not invented ROI or fewer jobs.</td></tr>
+      <tr><td>09:30–10:00</td><td>Close · next presenter</td><td>One takeaway and one next action. Stop.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">Finish ten minutes after the actual handoff, or sooner if the host shortens the slot. Do not borrow the next presenter’s time.</p>
+  <details class="prep"><summary>Why this story fits THIS room</summary>
+    <p><strong>Lead with operating control, not a product tour.</strong> Connect the demo to prompt drift, review burden, and privacy without quoting private discussions or claiming measured productivity gains.</p>
+    <p><strong>Keep the scenario operational.</strong> Show the implemented Arlington cards, not an unbuilt student or clinical workflow. Translate the pattern to campus facilities, municipal operations, and hospital facilities; do not suggest autonomous clinical, legal or emergency decisions.</p>
+  </details>
+</section>
+
+<section class="prep">
+  <h2>02 / Who does what</h2>
+  <div class="lanes">
+    <div class="lane"><p class="eyebrow">Host / optional operator</p><h3>Protect the room and the clock</h3><p>Host owns the agenda and handoff. If a separate operator is available, privately set the coach key and run Open/Close at your spoken cues. No operator was confirmed in the transcript. Do not assume one.</p></div>
+    <div class="lane"><p class="eyebrow">You</p><h3>Own all four proof points</h3><p>Present the board, Foundry and Copilot. If solo, preload the masked coach key off projection, collapse Operator controls, and make only the rehearsed Open/Close clicks. No typing credentials or live development on stage.</p></div>
+  </div>
+  <div class="handoff"><strong>Your first line after the host finishes:</strong><br>“Thank you. The question is not whether AI can produce more work. It is whether we can trust it to help us do the right work. Let me make that visible.”</div>
+</section>
+
+<section id="setup" class="prep">
+  <h2>03 / Private setup before the audience joins</h2>
+  <p class="sub">Keep this sheet on your private screen. Project only the demo tabs. No new deployments, model switches or infrastructure repairs during the showcase.</p>
+  <form class="origin-form" id="origin-form">
+    <label for="origin">Verified audience frontend origin — public URL only, never a coach key</label>
+    <input id="origin" type="url" value="https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io" autocomplete="off">
+    <button type="submit">Set demo links</button>
+  </form>
+  <p class="status" id="origin-status" role="status">The mock audience address is prefilled. Do not substitute the participant lab or the separate desktop demo.</p>
+  <div class="tabs"><a data-path="/surge" target="_blank" rel="noopener">Board</a><a data-path="/report?card=A" target="_blank" rel="noopener">Card A</a><a data-path="/surge/cards?only=ABCD" target="_blank" rel="noopener">Cards A–D</a><a data-path="/?demo=loaded" target="_blank" rel="noopener">Fixture replay</a><a href="https://ai.azure.com/" target="_blank" rel="noopener">Foundry</a></div>
+  <ul class="check">
+    <li><input type="checkbox" id="s1" data-key="s1"><label for="s1"><strong>Confirm the right room.</strong> Open the audience board and check for the Mock label, CLOSED and zero signals. The cue sheet is not the phone intake or the participant lab. Start the timer at your actual handoff.</label></li>
+    <li><input type="checkbox" id="s2" data-key="s2"><label for="s2"><strong>Scan from a physical phone.</strong> Prefer cellular to catch venue-network issues. Check the A–D picker and Use sample report. The Phone join link is the QR alternative. A mobile browser emulator does not prove a real phone scan.</label></li>
+    <li><input type="checkbox" id="s3" data-key="s3"><label for="s3"><strong>Go/no-go: privately rehearse Open → two sends → Close.</strong> Off projection on the designated mock room, enter the existing key via Operator controls → Coach key → Set key. Open intake. On the phone, choose A and send the sample twice; wait for each result. Require two room signals, one incident and two reports on its tile. Close immediately, wait for admitted work to finish, reset only your rehearsal tally, and confirm CLOSED, zero signals and no tiles. If any send, grouping or control check fails, close intake and use replay. No key in the URL, QR or logs.</label></li>
+    <li><input type="checkbox" id="s4" data-key="s4"><label for="s4"><strong>Choose your Foundry evidence.</strong> Pre-open a verified model deployment and completed evaluation only if available. Otherwise, open <code>.foundry\agent-metadata.yaml</code> and use cue C’s definition-only variant. Do not claim that room submissions called a Foundry model.</label></li>
+    <li><input type="checkbox" id="s5" data-key="s5"><label for="s5"><strong>Prepare Copilot and test evidence.</strong> Open <code>CONTEXT.md</code>, the constitution, RouterExecutor and the tests. Use a separate read-only Copilot session. Hide unrelated sessions, notifications and secrets.</label></li>
+    <li><input type="checkbox" id="s6" data-key="s6"><label for="s6"><strong>Warm the replay backup.</strong> Open Synthetic replay and leave it loaded. The 1,240 / 3 counts are a synthetic fixture, not measurement. Do not invite phones to submit to replay.</label></li>
+    <li><input type="checkbox" id="s7" data-key="s7"><label for="s7"><strong>Freeze the setup.</strong> Check mic, projector, readable QR, private controls and clock. Share only the board screen and its join link; hold the lab link until the demo closes. No new builds, credentials or model switches on stage.</label></li>
+  </ul>
+  <h4>Read-only checks — Git Bash</h4>
+  <p class="note">The real public audience address is already supplied. These GET requests check reachability only, not release acceptance. No login, coach key or secret changes are needed.</p>
+  <div class="cmd"><code id="health-command">DEMO_ORIGIN='https://allclear-sbuqtpuppifra-frontend.gentlesand-926708e1.eastus2.azurecontainerapps.io'
+curl --fail --silent --show-error --max-time 10 "$DEMO_ORIGIN/api/health" &amp;&amp;
+curl --fail --silent --show-error --max-time 10 "$DEMO_ORIGIN/api/surge/state"</code><button class="copy" data-target="health-command" type="button">Copy</button></div>
+  <h4>Optional offline proof — Git Bash, from this repo on your Windows demo machine</h4>
+  <div class="cmd"><code id="test-command">MOCK_MODE=true ENVIRONMENT=test PYTHONPATH=backend \
+python -m pytest backend/tests/test_surge_api.py backend/tests/test_surge_room.py backend/tests/test_router_no_llm.py -q</code><button class="copy" data-target="test-command" type="button">Copy</button></div>
+  <p class="note"><strong>Nov 18 verification:</strong> 33 passed, 3 dependency warnings, 2.31 sec in pytest. Includes near-identical mock reports → one incident, board privacy, protected controls and deterministic routing/escalation. This is not a live Azure rehearsal or broad-paraphrase proof. The Bash environment settings above apply only to that Python command.</p>
+  <h4>Optional local fixture fallback — Git Bash, no backend or Azure needed</h4>
+  <div class="cmd"><code id="replay-command">python -m http.server 8786 --bind 127.0.0.1 --directory frontend/dist</code><button class="copy" data-target="replay-command" type="button">Copy</button></div>
+  <p class="note">From the repository root, with the already-built <code>frontend\dist</code> present. Leave that terminal running and open <a href="http://127.0.0.1:8786/?demo=loaded" target="_blank" rel="noopener">http://127.0.0.1:8786/?demo=loaded</a>. It animates for about 7.2 seconds; label it synthetic. This static server intentionally does not process phone reports or proxy an API. Do not select LIVE or MUNI WATER SURGE here. If the port is occupied, do not stop someone else’s process; select an unused port and match the URL. Stop your server with Ctrl+C after the event.</p>
+</section>
+
+<section id="cues">
+  <h2>04 / The four cues</h2>
+  <p class="sub">Use A and B with the mock room only if private rehearsal passed. Otherwise use the fixture variants and skip audience sends. Keep the same ten-minute clock.</p>
+
+  <article class="cue" id="cue-a">
+    <div class="id"><span>A</span><small>00:00–01:30<br>90 seconds</small></div>
+    <div class="body">
+      <h3>The mission, not another chatbot</h3>
+      <p class="proves">Proves: the unit of work is the underlying incident, not the number of messages.</p>
+      <p><strong>Screen:</strong> <code>/surge</code>, CLOSED, verified QR visible. No Azure portal or code yet.</p>
+      <div class="say"><b>Say</b>
+        <p>“Less noise, not less human judgment. That is what this application is designed to deliver.</p>
+        <p>AI can make one person faster while creating more work for everybody else. Here is a different target: make the operational picture clearer for the whole team.</p>
+        <p>A water main breaks. Twenty people describe it twenty different ways. We want every report preserved, without giving a responder twenty separate incidents to investigate.</p>
+        <p>This is All Clear. A signal is what someone reports. An incident is the event underneath those reports. The system helps connect the two; it is not an emergency service or a replacement for professional judgment.”</p>
+      </div>
+      <div class="say"><b>Say after private rehearsal passes</b>
+        <p>“This audience exercise is running in mock mode. It is not calling a live AI model, and it does not demonstrate semantic grouping of different descriptions.</p>
+        <p>If you would like to participate, scan the code or use the phone join link. Choose your table’s letter from A through D and tap Use sample report. Keep the sample wording and wait until the board says OPEN. Then tap Send report once.</p>
+        <p>Please do not enter real incidents, names, contact details, student information or patient information. Participation is optional. This is a demonstration, not an emergency service.”</p>
+      </div>
+      <div class="wait"><b>Replay variant · replaces the participation instructions</b><p>“I am using a synthetic fixture replay for this segment, not collecting reports from your phones. Its numbers illustrate the experience; they are not today’s live traffic or a performance result.”</p></div>
+      <div class="appears"><b>What appears</b>Live: CLOSED, QR, SIGNALS IN, INCIDENTS OUT, empty room tally if reset. Replay: the main ClearBoard fixture, not the Room Surge board.</div>
+      <p class="note"><strong>Careful:</strong> pause five seconds for scanning. Do not ask the audience to invent emergencies or run red-card attacks. A–D are implemented Arlington scenes; they are not clinical/student-data demos.</p>
+      <label class="done-row"><input type="checkbox" data-key="a">A delivered</label>
+    </div>
+  </article>
+
+  <article class="cue star" id="cue-b">
+    <div class="id"><span>B ★</span><small>01:30–03:30<br>120 seconds</small></div>
+    <div class="body">
+      <h3>Show the difference between volume and workload</h3>
+      <p class="proves">Proves: report attachment can reduce duplicate incident work without deleting reports.</p>
+      <p><strong>Click:</strong> private Operator controls → Open. Confirm <strong>OPEN, REPORT NOW</strong>. At 02:30 click Close. Let admitted work finish; keep the board visible. Do not Reset on stage.</p>
+      <div class="say"><b>Say only when OPEN appears</b><p>“The room is open. Send your one sample report now. Watch the two big numbers. If several people send the same sample, the report count can grow without adding another incident.”</p></div>
+      <div class="wait"><b>Say while reports arrive</b>
+        <p>“The left number counts processed signals. The right number counts the incidents represented here. The sample reports let us demonstrate intake, report attachment and the shared board without depending on live model inference.</p>
+        <p>The deployed mock check accepted forty reports and grouped them into four separate incidents with no failed requests. That is a mock-workflow result, not a live-AI benchmark. Your counts here may differ.</p>
+        <p>Nothing about your card letter controls routing. The sample is ordinary submitted text. We are not secretly grouping by table or changing the rules to make the screen look good.”</p>
+      </div>
+      <div class="say"><b>Say after Close · point to ACTUAL counts</b>
+        <p>“I am closing intake so we can inspect the result. Look at the actual signal count and incident count on this screen. Each tile shows the reports associated with that incident in this room.</p>
+        <p>The benefit is a clearer work queue, not fewer people being heard. The different events must also stay separate; collapsing everything into one tile would be a failure, not a success.</p>
+        <p>Now let me show the part that matters when this is your institution: what the AI is allowed to decide, and how we check it.”</p>
+      </div>
+      <div class="wait"><b>If using the fixture replay</b><p>“This animation uses a prepared set of synthetic incidents. It illustrates the board experience; it does not exercise live classification, embeddings or safety services. I will use the code and tests next to show which application boundaries we can actually verify.”</p></div>
+      <div class="appears"><b>What appears</b>Live tiles show incident ID, category, optional location, severity and “reports from this room”; incident-bearing escalations have their own tile label. Counts vary. No target count is promised on stage.</div>
+      <p class="note"><strong>Point at:</strong> the two counters, then one tile’s room report count. <strong>Careful:</strong> room tally is not lifetime incident magnitude. The global “escalated to a person” counter does not count every incident-bearing escalation; phone count is not verified people. “Collapse” is not measured staff-hours saved. If counts fragment or errors occur, say so and take the fallback.</p>
+      <label class="done-row"><input type="checkbox" data-key="b">B delivered · intake CLOSED</label>
+    </div>
+  </article>
+
+  <article class="cue" id="cue-c">
+    <div class="id"><span>C</span><small>03:30–06:00<br>150 seconds</small></div>
+    <div class="body">
+      <h3>Foundry: inspect the AI, keep policy in code</h3>
+      <p class="proves">Proves: deployed model configuration and quality/safety evaluation are different from application-enforced decision authority.</p>
+      <p><strong>03:30–04:10:</strong> switch to the already-open Foundry project’s actual model deployment detail. Point to model/deployment/version, only if visible and verified. Do not create or switch a deployment.</p>
+      <div class="say"><b>Say</b>
+        <p>“The room example you just saw was not a call to this model deployment. Foundry is the AI platform for the live-AI side of this design. Here is where we inspect a prepared model deployment rather than treating a model as a mystery inside a chat window.</p>
+        <p>In this application, the model classifies a report into structured fields. That is a bounded job. It is not given authority to invent our escalation policy, erase reports or publish a public message.”</p>
+      </div>
+      <p><strong>04:10–05:00:</strong> switch to a pre-opened completed, relevant Foundry evaluation detail. Point to target/version, dataset, one metric, one actual failed or reviewed example. This portal step is <strong>unverified until privately rehearsed</strong>; use the next variant if no completed run exists.</p>
+      <div class="say"><b>Completed-evaluation variant · only with real results on screen</b>
+        <p>“The second feature is evaluation. A good-looking answer is not an acceptance test. We look at the dataset, which agent or model version was evaluated, and the individual cases behind the score.</p>
+        <p>This is a recorded evaluation of the target named here. It is not a trace of every phone submission in this room, and a passing score is not a guarantee of safety. It gives the team evidence to review before a release.”</p>
+      </div>
+      <div class="wait"><b>No verified evaluation available · open .foundry/agent-metadata.yaml instead</b>
+        <p>“I do not have a completed Foundry evaluation result to claim for this audience deployment. What I can show is the repository’s evaluation definition: quality checks and a separate safety set. These are definitions, not passing scores.</p>
+        <p>Foundry’s evaluation capability is where that release evidence can be produced and reviewed. Today’s operating-policy proof is the application code and offline tests I will show next.”</p>
+      </div>
+      <p><strong>05:00–06:00:</strong> open the prepared <code>backend\app\agents\query_agent.py</code> and <code>router_agent.py</code> tabs or the boundary below. No raw attendee trace.</p>
+      <div class="cmd"><code id="boundary">QueryAgent: classify only
+RouterExecutor: deterministic dedup / severity / SLA / escalation
+ActionAgent: create_incident / search_knowledge / generate_sitrep</code><button type="button" class="copy" data-target="boundary">Copy</button></div>
+      <div class="say"><b>Say when the boundary is visible</b>
+        <p>“The strongest control here is what we deliberately do not give to the model. The RouterExecutor makes no language-model calls. It applies the deduplication threshold and fixed rules for severity, response deadlines and escalation. Similarity still depends on the input classification and embeddings; deterministic rules do not make those inputs infallible.</p>
+        <p>The ActionAgent has only three named tools. Life-safety and statutory-clock paths escalate; they are not something a confident answer is allowed to waive. Foundry evaluation and application controls are complementary. One does not replace the other.”</p>
+      </div>
+      <div class="appears"><b>What appears / what is verified</b>Source confirms the typed QueryAgent classification and three-stage design. Metadata defines relevance/coherence/fluency and safety suites for <code>all-clear-triage</code>; it does not establish a deployed agent, completed evaluation, or live Room Surge trace. The app runs its MAF pipeline in the backend; do not call it Foundry-hosted merely because model/evaluation capabilities are in Foundry.</div>
+      <p class="note"><strong>Careful:</strong> portal labels vary. Pre-open pages; do not hunt through menus. The registered evaluation agent may differ from the live runtime. No Foundry IQ, Work IQ, Fabric, adaptive model routing, autonomous dispatch or compliance certification is established by this demo. Do not add a model catalog detour.</p>
+      <label class="done-row"><input type="checkbox" data-key="c">C delivered</label>
+    </div>
+  </article>
+
+  <article class="cue" id="cue-d">
+    <div class="id"><span>D</span><small>06:00–08:30<br>150 seconds</small></div>
+    <div class="body">
+      <h3>GitHub Copilot: delegate a bounded task, demand evidence</h3>
+      <p class="proves">Proves: repository context and a precise request help a developer inspect an implementation; tests, not agent confidence, are the acceptance signal.</p>
+      <p><strong>06:00–06:30:</strong> show <code>CONTEXT.md</code> and the constitution already open in VS Code. Then switch to a separate, pre-rehearsed Copilot session. No edits to the deployment session.</p>
+      <div class="say"><b>Say</b>
+        <p>“GitHub Copilot helps us build and inspect the application. It is not the agent triaging your phone report.</p>
+        <p>Here is how we keep it on task: shared definitions, explicit boundaries, a small request, and evidence we can independently check. The repository spells out what a signal is, what an incident is, and what the agents must never do.”</p>
+      </div>
+      <p><strong>06:30:</strong> paste this exact prompt. It requests inspection only. A written instruction is not itself a security boundary; do not approve write or deployment actions. If the answer is not useful within 15 seconds, use the saved response from the same prompt and identify it as prepared.</p>
+      <div class="cmd"><code id="copilot-prompt">Read-only inspection. Do not edit files, run commands, deploy, or access Azure. Read CONTEXT.md, .specify/memory/constitution.md, backend/app/agents/router_agent.py, backend/tests/test_router_no_llm.py and backend/tests/test_surge_api.py. In at most 120 words, cite file and line evidence for three things: (1) RouterExecutor has no language-model decision calls, (2) public-safety and statutory-clock inputs force escalation, and (3) near-duplicate reports attach without appearing as raw text on the public surge board. Distinguish application behavior from what these specific tests actually prove. Identify any missing evidence rather than claiming success. Do not propose changes.</code><button type="button" class="copy" data-target="copilot-prompt">Copy prompt</button></div>
+      <div class="wait"><b>Say while it responds</b><p>“Notice what I am delegating: a narrow inspection with named files and specific acceptance questions. Not ‘make this production-ready.’ Copilot can help locate the evidence, but we still inspect what it cites and execute the tests ourselves.”</p></div>
+      <p><strong>06:45–07:30:</strong> point to the answer’s actual file references. Open the public-safety and statutory tests. Do not read the entire generated answer aloud.</p>
+      <div class="say"><b>Say when the evidence appears · only if the references are correct</b><p>“That is the useful output: a path back to the implementation and its tests. I can check the escalation assertions and the report-attachment test. A confident paragraph without those references would not be enough.”</p></div>
+      <div class="wait"><b>If the answer is slow, wrong or unverified</b><p>“I am not going to accept an uncited answer just to keep the demo moving. These are the source files and tests we prepared. The acceptance bar stays the same even when the assistant misses it.”</p></div>
+      <p><strong>07:30–08:00:</strong> in a separate prepared terminal, run the offline proof command from Setup, or show its saved genuine output. Hard cap: 15 seconds waiting, then identify the recorded output. Never substitute a green marker or edit tests.</p>
+      <div class="say"><b>Say over the test output</b>
+        <p>“These tests run without Azure credentials. They check report attachment, public-board privacy, protected controls and deterministic escalation. During preparation this exact selection passed thirty-three tests.</p>
+        <p>That is bounded evidence, not a certificate. It does not prove live cloud performance or that every model classification will be correct. It gives us a repeatable check before we ask people to depend on the application.”</p>
+      </div>
+      <div class="say"><b>08:00–08:30 · land the distinction</b><p>“So the division of labor is deliberate. Copilot helps the engineering team work through the code. Foundry provides AI platform capabilities and evaluation. The application enforces the operating rules. None of those responsibilities disappear because the assistant sounds confident.”</p></div>
+      <div class="appears"><b>What appears / rehearsal status</b>The command was actually run in this preparation: <code>33 passed, 3 warnings in 2.31s</code>. Copilot generation itself was not rehearsed here; use a prepared real response or direct file walkthrough if needed. No generated diff, PR, Actions run or autonomous fix is claimed.</div>
+      <p class="note"><strong>Careful:</strong> do not live-code, launch a broad review, spawn a team, push changes or enable automatic approvals. If using CLI, <code>/diff</code> and <code>/review</code> exist in this build, but neither is needed for this read-only cue. Do not demonstrate them against the other session’s active changes.</p>
+      <label class="done-row"><input type="checkbox" data-key="d">D delivered</label>
+    </div>
+  </article>
+</section>
+
+<section id="close">
+  <h2>05 / Bring it back to their mission</h2>
+  <p><strong>08:30–09:30:</strong> return to the closed board, or the openly labeled fixture replay. No more portal tabs.</p>
+  <div class="say"><b>Say</b>
+    <p>“For a campus, the starting point might be facilities reports during an outage. For a local government, it might be duplicate reports about a water main. For an academic medical center, it might be facilities disruption—not diagnosis or treatment. Those are potential adaptations of this operational pattern, not integrations I have demonstrated today.</p>
+    <p>The pilot question is not ‘How many messages can we generate?’ It is ‘Can we reduce duplicate handling while keeping the evidence, getting urgent reports to a person, and protecting sensitive information?’</p>
+    <p>Measure duplicate incident work, routing errors, time to human review and staff experience. We have not measured your return on investment in this demo.</p>
+    <p>The participant lab is where you can inspect and extend these boundaries. Its mock-first path lets you learn the workflow without deploying to Azure first.”</p>
+  </div>
+  <div class="say"><b>09:30–10:00 · final words, then stop</b>
+    <p>“The takeaway is simple: reduce the noise without removing accountability. Use Foundry to build and evaluate the AI capabilities. Use GitHub Copilot to help engineers inspect and verify the implementation. Keep the operating policy and the human handoff explicit.</p>
+    <p>Bring one repetitive operational workflow, its policy owner and one measurable outcome to the next conversation. Thank you to our hosts and partners. Back to you.”</p>
+  </div>
+  <p class="note"><strong>At 08:00 if behind:</strong> skip remaining generated explanation; show the saved test result, then jump to the mission paragraph and 30-second close. <strong>At 09:30:</strong> close regardless. Leave intake CLOSED. After the show, the operator drains/resets/closes and clears private coach storage on shared devices.</p>
+  <div class="handoff prep" id="handoff">
+    <strong>After the demo: share the lab, not the room.</strong>
+    <p>Confirm the board is CLOSED. Then share the <a href="https://github.com/msftsean/all-clear/blob/2d97a0d331ef1671a2ddfe4676842acf5e122646/docs/lab/participant-quickstart.md" target="_blank" rel="noopener">participant quickstart</a>. Do not share the cue sheet, the operator tab, or the preconfigured presenter deployment as the lab.</p>
+    <p>“The reporting room is closed. Open the quickstart I’m sharing now. Start in mock mode in your own workspace; you won’t submit to my demo room.”</p>
+  </div>
+</section>
+
+<section id="early" class="prep">
+  <h2>06 / Only if genuinely early</h2>
+  <p class="sub">Optional beats consume spare time inside your ten minutes, never time belonging to another presenter.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Beat / time</th><th>Where to click</th><th>Verbatim</th></tr></thead>
+    <tbody>
+      <tr><td>E1 · 20 sec</td><td><code>test_router_no_llm.py</code> → statutory-clock test</td><td>“A statutory deadline is not a preference the model can negotiate. This test asserts SEV1 and the statutory escalation reason. The policy owner decides the rule; the code applies it.”</td></tr>
+      <tr><td>E2 · 20 sec</td><td><code>test_surge_api.py</code> → public snapshot assertion</td><td>“The public board does not display raw attendee wording. This test checks a specific example. That is one privacy control, not a claim that every possible privacy risk has been eliminated.”</td></tr>
+      <tr><td>E3 · 20 sec</td><td><code>CONTEXT.md</code> → Report / Magnitude</td><td>“A report is preserved as an association to an incident. Grouping is not erasure. That distinction lets the operational view become simpler without pretending fewer people were affected.”</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="break">
+  <h2>07 / If something goes wrong</h2>
+  <p class="sub">One sentence, one switch. No live Azure repairs. A replay is not a recording of a successful run.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>You see</th><th>Say and do</th></tr></thead>
+    <tbody>
+      <tr><td>Live gates never pass</td><td>Before A, open the rehearsed local fixture replay. “This is a synthetic fixture replay, not live traffic. I will use it to show the experience, then show the application controls and tests.” Skip QR participation. Keep the A/B time budgets using the prepared story.</td></tr>
+      <tr><td>Phones cannot join / guest Wi-Fi fails</td><td>“The room connection is not dependable enough for participation, so I am switching to the prepared fixture.” Operator closes intake. Use the already-open local replay, not a new sign-in. Do not ask everyone to troubleshoot Wi-Fi.</td></tr>
+      <tr><td>Reconnecting / failures / no progress</td><td>If no progress for 15 seconds, or processing exceeds the rehearsed live acceptance: “This run is not meeting the responsiveness we rehearsed. I am closing intake and switching to the prepared fixture.” Close privately; inspect errors later. No claim that stuck reports were accepted.</td></tr>
+      <tr><td>Too many incident tiles</td><td>“These descriptions are not grouping as well as intended. That is a quality failure to investigate, not a reason to hide reports.” Close; use the fixture and continue. Never lower thresholds or group by card to fake success.</td></tr>
+      <tr><td>No one participates</td><td>“Participation is optional. I will show the prepared synthetic example instead.” Do not impersonate audience traffic. If an operator seeds reports, explicitly identify them as operator-generated.</td></tr>
+      <tr><td>Coach key rejected / controls absent</td><td>“Intake is staying closed. We will use the prepared view.” Do not paste the key into the URL, disable authentication or toggle mock mode on the public service.</td></tr>
+      <tr><td>Foundry sign-in / empty results</td><td>“I am using a prepared screenshot of the deployment configuration.” If no screenshot was captured, show the manifest/source and say “This is configuration, not a live portal result.” Use the no-evaluation variant in C; no invented score.</td></tr>
+      <tr><td>Copilot slow / wrong / unavailable</td><td>“I am switching to the prepared evidence rather than accepting an unsupported answer.” Show the actual files and genuine saved test output. If tests fail today, say they failed; never claim an old result is the current run.</td></tr>
+      <tr><td>Unexpected sensitive text</td><td>Stop projection immediately, close intake privately, switch to a safe window and alert the operator. “I am stopping that view so we can handle the unexpected content safely.” Do not repeat the text or investigate it on the projector.</td></tr>
+      <tr><td>Cloud and local UI both fail</td><td>Use the boundary text in C and the actual saved offline test result. “I cannot demonstrate the interface reliably right now. What I can show is the architecture and the specific tests we ran.” Do not call that an end-to-end demo.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="qa" class="prep">
+  <h2>08 / Q&amp;A — answers to this room’s concerns</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Question</th><th>Verbatim answer</th></tr></thead>
+    <tbody>
+      <tr><td>“How do I stop it going off task?”</td><td>“Use a small task, an explicit output contract, restricted tools and independent checks. Instructions help direct it; application permissions and tests are what let us enforce and verify boundaries. You should not have to rely on politeness or confidence.”</td></tr>
+      <tr><td>“Is every decision deterministic?”</td><td>“No. Classification and semantic embeddings involve model behavior. Given their outputs and incident state, the router applies fixed dedup, severity and escalation rules. We still need to evaluate the inputs and the complete workflow.”</td></tr>
+      <tr><td>“Is this replacing our staff?”</td><td>“The objective here is to remove duplicate handling and improve the human work queue. We would measure staff experience and review burden, not assume a staffing reduction is the outcome.”</td></tr>
+      <tr><td>“Can we use legal, student or patient data?”</td><td>“This demonstration is not approval to do that. We would first review the data flows, access, retention, privacy requirements and the authorized use case with your institution. No sensitive case, student or patient records are needed for this exercise.”</td></tr>
+      <tr><td>“Are you CJIS / HIPAA / FERPA compliant?”</td><td>“This demo establishes no compliance certification. The code includes safeguards, but compliance depends on the complete deployment, agreements, operations and your institution’s review.”</td></tr>
+      <tr><td>“Does the red card prove safety?”</td><td>“No. A safety service may block an input, or it may proceed through the normal application rules. One probe cannot certify a system. We inspect the actual outcome and keep broader evaluation separate.”</td></tr>
+      <tr><td>“Is Foundry IQ doing this?”</td><td>“I have not demonstrated Foundry IQ, Fabric or Work IQ here. This segment shows an incident pipeline, its AI platform connection, and engineering verification. Those integrations would need their own evidence.”</td></tr>
+      <tr><td>“Where does Copilot run the incident?”</td><td>“It does not. Copilot is assisting the developer. The backend runs the All Clear pipeline. That separation is intentional.”</td></tr>
+      <tr><td>“Did Copilot write all this?”</td><td>“Copilot is part of the development workflow. I am not claiming every line or today’s deployment was produced autonomously. The specification, implementation and verification still need accountable review.”</td></tr>
+      <tr><td>“Why does reset not remove old incidents?”</td><td>“Reset clears the room tally, not operational history. A new room report can still attach to a retained incident. That is why I distinguish this room’s counts from lifetime incident magnitude.”</td></tr>
+      <tr><td>“What would ROI look like?”</td><td>“We would baseline duplicate handling, review time, routing accuracy and staff experience for one workflow, then compare the pilot. The synthetic replay’s collapse ratio is not a financial result.”</td></tr>
+    </tbody>
+  </table></div>
+  <h3 style="margin-top:28px">Do not say or click</h3>
+  <p><strong>Do not say:</strong> “production ready,” “compliant,” “guaranteed safe,” “all attacks blocked,” “exactly four incidents,” “zero hallucinations,” “every phone is a unique person,” “the model makes all decisions,” “the model makes no decisions,” or “we measured these savings.”</p>
+  <p><strong>Do not click:</strong> Reset during the segment; publish/dispatch/resolve all; model deployment or version changes; new evaluation jobs; content-filter changes; automatic permission approval; deployment/commit/push commands; red-team inputs on an open public screen. Voice, phone, model failover, multi-agent teams and model catalogs are cut from these ten minutes.</p>
+</section>
+
+<section id="sources" class="prep">
+  <h2>09 / Evidence and revision notes</h2>
+  <p><strong>Current delivery source:</strong> <a href="../../specs/024-room-surge/run-of-show.md">Room Surge run-of-show</a> and <a href="../../specs/024-room-surge/quickstart.md">verification quickstart</a>. Their seven-minute surge story is tightened here to 3½ minutes so Foundry and Copilot each get a visible proof point. This does not change application behavior or the live-readiness gates.</p>
+  <p><strong>Implementation:</strong> <a href="../../frontend/src/allclear/surge/SurgeBoard.tsx">board and controls</a>, <a href="../../frontend/src/allclear/surge/SurgeReport.tsx">mobile form</a>, <a href="../../frontend/src/allclear/surge/cards.ts">implemented cards</a>, <a href="../../backend/app/services/surge_room.py">room tally semantics</a>, <a href="../../backend/app/agents/query_agent.py">QueryAgent</a>, <a href="../../backend/app/agents/router_agent.py">RouterExecutor</a>, <a href="../../.foundry/agent-metadata.yaml">evaluation definitions</a>, <a href="../../frontend/src/allclear/demo.ts">synthetic fixture</a>.</p>
+  <p><strong>Executed verification:</strong> <a href="../../backend/tests/test_surge_api.py">10 surge API tests</a> + <a href="../../backend/tests/test_surge_room.py">8 room tests</a> + <a href="../../backend/tests/test_router_no_llm.py">15 router tests</a> = 33 passing. Current operator access, physical phones, portal clicks, current Foundry scores and Copilot response time are not certified by this sheet.</p>
+  <p><strong>Browser verification:</strong> The hosted cue sheet opened, the hosted mock board loaded CLOSED and empty, the emulated phone loaded the sample, and the hosted fixture reached 1,240 synthetic signals. These were read-only cloud checks with no phone submissions. The local static replay has previously run without a backend; warm it before the event rather than relying solely on venue Wi-Fi.</p>
+  <p><strong>Isolated rehearsal:</strong> The current mock app on loopback accepted the masked operator login, opened the room, processed two emulated-phone sends (first opened, second joined), then closed and reset to zero. The two requests took 70 ms and 90 ms locally; these are not cloud latency measurements. This does not substitute for the private check on the hosted room.</p>
+  <p><strong>Offline fixture warning:</strong> the seeded ClearBoard fixture contains example SLA values (including five-minute SEV1 labels) that differ from the canonical 15-minute SEV1 policy in <a href="../../CONTEXT.md">CONTEXT.md</a>. Do not use the fixture as severity/SLA proof. Point to tests instead. No app changes made in this delivery task.</p>
+  <p><strong>Revision v1.4:</strong> verified hosted paths, explicit private go/no-go, mock-only audience cues, and separate participant handoff. Saved checkboxes and timer are local conveniences, not readiness evidence.</p>
+</section>
+</main>
+<footer><div class="wrap">All Clear · Presenter cue sheet v1.4 · November 18, 2026 · Git Bash commands · ⏱️ Hard stop 10:00</div></footer>
+<p class="wrap status" id="utility-status" role="status" aria-live="polite"></p>
+<script>
+(() => {
+  const status = document.getElementById("utility-status");
+  function report(message) { status.textContent = message; }
+  document.querySelectorAll(".copy").forEach(button => {
+    button.addEventListener("click", async () => {
+      const text = document.getElementById(button.dataset.target).textContent;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const area = document.createElement("textarea");
+          area.value = text;
+          area.setAttribute("aria-label", "Text to copy");
+          document.body.appendChild(area);
+          try {
+            area.select();
+            if (!document.execCommand("copy")) throw new Error("Copy was not permitted.");
+          } finally { area.remove(); }
+        }
+        const label = button.textContent;
+        button.textContent = "Copied";
+        setTimeout(() => { button.textContent = label; }, 1400);
+        report("Copied. Paste into the intended private terminal or Copilot session.");
+      } catch {
+        report("Clipboard unavailable. Select the visible text and copy it manually.");
+      }
+    });
+  });
+  const prefix = "allclear-showcase-20261118-v14:";
+  document.querySelectorAll("input[type=checkbox][data-key]").forEach(box => {
+    try { box.checked = localStorage.getItem(prefix + box.dataset.key) === "1"; }
+    catch { report("Browser storage unavailable. Checkboxes will not persist."); }
+    function paint() { box.closest("li")?.classList.toggle("on", box.checked); }
+    paint();
+    box.addEventListener("change", () => {
+      paint();
+      try { localStorage.setItem(prefix + box.dataset.key, box.checked ? "1" : "0"); }
+      catch { report("Could not save this checkbox. Keep the page open."); }
+    });
+  });
+  let running = false, accrued = 0, started = 0;
+  const toggle = document.getElementById("timer-toggle");
+  function seconds() { return accrued + (running ? (performance.now() - started) / 1000 : 0); }
+  function render() {
+    const elapsed = Math.floor(seconds());
+    document.getElementById("clock").textContent =
+      String(Math.floor(elapsed / 60)).padStart(2, "0") + ":" + String(elapsed % 60).padStart(2, "0");
+    document.getElementById("elapsed").value = Math.min(600, elapsed);
+    if (elapsed >= 600 && running) {
+      accrued = seconds(); running = false; toggle.textContent = "Time — close now";
+      report("Ten minutes reached. Deliver the final line and hand back.");
+    }
+  }
+  toggle.addEventListener("click", () => {
+    if (running) { accrued = seconds(); running = false; toggle.textContent = "Resume"; }
+    else if (accrued < 600) { started = performance.now(); running = true; toggle.textContent = "Pause"; }
+    render();
+  });
+  document.getElementById("timer-reset").addEventListener("click", () => {
+    running = false; accrued = 0; toggle.textContent = "Start 10 min"; render();
+  });
+  setInterval(render, 250);
+  document.getElementById("script-toggle").addEventListener("click", event => {
+    const active = document.body.classList.toggle("script-only");
+    event.currentTarget.setAttribute("aria-pressed", String(active));
+    event.currentTarget.textContent = active ? "Full runbook" : "Script only";
+  });
+  document.getElementById("origin-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const message = document.getElementById("origin-status");
+    try {
+      const value = document.getElementById("origin").value.trim();
+      if (!value)
+        throw new Error("The address is empty. Reload this page to restore the mock audience address.");
+      if (!URL.canParse(value))
+        throw new Error("Enter a complete HTTPS site address, or reload to restore the mock audience address.");
+      const url = new URL(value);
+      const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+      if ((url.protocol !== "https:" && !(local && url.protocol === "http:")) ||
+          url.username || url.password || url.search || url.hash || url.pathname !== "/")
+        throw new Error("Use only an HTTPS origin (or local HTTP), with no path, query, credentials or key.");
+      document.querySelectorAll("[data-path]").forEach(link => {
+        link.href = url.origin + link.dataset.path;
+      });
+      message.textContent = "Links set. This does not verify reachability or authorize opening intake.";
+    } catch (error) {
+      document.querySelectorAll("[data-path]").forEach(link => link.removeAttribute("href"));
+      message.textContent = error instanceof Error ? error.message : "Invalid public origin.";
+    }
+  });
+  document.getElementById("origin-form").requestSubmit();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+.azure/
+site/
+.swa/
+infra/*.json
