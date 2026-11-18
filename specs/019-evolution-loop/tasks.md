@@ -7,6 +7,7 @@ description: "Completed task ledger for All Clear consolidation"
 **Input**: [spec.md](./spec.md), [plan.md](./plan.md), `CONTEXT.md`
 **Status**: Complete on 2026-09-20
 **Tests**: Required for behavioral changes.
+**Last Updated**: 2026-11-17 — Phase 3 participant documentation completed. Backend and frontend verification passed. Mockmode enabled in public docs. Quickstart and bootcamp guides updated.
 
 ## Phase 1: Retire University-Support Runtime
 
@@ -47,6 +48,23 @@ description: "Completed task ledger for All Clear consolidation"
 - [x] T304 Update Spec Kit templates with current authority, escalation, PII,
   mock-mode, and verification expectations.
 - [x] T305 Verify the tracked-content legacy-brand scan returns no matches.
+
+## Phase 5: Participant-Facing Documentation (Nov 17)
+
+- [x] T501 Update README.md with mock-mode quickstart (no Azure credentials, `MOCK_MODE=true`,
+  exact backend/frontend commands, Node 18, Copilot CLI binary, GHE.com sign-in).
+- [x] T502 Update `.specify/memory/constitution.md` to match current code and
+  incident-triage boundaries (no changes needed — already aligned).
+- [x] T503 Update `specs/019-evolution-loop/spec.md` and `plan.md` to reflect
+  verified behavior and test counts (347 backend + 4 frontend, Nov 17).
+- [x] T504 Update `docs/bootcamp/PARTICIPANT_GUIDE.md` with mock-mode setup,
+  Copilot CLI install path, GHE.com sign-in, copy/paste tips, test coverage,
+  96% resilience score clarification, and routing zero-LLM fact.
+- [x] T505 Update `docs/bootcamp/QUICK_REFERENCE.md` to reflect mock-mode
+  commands, Copilot CLI, test counts, Azure optional-stretch guidance, RG naming
+  convention `rg-allclear-pNN`, and East US 2 embeddings Standard.
+- [x] T506 Verify all links in participant docs point to canonical files and
+  no coach-only content is exposed.
 
 ## Final Verification
 

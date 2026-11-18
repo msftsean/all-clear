@@ -22,6 +22,32 @@ This repository is the pro-dev track for developers and architects; business rol
 
 ---
 
+## 🧪 November 18 lab: mock mode, no Azure credentials
+
+The lab uses the enterprise-owned repository and its **main** prebuild (US East,
+one retained version). After the coach approves publication, choose your assigned
+`pNN` branch if created, otherwise `main`, and a 4-core Codespace. Do not create a
+workspace until the payer/capacity is confirmed. Keep forwarded ports private.
+
+```bash
+# Repository root, in the Codespace Bash terminal:
+copilot --version
+bash scripts/codespaces-start.sh
+curl -fsS http://127.0.0.1:8000/api/health
+curl -fsS http://127.0.0.1:5173/api/health
+npm run lab:verify
+```
+
+Both health responses must have `mock_mode=true`. Open the private forwarded
+**5173** URL. Setup installs pinned `@github/copilot@1.0.113`; no Azure sign-in,
+application keys, or `.env` file is needed. The default post-start hook already
+starts the app; the start command above is safe to repeat. Copilot still needs
+the attendee's GitHub entitlement and internet access.
+
+Use the [participant workbook](docs/lab/codespaces-no-azure-plan.md) for all four
+Spec Kit stages, bounded exercises, offline evaluations, and cleanup. The replay
+at `/?demo=loaded` is synthetic, not live inference or a load test.
+
 ## 📖 Overview
 
 All Clear is a MAF-based triage pipeline that turns a flood of inbound **signals** into a small, accurate set of **incidents** so responders work the *event*, not the noise. Each signal flows through one coordinated pipeline that:
@@ -122,6 +148,50 @@ Chat runs through [`FailoverChatClient`](./backend/app/services/azure/failover_c
 ## 🚀 Quickstart
 
 ### 🟡 Mock mode (offline, zero Azure credentials) — start here
+
+**Lab Setup**: The enterprise Codespace ships with the lab prebuilt on `main`. After
+coach approval, open your assigned `pNN` branch (or `main`) and choose a 4-core
+instance. Run the start command below; setup installs Copilot CLI and starts both
+backend and frontend. No `.env`, no Azure credentials needed.
+
+```bash
+# In Codespace Bash
+cd backend && ENVIRONMENT=test MOCK_MODE=true python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+cd ../frontend && npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+```
+
+Health check (both must return `mock_mode=true`):
+```bash
+curl http://127.0.0.1:8000/api/health
+# Frontend: http://127.0.0.1:5173
+```
+
+**Node.js**: devcontainer ships with Node 18. Install Copilot CLI (npm requires Node 22+):
+```bash
+curl -fsSL https://gh.io/copilot-install | bash
+# Binary at: ~/.local/bin/copilot
+copilot login --host established-corp-emu-enterprise.ghe.com  # Choose GHE.com, not default GitHub
+```
+
+**Copilot Setup**:
+- Press `Ctrl+Shift+I` to open Copilot Chat
+- VS Code settings must have `github-enterprise.uri` and `github.copilot.advanced.authProvider=github-enterprise`
+- If browser auth appears: select "Open in VS Code Desktop" (PAT not needed)
+- Share browser clipboard permission; Shift-drag and right-click Copy for long answers
+
+**Test Count**: 347 backend tests + 4 frontend tests (verified Nov 17). The lab runs all backend tests in mock mode.
+
+```bash
+cd backend && PYTHONPATH=. python -m pytest tests/test_schemas.py tests/test_voice/test_safety_net.py tests/test_voice/test_endpoints.py -q
+```
+
+**96% Score Is Surge Resilience** (not accuracy). It measures how many signals collapse into incidents without crashing the dedup or routing. Routing makes zero LLM calls by design.
+
+**Voice** (optional): Browser WebRTC → Azure OpenAI Realtime → 3-agent pipeline. Health check: `GET /api/realtime/health`.
+
+**Phone** (optional stretch, instructor-led): Requires purchased ACS number; never reuse another team's. Phone intake → ACS → Event Grid → WebSocket bridge → Realtime → triage pipeline → audio response.
+
+**UI State**: The ClearBoard shows `MODEL: MOCK-CLASSIFIER` in mock mode. Reload the page if it doesn't update.
 
 The **entire** pipeline runs offline against mock twins of every Azure service. Every live service has a mock twin and they stay in lockstep.
 

@@ -15,16 +15,89 @@ You will build **All Clear**, an incident-triage system that turns noisy inbound
 
 ## Prerequisites Checklist
 
-Before starting Lab 00, verify you have:
+The lab runs entirely in mock mode without Azure credentials. Before starting Lab 00, verify:
 
 - [ ] **Python 3.11+** - `python --version`
-- [ ] **Node.js 18+** - `node --version`
+- [ ] **Node.js 18** (shipped in devcontainer) - `node --version`
 - [ ] **VS Code** with GitHub Copilot extension installed
-- [ ] **Azure CLI** - `az --version`
-- [ ] **Docker Desktop** optional; only needed for local compose exercises, not `azd up`
 - [ ] **Git** - `git --version`
-- [ ] **Azure subscription** with access credentials (provided by instructor)
-- Microphone (for optional voice exercises in Lab 05)
+- [ ] **GitHub Enterprise access** to `established-corp-emu-enterprise.ghe.com` (for Copilot CLI sign-in)
+- [ ] **Microphone** (optional for voice exercises in Lab 05)
+
+**No Azure subscription needed.** The entire pipeline runs in mock mode with `MOCK_MODE=true`. All tests pass locally.
+
+---
+
+## Mock Mode Setup (No Azure Credentials Required)
+
+All labs run in **mock mode**, which means the entire pipeline operates offline without Azure services, keys, or subscriptions.
+
+### Environment
+
+```bash
+# Backend (Python)
+cd backend && ENVIRONMENT=test MOCK_MODE=true python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Frontend (TypeScript/React)
+cd frontend && npm run dev -- --host 127.0.0.1 --port 5173 --strictPort
+```
+
+Health check (both must return `mock_mode=true`):
+```bash
+curl http://127.0.0.1:8000/api/health
+# Frontend opens at http://127.0.0.1:5173
+```
+
+The ClearBoard UI displays `MODEL: MOCK-CLASSIFIER` in the top-right model badge.
+
+### Copilot CLI Setup (GitHub Enterprise)
+
+The devcontainer ships with Node 18. GitHub Copilot CLI requires Node 22+ via npm, so we install the standalone binary:
+
+```bash
+curl -fsSL https://gh.io/copilot-install | bash
+# Binary location: ~/.local/bin/copilot
+# (npm requires Node 22+, so binary avoids version conflict)
+
+# Sign in with GHE.com (never default GitHub or PAT)
+copilot login --host established-corp-emu-enterprise.ghe.com
+```
+
+**Browser Auth Fallback**: If the browser auth dialog appears, select **"Open in VS Code Desktop"**. Never paste a personal access token (PAT).
+
+### Copilot in VS Code
+
+Ensure your `.vscode/settings.json` presets the GitHub Enterprise URI:
+
+```json
+{
+  "github-enterprise.uri": "established-corp-emu-enterprise.ghe.com",
+  "github.copilot.advanced.authProvider": "github-enterprise"
+}
+```
+
+Then:
+- Press `Ctrl+Shift+I` to open Copilot Chat
+- Press `Ctrl+I` for inline suggestions
+- Use `@workspace` to query your entire repository
+
+### Copy/Paste Tips (Windows/Linux)
+
+For long responses from Copilot or terminal output:
+1. **Shift-drag** to select text in the terminal
+2. **Right-click** and choose **Copy**
+3. Allow browser clipboard permissions when prompted
+4. For very long content, save to a file first: `command > output.txt`
+
+### Test Coverage
+
+The lab includes **347 backend tests** and **4 frontend tests** (verified November 17). Run the focused suite:
+
+```bash
+cd backend && PYTHONPATH=. python -m pytest tests/test_schemas.py tests/test_voice/test_safety_net.py tests/test_voice/test_endpoints.py -q
+```
+
+The **96% score** referenced in evaluations is a **surge-resilience metric** (how many signals collapse into incidents without crashing dedup/routing), not model accuracy. RouterExecutor makes **zero LLM calls by design**.
 
 ---
 
