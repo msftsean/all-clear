@@ -10,8 +10,6 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from app.services.mock.realtime import MockRealtimeService
 
 
@@ -28,7 +26,8 @@ async def test_voice_analyze_routes_through_pipeline() -> None:
     # Incident-domain contract, not the retired ticket/department stub.
     assert payload["intent_category"] == "FIELD_HAZARD"
     assert payload["queue"] == "field-operations"
-    assert payload["severity"] == "SEV2"
+    assert payload["severity"] == "SEV1"
+    assert payload["escalated"] is True
     assert payload["outcome"] == "OPEN_INCIDENT"
     assert payload["incident_id"].startswith("AC-")
     assert "ticket_id" not in payload
@@ -51,7 +50,9 @@ async def test_voice_dedup_attaches_within_session() -> None:
     service = MockRealtimeService()
     text = "downed power line sparking at 5th and Main blocking the sidewalk"
     first = json.loads(
-        (await service.execute_tool("c3", "analyze_and_route_query", {"query": text}, "voice-3")).result
+        (
+            await service.execute_tool("c3", "analyze_and_route_query", {"query": text}, "voice-3")
+        ).result
     )
     second = json.loads(
         (
@@ -62,3 +63,5 @@ async def test_voice_dedup_attaches_within_session() -> None:
     )
     assert first["outcome"] == "OPEN_INCIDENT"
     assert second["outcome"] == "ATTACH_TO_INCIDENT"
+    assert first["severity"] == second["severity"] == "SEV1"
+    assert first["escalated"] is second["escalated"] is True

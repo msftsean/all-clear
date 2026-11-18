@@ -17,7 +17,7 @@ azure-ai-projects==2.2.0        # only if FoundryChatClient path used
 openai==2.41.1
 azure-identity>=1.15.0
 azure-cosmos>=4.5.0
-azure-search-documents>=11.4.0
+azure-search-documents==11.7.0b2
 azure-monitor-opentelemetry>=1.8.0,<2.0.0
 azure-communication-callautomation>=1.4.0
 mcp>=1.0.0
