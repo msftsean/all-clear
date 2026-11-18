@@ -32,6 +32,8 @@
         "ms-playwright.playwright"
       ],
       "settings": {
+        "github-enterprise.uri": "https://established-corp-emu-enterprise.ghe.com",
+        "github.copilot.advanced.authProvider": "github-enterprise",
         "python.defaultInterpreterPath": "/usr/local/bin/python",
         "python.formatting.provider": "none",
         "editor.formatOnSave": true,
