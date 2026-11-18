@@ -82,10 +82,54 @@ pair retains SEV1, escalation, reports and audit records offline. The focused
 router/pipeline suites passed 23 tests after a red reproduction. This fix is
 also covered by the final integrated telemetry/schema/API/pipeline/router/voice
 suite: 92 passed after strengthening the existing sparking-powerline route-test
-expectation to SEV1/15m/escalation. It remains
-**tested locally, not deployed**; the three-attempt cap and live safety failure
-remain. Any future deployment, existing-incident remediation and live
-revalidation require separate authorization and must preserve every report.
+expectation to SEV1/15m/escalation. It was
+**tested locally, not deployed** at the original three-attempt stop.
+At 01:22:30 ET the user authorized six additional attempts (4–9); deploy the
+committed fix backend-only on the same stack and revalidate the unchanged three
+signals. Positively confirmed original synthetic fixtures may be retired to
+resolved with an audit trail, never deleted, rewritten or counter-reset.
+Record recovery revision/timing/results separately; retain original failed
+evidence and keep readiness blocked until all required proof is obtained.
+Backend-only attempt 4 succeeded in 32.6767145 seconds. The unchanged new
+three-signal live run passed all seven verifier checks: AC-0003 opened
+SEV1/15m/escalated and the duplicate attached at magnitude 2; AC-0004 handled
+the explicit human request. Scoped storage readback confirmed preserved
+original fixtures and monotonic counter 4. Authenticated p29 Foundry portal
+rendering remains unverified, independently of functional recovery.
+One separately authorized frontend Send rehearsal then attached to AC-0003 at
+magnitude 3, retaining SEV1/escalation. At that checkpoint, its desktop receipt
+trigger was absent; the same-page 430px View control opened the actual receipt.
+The browser-local attachment count and unconditional Sitrep ready label were not
+authoritative evidence. After capture, audited status-only retirement of the
+two new synthetic fixtures left four preserved/resolved incidents, zero active,
+counter 4 and eight maintenance audit documents. Health passed at the
+01:39:07.947 ET checkpoint; subsequent desktop acceptance used AC-0005/6 below.
+No clean passing participant end-to-end rerun was timed; the 35–45 minute
+estimate is planning, not achieved timing proof.
+The real frontend rehearsal also exposed three directly coupled desktop
+accuracy defects: receipt access, attached aggregate zero despite attachment,
+and Sitrep ready despite null action sitrep. Parent authorized minimal local
+correction, focused tests/build and committed-source frontend-only deployment
+by Kitty after explicit approval. Backend and preserved fixture queue had to stay
+unchanged; no preemptive deployment was authorized.
+Five frontend files were committed as
+`b26e397500bc00f465a025363d17c548801a93cb`, with six focused tests, build and
+targeted zero-warning ESLint passing. Actual attached outcomes/reset handling,
+optional compatibility fields and null-sitrep copy correct the live rendering
+without backend/API/dependency changes. Kitty was explicitly authorized attempt 5,
+frontend-only, after preflight. Attempt 5 passed in 42.5539561 seconds;
+serving-container/public/local asset hashes match. Actual desktop acceptance
+passed all three original inputs through real Send controls at 1440px:
+AC-0005 opened SEV1/escalated, AC-0006 handled the human request and the duplicate
+attached to AC-0005 at magnitude 2. Desktop receipts, attached counter 1 and
+null-sitrep/no-approval-gate rendering passed without mocks/retries/resize.
+After frozen capture, the authorized AC-0005/6 status-only CAS retirement passed,
+preserving all other fields, older documents/ETags and full counter document.
+Final six resolved/zero active/counter6/audit12 and health/frontend HTTP 200 were
+verified at 01:51:15.229 ET. Next audience IDs are expected AC-0007/8 without
+reset, not yet submitted. Final desktop calls also have fresh real-model/
+embedding HTTP correlation proof. Ten total signal POSTs, five of nine
+deployment attempts used; apps remain running for 9:00 AM.
 
 ## Verification Matrix
 

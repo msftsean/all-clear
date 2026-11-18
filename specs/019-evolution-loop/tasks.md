@@ -63,19 +63,53 @@ description: "Completed task ledger for All Clear consolidation"
   keeping credentials out of outputs and local telemetry storage.
 - [x] T503 Verify Bicep preview, telemetry tests, existing safety/pipeline
   regressions, and frontend production build.
-- [ ] T504 Deploy one p29 stack (maximum three attempts), prove the requested
-  live signals and model/telemetry behavior, and commit the timed morning report.
+- [ ] T504 Deploy one p29 stack (original three attempts; six more explicitly
+  authorized at 01:22:30 ET, maximum nine total), prove the requested
+  live signals, model/telemetry behavior and authenticated p29 Foundry portal
+  rendering, and commit the timed morning report. Functional recovery passed;
+  authenticated portal rendering is still unverified, and a clean passing
+  participant end-to-end timing has not been measured under the one-stack rule.
 - [x] T505 Reproduce the live downed/sparking FIELD_HAZARD safety failure and
   add bounded deterministic `sparking`/`electrical arcing` matching, ordinary
   field-hazard negatives, and duplicate/report/audit regressions. Focused
   router/pipeline suites: 23 passed; strengthen the directly coupled API route
   expectation and pass the combined 92-test regression suite.
-  **Tested locally, not deployed**.
-- [ ] T506 Obtain separate authorization before future deployment or live
-  revalidation of the local safety fix; account for existing unsafe incident
-  state without deleting reports. Current attempt/write budgets remain closed,
-  live safety acceptance failed, and authenticated Foundry portal rendering
-  remains unverified.
+  **Tested locally, not deployed at the original 00:20 stop**; recovery
+  deployment/acceptance is tracked separately in T506.
+- [x] T506 Use the 01:22:30 ET recovery authorization for backend-only
+  deployment of the safety fix and new three-signal acceptance; retire only
+  confirmed original synthetic fixtures to resolved with an audit trail.
+  Preserve every report, original severity/embeddings and monotonic IDs.
+  Record new revision and measured recovery timing without obscuring original
+  safety failure. Attempt 4 passed in 32.6767145s; all seven new live-verifier
+  checks and scoped old/new fixture readback passed. Authenticated Foundry portal
+  rendering remains a separate incomplete gate under T504.
+- [x] T507 After the single authorized frontend Send rehearsal, conditionally
+  retire only confirmed synthetic AC-0003/AC-0004 to resolved with durable audit.
+  Verify all four fixtures preserved/resolved, zero active incidents, counter 4
+  unchanged and eight maintenance audit documents; leave the live stack running.
+  Final verification/health passed at 01:39:07.947 ET; AC-0003's rehearsal
+  magnitude 3 and two attached reports are preserved, not active. At this
+  checkpoint seven signal POSTs/four deployments had been used; later desktop
+  verification/final lifecycle is recorded in T508/T509.
+- [x] T508 Correct the three desktop live-result accuracy defects with focused
+  tests/build: actual receipt access, attached-report total and no false
+  sitrep-ready claim for null action sitrep. Deploy only the validated committed
+  frontend after explicit approval, preserving backend, clean queue and history.
+  Five files committed as `b26e397500bc00f465a025363d17c548801a93cb`;
+  six tests/build/targeted zero-warning ESLint pass. Attempt 5 frontend-only
+  deployment passed in 42.5539561s with matching serving/public/local asset
+  hashes; actual three-send desktop acceptance passed receipt/counter/null-sitrep
+  checks. Its separately authorized final lifecycle is tracked in T509.
+- [x] T509 After the corrected frontend is explicitly Ready, capture the
+  separately authorized three real desktop Sends with unchanged original inputs,
+  accurate receipt/attachment/sitrep rendering and no retries/mocked state.
+  Then conditionally retire only the confirmed new synthetic fixtures and verify
+  preserved records, zero active incidents and updated counter/audit totals.
+  Real desktop receipts/count1/null-sitrep copy and fresh model/embedding spans
+  passed. Final six resolved/zero active/counter6/audit12 and health/frontend HTTP
+  200 verified 01:51:15.229 ET; 10 signal POSTs/five of nine deployments used.
+  Next audience AC-0007/8 expected, not executed; backend/infra unchanged.
 
 ## Post-Consolidation Privacy Hardening (2026-11-12)
 

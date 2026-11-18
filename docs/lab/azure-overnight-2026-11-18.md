@@ -3,572 +3,558 @@ AZURE DEMO NOT READY
 Live URLs:
 - Frontend: https://allclear-q2lt63vq6i5f4-frontend.happysmoke-f829312c.eastus2.azurecontainerapps.io
 - Backend health: https://allclear-q2lt63vq6i5f4-backend.happysmoke-f829312c.eastus2.azurecontainerapps.io/api/health
-- Foundry: https://ai.azure.com/?cid=learnDocs → **New Foundry off → Keep building with Foundry → View all resources → `allclear-q2lt63vq6i5f4-openai` → Shared resources → Deployments** (official navigation verified; p29 signed-in rendering **unverified**).
+- Foundry: https://ai.azure.com/?cid=learnDocs → **New Foundry off → Keep building with Foundry → View all resources → `allclear-q2lt63vq6i5f4-openai` → Shared resources → Deployments**. Navigation documented; authenticated p29 rendering **unverified**.
 
-| check | result | time | note |
+| check | result | time (ET) | note |
 |---|---|---|---|
-| Identity | PASS | 2026-11-17 23:36 ET | `azuredays-arl26-allclear-p29@establishedcorp.com`; subscription `0e1d648b-17c8-4724-9405-8e84b4c565c4` (Microsoft Azure Sponsorship). |
-| Existing RG | PASS | 23:36 ET | `rg-allclear-p29`, eastus2, Succeeded; initially empty. |
-| Azure CLI / azd / Docker | PASS | 23:36 ET | 2.93.0 / 1.37.3 / Docker server 29.9.3. Local builds available. |
-| azd identity | PASS | 23:37 ET | Login status confirms p29. No login or account switch performed. |
-| Roles | PASS | 23:37 ET | Direct Owner on own RG; inherited group access detailed below. |
-| Model quota | UNVERIFIED | 23:37 ET | `az cognitiveservices usage list -l eastus2` returned `[]`, including an unfiltered query. Do not interpret as zero usage or available quota. |
-| Deployment attempt 1 | CLI FAILED; ARM later SUCCEEDED | 23:47:40-00:06:26 ET observed | azd exited 1 after **87.6847s**: `npm error Exit handler never called!`. ARM duration **PT17M50.9427648S**, state Succeeded, error null. Success was observed approximately 18m46s after the initial CLI start; do not confuse polling/wall time with ARM duration. |
-| Deployment attempt 2 | FAILED before cloud writes | 00:06:59.560-00:07:01.506 ET | **1.9457583s**, exit 1. azd 1.37.3 rejected a map for `docker.buildArgs`; subsequently corrected to list schema. Counted against the cap despite no cloud writes. Attempt 3 later succeeded; all attempts are now consumed. |
-| Local azd packaging validation | PASS (cache-warm) | 00:07:26.979-00:07:34.902 ET | Both service images packaged in **7.923088s** after correcting `buildArgs` to a list. No provision/deploy writes; not another deployment attempt or cold-build timing. |
-| Deployment attempt 3 | PASS; FINAL | 00:07:57.842-00:09:10.791 ET | Exit 0; **72.9490883s**. azd reports provisioning 4s and deploying 1m2s on the same guarded stack. All three attempts consumed; no more deployment attempts. |
-| Knowledge seeding | PASS | 00:09:39.292-00:09:50.660 ET | **11.375s**, exit 0; **4/4** canonical All Clear documents upserted into `knowledge-base` using `text-embedding-3-small`. Keys stayed in Python/child-process memory; no seeder source edits. |
-| Model deployments | PASS (ARM metadata) | 00:02 ET | Beast confirmed `gpt-5.1` version `2025-11-13`, GlobalStandard capacity 150 and `text-embedding-3-small` version `1`, Standard capacity 50 are Succeeded. Actual invocation was independently proven later (below); portal rendering remains unverified. |
-| Application Insights resource | PASS (ARM metadata) | 00:02 ET | `allclear-q2lt63vq6i5f4-insights` Succeeded; application ID `b5d62388-cc87-44c7-96d0-6abfdfa055e8`. Trace ingestion was independently proven later (below); this row records resource metadata only. |
-| Acceptance verifier regression | PASS | 00:07 ET; hardened after live result | Six focused tests passed, including transport/field-redaction and rejection of the observed SEV2/non-escalated result; Ruff passed. Tests are offline. Live acceptance later used exactly three POSTs (below). |
-| Backend pytest against live config | SKIPPED (unsupported) | 00:03 ET | `backend/tests/conftest.py` explicitly sets `ENVIRONMENT=test` and `MOCK_MODE=true`; existing pytest is not a live-service runner. Use the explicit live acceptance helper instead. |
-| Local image recovery | PASS; not deployment attempts | Before midnight | Frontend Docker build approximately 38 seconds (npm ci 26 seconds) with Microsoft npm proxy. Backend Linux image approximately four minutes; `pip check` and Azure Monitor import passed in the image. |
-| Frontend browser / proxy | PASS | 00:09:26-36 ET | Isolated Chromium root HTTP 200 in 4435.6ms; title All Clear; visible live and GPT-5.1 PRIMARY badges; Trust opens. Zero JS/console/HTTP errors, zero writes. Backend preflight `mock_mode=false`, `storage_mode=cosmos`. Badges/health are not served-model proof. |
-| Audit route | PASS (simulation labeled) | 00:09:26-36 ET | HTTP 200 in 930.7ms; explicitly displays `LOCAL SIMULATION · NO AZURE CREDENTIALS`. Do not present this audit as a live Azure model/evaluation run. |
-| Signal 1: downed/sparking power line | **FAIL — SAFETY BLOCKER** | 00:10:09 ET; 4373.1ms client | `FIELD_HAZARD` → `OPEN_INCIDENT`, `AC-0001`, `field-operations`, **SEV2 / 60m / escalate=false**. Required **SEV1 / 15m / escalation** did not occur. Classifier emitted `downed`, `sparking` but no escalation; routing did not recognize those as life-safety indicators. |
-| Signal 2: water bill / call me | PASS | 00:10:13 ET; 2231.6ms client | `HUMAN_REQUEST` → `OPEN_INCIDENT`, `AC-0002`, `escalations`, **SEV3 / 240m / escalated=true**, reason `user_requested_human`. |
-| Signal 3: exact duplicate power line | PASS dedup; safety still FAIL | 00:10:15 ET; 1942.8ms client | `ATTACH_TO_INCIDENT` → same `AC-0001`, magnitude **2**, cosine **1.0**. Preserves inherited **SEV2 / 60m / escalate=false**, so dedup works but does not cure unsafe triage. |
-| Application write budget | CLOSED | 00:10:17.957 ET | Exactly three acceptance POSTs, all HTTP 200; no retries. Returned results preserve three signals/two incidents, not independent durable-storage proof. No more overnight submissions. |
-| Real model / embedding invocation | PASS (dependency telemetry) | 00:10:14 ET request; queried afterward | Successful `chat gpt-5.1` dependency correlated with own OpenAI `POST /openai/v1/responses`, HTTP 200, 1527ms. `text-embedding-3-small` requests also HTTP 200. This is served-request evidence beyond health configuration. |
-| Application Insights traces | PASS | After 00:10 ET ingestion | Initial query: 3 traces/24 dependencies; independent later query: **4 traces**, **2** successful `chat gpt-5.1` spans and **3** successful `embeddings text-embedding-3-small` spans, correlated with own OpenAI HTTP requests; own Search and Cosmos operations succeeded. Startup-message-specific query remains 0; do not claim that trace. No request bodies/secrets selected. |
-| Foundry p29 portal rendering | UNVERIFIED | Final | ARM model visibility and official classic navigation proven; no authenticated p29 portal rendering was available. Public HTML shell is not proof of selected resource/deployment rows. |
-| Electrical-hazard regression fix | **TESTED LOCALLY, NOT DEPLOYED** | 00:16 ET | Deterministic indicator terms add `sparking` and `electrical arcing`. Focused routing/pipeline tests **23 passed in 2.40s**. Does not alter deployed revision, existing unsafe `AC-0001`, safety failure or NOT READY verdict. |
-| Integrated local regression | PASS — **NOT DEPLOYED** | 00:20 ET | Final combined run: **92 passed in 11.79s**, three dependency warnings. The earlier **91 passed / 1 failed in 13.21s** exposed a stale sparking-powerline route-test expectation, now strengthened to SEV1/15m/escalation. No live evidence or deployment changed. |
-| Bicep build / own-RG preview | PASS | Before attempt 1 | RG-scope preview: **12 displayed resource rows (including two model deployments); database/secret children not individually displayed**. No role assignments, RG creation, subscription deployments, phone or realtime. Preview took 42 seconds. Five existing nullable-resource Bicep warnings. |
-| Focused backend tests | PASS | Before attempt 1 | 85 passed in 7.23 seconds: telemetry opt-in, schemas, API, pipeline, zero-LLM routing, voice safety and endpoints. These are mock/unit regressions, not live proof. |
-| Frontend build | PASS | Before attempt 1 | TypeScript + Vite; build 7.01 seconds. Existing Browserslist/CSS warnings. |
-| Changed Python lint | PARTIAL | Before attempt 1 | New telemetry tests pass Ruff. `main.py` has five pre-existing lint findings (UP035, W293, three E501); no unrelated formatting changes made. |
+| Current functional status | **LIVE API/SAFETY/DESKTOP ALL PASS**; full request qualified | Final health **01:51:15.229** | **5/9 deployments, 10 authorized signal POSTs; apps running**. Corrected desktop and preserved/clean audience queue pass. Authenticated portal rendering and a measured clean passing participant run remain unproven. |
+| Identity / scope | PASS | Initially 23:36; reconfirmed 01:23 | p29; subscription `0e1d648b-17c8-4724-9405-8e84b4c565c4`; only existing `rg-allclear-p29`. No account switch, login, role/policy/provider/app-registration writes. |
+| Attempt 1 | CLI FAIL; ARM PASS | 23:47:40.545 start | CLI failed in **87.6847s**, `npm error Exit handler never called!`; ARM continued, actual duration **PT17M50.9427648S**, error null. Observed successful at 00:06:26. |
+| Attempt 2 | FAIL before cloud writes | 00:06:59.560–00:07:01.506 | **1.9457583s**; `azure.yaml line 27: cannot unmarshal !!map into []osutil.ExpandableString`. Counted against cap; corrected map to supported list. |
+| Attempt 3 | PASS, original stack | 00:07:57.842–00:09:10.791 | **72.9490883s**, cache-warm. Same resources; azd reported provisioning 4s/deploying 1m2s. |
+| Attempt 4 | PASS, backend-only | 01:26:33.224–01:27:05.901 | **32.6767145s**, source `207b457`, no infrastructure/model reprovisioning. All seven live-verifier checks subsequently passed; later frontend attempt 5 recorded below. |
+| Attempt 5 | **PASS, frontend-only** | 01:47:11.656–01:47:54.209 | **42.5539561s**, committed source `b26e397`; Ready/Healthy/100% latest traffic. **5/9 consumed, four unused**. Serving/public/local asset hashes match; actual desktop acceptance subsequently passed. |
+| Knowledge seed | PASS | 00:09:39.292–00:09:50.660 | **11.375s**, 4/4 canonical documents in `knowledge-base`, `text-embedding-3-small`; keys only in process memory. |
+| Original acceptance | **Historical safety FAIL**, preserved | 00:10:09–17 | AC-0001 opened **SEV2/60m/not escalated**, not required SEV1; AC-0002 human escalation passed; duplicate attached AC-0001/magnitude2/sim1.0 but retained unsafe severity. Client times 4373.1/2231.6/1942.8ms. Full immutable original results retained. |
+| Safety source correction | DEPLOYED; LIVE PASS | 01:27:05.901 deploy; 01:29:54 acceptance | Narrow deterministic `sparking`/`electrical arcing` terms; **92 offline tests passed in 11.79s**; actual unchanged power-line sample now SEV1/escalated. Original AC-0001 severity was not rewritten. |
+| Backend recovery acceptance | **All seven checks PASS** | 01:29:44.664–54.441 | Exact same samples: **OPEN AC-0003 SEV1/15m/escalated**, OPEN AC-0004 human SEV3/240m/escalated, ATTACH AC-0003/magnitude2/sim1.0 retaining SEV1/escalation. Client 4009.4/2711.2/2329.9ms; no changed verifier/input or retry. |
+| Recovery browser / telemetry | **PASS, fresh recovery evidence** | Browser after recovery; dependencies ≥01:29:40 | Root HTTP 200, 1653.1ms; zero errors/writes. **All three** fresh `chat gpt-5.1` spans correlate to own OpenAI HTTP 200s; three embedding spans/four embedding HTTP 200s (extra knowledge lookup), fresh Search/Cosmos success. New-revision window has four traces. No original counts reused. |
+| Real frontend Send rehearsal | **PASS, exactly one extra POST** | 01:36:27.474 | Typed original power line → actual **Send** → same-origin frontend `/api/signals` → live nginx/backend HTTP 200; **2528.0ms** client/2096ms processing. **ATTACH AC-0003, magnitude3, SEV1/15m/escalated, sim1.0**. Desktop displays SEV1/escalated. **Seven total authorized signal POSTs**, no retries; R2 magnitude2 snapshot unchanged. |
+| Frontend accuracy recovery iteration | **LOCAL + DEPLOYED + LIVE PASS** | 01:45 validation; 01:49 proof | Five files, six tests/build/zero-warning ESLint pass. Matching live bundle; actual desktop receipt, attachment counter and null-sitrep copy all passed. |
+| Corrected desktop signal 1 | **PASS**, real Send | 01:49:30.958 | Original FIELD_HAZARD → **OPEN AC-0005, SEV1/15m/escalated**; 3038.5ms client/2750ms processing. Actual desktop receipt opens; nonnull sitrep ready, approval gate present but not approved. |
+| Corrected desktop signal 2 | **PASS**, real Send | 01:49:35.531 | HUMAN_REQUEST → **OPEN AC-0006, SEV3/240m/escalated**, `user_requested_human`; 2482.1ms client/2215ms processing. Desktop receipt/non-null sitrep/approval gate correct; no approval clicked. |
+| Corrected desktop signal 3 | **PASS**, real Send | 01:49:38.962 | **ATTACH AC-0005, magnitude2, sim1.0, SEV1/escalated**; 2258.3ms client/2082ms processing. Desktop receipt works at 1440px, **3 signals → 2 incidents, attached counter 1**; **No sitrep returned**, null sitrep, no approval gate. |
+| Corrected desktop capture | **ALL PASS** | 01:49:24.570–01:49:42.213 | Three same-origin real POSTs/HTTP 200, no API/state injection/retries/viewport resize/errors. All board/receipt screenshots visually inspected. Lifetime **10 POSTs**, no further signals planned. |
+| Final audience queue / health | **PASS, observed** | Retirement 01:51:04.102–07.892; health **01:51:15.229** | **Six resolved / 0 active / counter6 / audit12**, backend healthy/live/Cosmos/GPT-5.1/no failover, frontend HTTP 200. Only AC-0005/6 status changed; all other fields and old AC-0001–4 full documents/ETags preserved. Next expected audience IDs **AC-0007/8**; not yet submitted. |
+| Current desktop model proof | **PASS, actual real traffic** | 01:49:32–41 | All **three** `chat gpt-5.1` spans correlate by operation ID with own OpenAI HTTP 200; three embedding spans/three own deployment HTTP 200s. Not receipt-label or health-only proof. |
+| Source / active revisions | **PASS, serving content verified** | Backend hash proof 01:36; frontend 01:49 | Backend router live SHA-256 matches committed/local source; frontend live-container/public/local bundle hashes match. Both Ready/Healthy/100% latest traffic. Same 11 resources/models/roles; **5/9 deployments**. |
+| Models / p29 ARM permission | PASS, not rendered portal proof | 01:26:07 recheck | Own OpenAI account Succeeded/eastus2; `gpt-5.1` v2025-11-13 GlobalStandard150; `text-embedding-3-small` v1 **Standard50**. Direct guarded ARM account/deployments GETs succeed. |
+| Authenticated Foundry portal | **UNVERIFIED** | 01:26–27 bounded browser | Public deployments shell HTTP 200 attempted an Entra auth redirect; guard blocked auth before request. No authorized signed-in browser connection found. No login/token/profile access. ARM reads do not prove rendered p29 model rows. |
+| Local preparation / regression | PASS with existing warnings | Before attempt 1; 00:20 rerun | Preview 42s, 12 displayed rows including two model deployments (database/secret children not individually displayed); no new roles. Initial 85 tests/7.23s; frontend build/7.01s. Final **92 tests/11.79s**, six verifier tests. Existing Bicep/CSS/dependency/lint warnings remain. |
+| Backend pytest against live config | SKIPPED, unsupported | Verified source | `backend/tests/conftest.py` forces `ENVIRONMENT=test`, `MOCK_MODE=true`; dedicated live verifier used instead. |
+| Clean passing participant end-to-end timing | **NOT MEASURED** | One-stack constraint | Cold stages and later successful recovery were observed separately, not a clean-from-empty successful rerun. **35–45 minutes is a planning estimate**, not measured proof. |
 
-Total deploy time / participant estimate: **deployment succeeded; no passing
-participant run achieved**.
-Attempt 1 consumed **87.6847 seconds** before the package failure. Its ARM
-provisioning took **17m50.9427648s** and was observed Succeeded at **00:06:26 ET**,
-approximately **18m46s** after the initial CLI start. Attempt 2 took **1.9457583s**
-and failed azd configuration parsing before cloud writes. A local cache-warm
-`azd package --all` then passed in **7.923088s**. Attempt 3 succeeded in
-**72.9490883s** at **00:09:10.791 ET**. Initial deployment start to successful
-deployment exit was **21m30.246s**, including the failed CLI commands, ongoing
-ARM provisioning, investigation and warm-image recovery. Seeding added
-**11.375s**; seed-ready was **22m10.115s** after initial deployment start,
-including the gap before seeding. Three-signal acceptance finished at
-**00:10:17.957 ET**: **22m37.413s** from initial deployment start, but the
-**SEV1/escalation gate failed**, so no successful usable-demo duration or proven
-participant-completion estimate exists. Reserve at least the observed
-approximately 23-minute technical path plus prerequisites, troubleshooting and
-portal work; this is a planning floor, **not an achieved successful recipe**.
-Including the first recorded preflight at 23:36 ET, this overnight effort took
-approximately **34 minutes to the failed acceptance result**. A clean participant
-run has not been timed or proven; do not advertise the 73-second warm deployment
-as a participant completion estimate.
-No further deployment retry or overnight acceptance POST is permitted.
-Do not quote that cache-warm success as a
-participant's full deployment time. Include prerequisite installation, image
-builds (observed frontend approximately 38 seconds and backend approximately
-four minutes), ARM completion, deployment, knowledge seeding and acceptance in
-the cold-path estimate. No achieved cold-path duration is available yet.
+**Total deploy time / participant estimate.** Initial start → deployed stack:
+**21m30.246s**; → seed-ready: **22m10.115s**; → original failed acceptance:
+**22m37.413s**. Including approximately 23:36 preflight, about **34 minutes**
+elapsed to that failed gate. Backend-only recovery deployment took
+**32.6767145s**, separately from fixture preparation/new acceptance.
+The later frontend-only correction took **42.5539561s**. Both are warm
+same-stack service deployments, not cold participant provisioning.
+Backend recovery start → passing three-signal acceptance end
+(01:29:54.440876 ET) was **3m21.216s**, including controlled fixture preparation;
+acceptance itself was **9.776848s**. These are warm same-stack recovery timings,
+not clean participant provisioning.
+The 00:10–01:22 authorization wait is **not deployment time**.
+No successful clean-from-empty participant run has been timed: creating a
+second stack merely to measure it would violate the one-stack rule.
+For planning, reserve **35–45 minutes after tools/login/quota are ready**,
+based on the observed approximately 22-minute infrastructure/build path plus
+preview, seed, acceptance and portal/network contingency; this is a conservative
+estimate, **not an achieved completion guarantee**. Excludes tool installation,
+login renewal, capacity waits, unavailable package feeds and unverified portal
+access. Never advertise warm backend-only seconds as full participant timing.
 
-## Changes and merge disposition
+**Status:** 🟩 live API · 🟩 desktop · 🟩 real models/traces · 🟨 portal · 🟨 clean-run timing
 
-Revision: overnight working record, branch `azure/overnight-2026-11-18`; base `8ae9276`.
-Existing unrelated Squad and lab/showcase changes are excluded from this task's commits.
+**Report revision:** `2026-11-18-r2` · runtime source `b26e397` · latest health 01:51:15 ET.
 
-| Task-owned file | Why changed | Merge after the event |
+## Changes and safe merge after the event
+
+Branch `azure/overnight-2026-11-18`; recovery began at `207b457`, current runtime
+source `b26e397` (backend unchanged from `207b457`); main untouched.
+The complete original report and D01–D39 ledger are retained in that commit.
+Stage only task-owned files; existing dirty `.squad` work, other azd environments
+and the other two lab reports are unrelated.
+
+**Inventory scope:** task-owned changes from baseline `8ae9276`
+(`207b457`, `b26e397`, final docs), **not the whole branch diff against main**.
+Remote `origin/main` `16caa52` differs from local main `091953`; before our task
+commits, GitHub comparison already showed baseline diverged **31 ahead/3 behind**.
+Those pre-existing commits were already server-visible, not newly authored or
+reviewed here. After the event, review/cherry-pick the task-owned commits and
+revalidate the target; **do not wholesale merge/rebase this diverged branch**.
+No main writes or fetch-merges occurred.
+
+**Participant delivery planned, not yet verified published:** after the final
+documentation commit, the coordinator intends a normal non-force push of only
+this branch to existing `msftsean/all-clear`. No PR/merge/main push or main merge
+into the tested branch. Coordinator reviewed the exact origin, already-published
+base and workflows: Azure SWA push deployments filter main only; this branch's
+push CI uses mock mode/no Azure deployment credentials. The checkout recipe
+below requires confirmed branch publication; do not claim that push has happened
+until the coordinator verifies the remote ref.
+**Normal non-force push occurs after the report commit; main is not pushed.**
+
+| Files | Why | Merge disposition |
 |---|---|---|
-| `infra/main.bicep` | Explicit resource-group scope; optional role assignments and OpenAI key authentication; workspace-based Application Insights and Container Apps secret wiring. | Review, then merge: defaults retain managed identity and role creation; this lab explicitly disables new roles. Key-auth opt-in is a constrained lab exception, not the production recommendation. |
-| `infra/main.parameters.json` | Wire opt-in settings through azd, preserving `createRoleAssignments=true` and `openAiKeyAuth=false`. | Safe with the Bicep changes; never copy p29 environment overrides into default production settings. |
-| `backend/app/main.py` | Opt-in Azure Monitor initialization before app construction; no local offline telemetry buffer; non-PII live/model startup trace. | Merge with dependency and tests after telemetry/privacy review. No classification/routing authority changes. |
-| `backend/requirements.txt` | Add the Azure Monitor OpenTelemetry distribution. | Merge with tested lock. |
-| `backend/requirements-lock.txt` | Reproducible Linux dependency resolution after local wheel-metadata TLS failure. | **Review portability first**: the Microsoft proxy index may not be reachable outside this environment; validate from a participant network before general adoption. |
-| `backend/tests/test_telemetry.py` | Verify telemetry opt-in/out behavior without live service calls. | Safe with startup change; focused regressions passed. |
-| `backend/app/agents/router_agent.py` | Local-only one-line life-safety term addition for `sparking` and explicit `electrical arcing`, addressing observed FIELD_HAZARD under-triage. | Bounded source merge candidate after integrated tests; **NOT DEPLOYED**. No generic `downed` trigger/category-wide elevation, LLM or raw-text classification, PII/audit/dedup changes. |
-| `backend/tests/test_router_no_llm.py`; `backend/tests/test_pipeline_e2e.py`; `backend/tests/test_routes.py` | Reproduce exact typed live failure; cover case-insensitive electrical indicators, ordinary downed-tree non-escalation and preserved SEV1 duplicate/report/audit behavior. Strengthen pipeline and route sparking-line expectations to SEV1/15m/escalation rather than weaken them. | Safe with the local router fix. Red first: 4 failed/3 passed/16 deselected in 2.96s; focused suites: **23 passed in 2.40s**; final integrated telemetry/schema/API/pipeline/router/voice suites: **92 passed in 11.79s**. Existing lint findings remain; zero new diagnostics in Forge's original three-file comparison. These are offline tests, not live remediation. |
-| `scripts/verify_live_demo.py`; `scripts/test_verify_live_demo.py` | Guarded, no-retry live acceptance helper; three signal writes require explicit opt-in. | Review as operational tooling; do not make test runs contact Azure or submit extra signals by default. |
-| `frontend/Dockerfile` | Parameterize npm registry; keep public npm as fallback; omit audit/fund chatter during image install. | Safe after validating normal public-registry builds still work. |
-| `azure.yaml` | Pass the optional npm registry build argument to the local frontend image build using azd's required list schema. | Safe with Dockerfile after parse/deploy validation; do not make a Microsoft-only feed an unconditional public prerequisite. |
-| `specs/019-evolution-loop/{spec,plan,tasks}.md` | Record restricted deployment, safety defaults and measured verification; keep entries under appropriate headings. | Safe documentation update; leave live acceptance incomplete until evidence exists. |
-| This report | Participant recipe, timings, evidence limits, access source, demo and deferred teardown. | Merge as dated operational evidence, not a timeless production-readiness guarantee. |
+| `infra/main.bicep`; `infra/main.parameters.json` | Explicit existing-RG scope, configurable role creation/key auth, workspace-based Insights and Azure-resident runtime secrets. | Review then merge together. Defaults retain managed identity/role creation; p29 alone opts into no-role/key-auth lab mode. Not a production key-auth recommendation. |
+| `backend/app/main.py`; `backend/requirements.txt`; `backend/requirements-lock.txt`; `backend/tests/test_telemetry.py` | Opt-in Azure Monitor before app construction; no offline local telemetry buffer; guarded non-PII traces/tests. | Merge after privacy/dependency review. **Validate proxy-index portability**: this environment needed the Microsoft PyPI mirror after TLS metadata failure. |
+| `frontend/Dockerfile`; `azure.yaml` | Optional npm registry build arg, public npm fallback, local builds; azd `buildArgs` list schema. | Safe after ordinary public-registry validation. Do not make the Microsoft feed an unconditional public prerequisite. |
+| `frontend/src/allclear/{BriefingRoom.tsx,BriefingRoom.test.tsx,Canvas.tsx,Canvas.test.tsx,types.ts}` | Desktop real IncidentCard/receipt access; actual ATTACH counter with both resets; optional `attached_signals`/`sitrep_available` preserve demo/API compatibility and honest null-sitrep labeling. | Commit `b26e397500bc00f465a025363d17c548801a93cb`: red reproduction then **6 tests PASS**, build PASS, five-file ESLint zero warnings. No backend/infra/API/dependency changes or redesign. Matching deployed asset hashes and actual three-send desktop acceptance PASS. |
+| `backend/app/agents/router_agent.py` | One-line deterministic life-safety term addition for `sparking` and explicit `electrical arcing`. | Bounded tested fix. No generic `downed` trigger, category-wide elevation, LLM/raw-text classification or PII/audit/dedup change. Recovery deployment status must follow live evidence. |
+| `backend/tests/test_router_no_llm.py`; `backend/tests/test_pipeline_e2e.py`; `backend/tests/test_routes.py` | Exact typed failure, case-insensitive terms, ordinary-field-hazard negatives, preserved duplicate/report/audit behavior; strengthened stale sparking-line assertions. | Safe with fix. Red reproduction 4 failed/3 passed; focused 23 passed; integrated 92 passed. No lowered acceptance threshold. |
+| `scripts/verify_live_demo.py`; `scripts/test_verify_live_demo.py` | Explicit-opt-in, exactly-three, no-retry live acceptance; rejects observed unsafe result. | Review as operational tooling. Offline tests must never contact Azure or submit live signals. |
+| `specs/019-evolution-loop/{spec,plan,tasks}.md`; this report | Current requirements, recovery authorization, evidence, recipe and cleanup. | Safe dated evidence; do not describe unresolved gates as complete. |
 
-No main checkout, push or branch switch is needed during this run. The coordinator
-alone may commit task-owned paths on `azure/overnight-2026-11-18`; review that diff
-after the event before merging. Existing dirty `.squad` files, the other two lab
-reports and other azd environments are unrelated and must not be staged.
+Original pre-fix image identities/digests are preserved in report commit `207b457`.
+**Current recovery backend:** revision
+`allclear-q2lt63vq6i5f4-backend--azd-1794983208`,
+image `allclearq2lt63vq6i5f4acr.azurecr.io/all-clear/backend-p29-demo:azd-deploy-1794983198`,
+digest `sha256:17ec76da9a6e4d053e77aa3b7242876d6abbff46803d5896be1f81024d13d79a`.
+Ready/healthy at 01:29:05 ET, live/Cosmos/GPT-5.1/no failover; unchanged by
+the frontend-only correction.
+Minimum replicas backend 1/frontend 1; backend max 1; no teardown scheduled.
+Packaging/deployment used clean committed backend
+`207b45700e0cbbebe5b23fded728dff47d0998e8`, no untracked backend files;
+committed/working router git blob both
+`d941609e882e36bbed4a751477287018b4f286a0`. ARM confirms this latest Ready
+revision is active and receives 100% ingress traffic. This is source/build/
+revision attestation. Subsequently a parent-authorized narrow read-only exec
+on that exact serving revision ran only
+`sha256sum /app/app/agents/router_agent.py`; live and local file SHA-256 both:
+**`b3dfc6338c01b09f73b970e45ec3e0e18a6dfa98a1107a10dde0b3f17b8dc8c7`**.
+This **does verify serving router content**, superseding the earlier absence of
+an in-container measurement. No content/environment/secret dump or app mutation.
 
-**Authentication limitation:** this is a bounded demonstration deployment, not
-an authenticated production service. An existing app registration is not proof
-that end-user sign-in is configured. Do not enter personal information or invite
-public traffic. History/transcript/ACS ingress routes remain fail closed until
-server-verified ownership exists; do not bypass those controls to make a demo work.
+**Current corrected frontend:** revision
+`allclear-q2lt63vq6i5f4-frontend--azd-1794984456`,
+image `allclearq2lt63vq6i5f4acr.azurecr.io/all-clear/frontend-p29-demo:azd-deploy-1794984448`,
+digest `sha256:564ef351a29faa73578ec92788142d0d1f6942f96256c17ebd817cbb55ac0c50`,
+Single/latest 100% traffic, active/Healthy/Provisioned.
+`index-Co9HNnxP.js` (267497 bytes) has identical serving-container, public GET
+and local-dist SHA-256:
+`628e7cd782a52c988f62f4ac1f6728f01e4f0ff9f02581767a1eb15e364d1de7`.
+Root/asset HTTP 200 confirmed at 01:49:01.627 ET. A transient rollout asset
+assertion failed before the uncached GET confirmed the correct live asset;
+this was a read-only check, not another deployment.
 
-**Deployed revision identity (nonsecret):** registry
-`allclearq2lt63vq6i5f4acr.azurecr.io`, tag `azd-deploy-1794978486`.
-Backend revision `allclear-q2lt63vq6i5f4-backend--azd-1794978515`,
-image `all-clear/backend-p29-demo`,
-digest `sha256:b28a4b339138a47141df3f64b73d85ccbf08dac3fbbca626f8655d8795729f9d`
-(created 00:08:36.015 ET).
-Frontend revision `allclear-q2lt63vq6i5f4-frontend--azd-1794978533`,
-image `all-clear/frontend-p29-demo`,
-digest `sha256:4252de6f6bd42badea70b2b3b4ac3ef33f68e14f63b879b2de064bbf4d8286ce`
-(created 00:08:31.191 ET). Both revisions Ready; both apps retain minimum
-one replica. Image identity proves what was deployed, not safety correctness.
+**Synthetic lifecycle, not retroactive incident correction.** Each explicitly
+authorized retirement followed frozen acceptance capture, positive fixture/
+evidence/ETag matching and status-only CAS. All summaries, raw attached reports,
+severity, magnitudes, 1536-dimension embeddings and original timestamps were
+preserved. Durable intent/completion records contain actor p29, reason, IDs,
+old/new status, evidence hashes, before/after hashes and ETags.
 
-**Local source differs from these deployed images.** Forge subsequently added
-the narrowly scoped electrical-hazard regression fix and tests, **TESTED
-LOCALLY, NOT DEPLOYED**. No fourth deployment, hotpatch or extra signal was
-performed. The stored `AC-0001` remains the observed SEV2/non-escalated incident;
-the source fix does not migrate it. Future authorized remediation/revalidation
-must account for that existing incident without deleting or hiding its reports.
+| Operation | Only fixtures retired | Preserved history / verified resulting totals |
+|---|---|---|
+| `p29-synthetic-retirement-20261118T062853Z` | AC-0001/2 | Original unsafe SEV2 retained; magnitudes 2/1, reports 1/0; counter2, audit4. |
+| `p29-audience-prep-retirement-20261118T063858Z` | AC-0003/4 | AC-0003 **acceptance magnitude2 → one UI rehearsal magnitude3 → resolved**, reports2 retained; counter4, audit8; older full docs/ETags unchanged. |
+| `p29-final-desktop-retirement-20261118T065104Z` | AC-0005/6 | 01:51:04.102–07.892: preserve SEV1/escalated/15m/magnitude2/reports1 and SEV3/escalated/240m/magnitude1/reports0. Older AC-0001–4 full docs/ETags and full counter document unchanged. **Six resolved, zero active, counter6, audit12**. |
+
+No deletion, counter reset, severity/embedding rewrite or report loss.
+Final health passed **01:51:15.229 ET**. No fixture is active; expected first
+audience IDs are **AC-0007/AC-0008**, assuming no intervening traffic.
+
+**Auth/privacy limitation:** no production end-user login is established.
+Use synthetic content only; history/transcript/ACS ingress stay fail closed.
+Do not treat an app registration or an ARM permission as deployed user sign-in.
 
 ## Five-step 9:00 AM demo
 
-**Do not present this as a ready or safety-correct demo.** Root page, live/model
-badges and Trust interaction are browser-proven, but the prescribed power-line
-signal failed mandatory SEV1/escalation acceptance. A 9:00 AM operator can show
-the evidence and limitation transparently, or defer the demo; do not silently
-substitute a different prompt to disguise the failed gate. Authenticated portal
-views remain unverified. Use a desktop-width
-window. Do not choose `?demo=loaded`, `?demo=hero`, simulate surge, or the
-40-signal water scenario as evidence of live classification. Overnight verifier
-submits exactly three signals; the morning operator's rehearsal is a separate
-write and may attach to incidents already created overnight.
+**New live safety/dedup acceptance and corrected actual desktop Sends/receipts
+all passed.**
+Authenticated portal rendering and a measured clean successful participant run
+remain unproven; overall report stays NOT READY. Final audience queue is
+verified **zero active / six resolved / counter6**, health passed **01:51:15.229 ET**.
+Original AC-0001's failed result remains history;
+fixture retirement is controlled test preparation, not correction of a real incident.
 
-1. **Open the frontend root URL**, with no demo query parameters. The audience
-   sees the incident-triage briefing room. Confirm the live service indicator
-   and open backend `/api/health` in a second tab to show `mock_mode: false`.
-2. Show the recorded result for **“There's a downed power line sparking on
-   Oak Street near the school.”** Required: **SEV1 / 15m / human escalation**.
-   Actual overnight result: **AC-0001 / SEV2 / 60m / not escalated**.
-   Explain that this is a blocking safety defect, not success. Do not enter
-   another overnight signal or promise a corrected live result. Only after a
-   separately authorized fix/redeployment/revalidation may an operator type it
-   in **“Describe the signal…”** and click **Send** as a passing demonstration.
-3. Type **“My water bill is wrong, can someone call me?”** and click **Send**.
-   This is a morning-operator action, not an instruction for extra overnight
-   writes. The recorded result is **HUMAN_REQUEST**, **AC-0002**, **SEV3 / 240m**,
-   queue **escalations**, reason **user_requested_human** and escalated true.
-4. Show the recorded exact power-line duplicate: **ATTACH_TO_INCIDENT**,
-   **AC-0001**, magnitude **2**, similarity **1.0** rather than a second incident.
-   If a separately authorized morning run is performed, enter that exact text
-   again and compare the incident ID; do not claim its still-SEV2 state passes.
-   Click **Show decision receipt**
-   to explain QueryAgent classification versus zero-LLM RouterExecutor rules.
-   Every signal remains a report. Do not approve a public update.
-5. In a separate tab open **https://ai.azure.com/?cid=learnDocs** as p29.
-   Switch **New Foundry off → Keep building with Foundry → View all resources**,
-   select the own-RG OpenAI resource, dismiss an upgrade offer with **Cancel**,
-   then open **Shared resources → Deployments** and inspect the existing
-   `gpt-5.1` and `text-embedding-3-small` rows.
-   Compare the backend model evidence and Application Insights traces.
-   These labels are verified against official documentation, **not an
-   authenticated p29 browser**. Do not select **+ Deploy model**, upgrade the
-   OpenAI resource or create a project. This account is `kind: OpenAI`, not an
-   upgraded AI Services project; do not promise the newer Models + endpoints UI.
+1. Open the frontend root at desktop width, without demo query parameters.
+   Show live mode and `/api/health` with `mock_mode:false`, `storage_mode:cosmos`.
+   **Say:** “The live synthetic All Clear demo is working: it escalates hazards
+   and attaches duplicates to one incident. These are test reports. No real
+   emergency response or crew dispatch is being made.”
+2. In **Describe the signal…**, type **“There's a downed power line sparking on
+   Oak Street near the school.”**, click **Send**. Required: SEV1/15m/escalation.
+   Expect **OPEN**, next ID **AC-0007**, **SEV1/15m/escalated**
+   (verified preserved counter 6, not reset).
+   This behavior was proven live on AC-0003 and desktop AC-0005.
+   If another user has already submitted it,
+   explain attachment honestly rather than promise a fresh opening.
+   **Say:** “The deterministic router makes this a SEV1 incident, starts a
+   fifteen-minute response clock and escalates it to a human.”
+3. Type **“My water bill is wrong, can someone call me?”**, click **Send**.
+   Expect next ID **AC-0008**, **HUMAN_REQUEST, SEV3/240m/escalations**,
+   `user_requested_human` handoff; proven on AC-0004 and desktop AC-0006.
+   **Say:** “The callback request goes to a human with a four-hour response
+   target. It is not treated as the power-line emergency.”
+4. Send the **exact first text again**. Show same incident and increased
+   magnitude (**expected AC-0007, magnitude 2**), **SEV1/escalated**.
+   Stay on desktop: click **Show decision receipt**. The verified 1440px path
+   shows ATTACH/SEV1/15m/similarity/citations; no resize or extra signal needed.
+   Show **3 signals → 2 incidents, 1 attached report** and **No sitrep returned**
+   on the attach path. First-opening paths may show a ready sitrep/approval gate;
+   attachment does not invent a new sitrep/gate. Do not approve public updates.
+   **Say:** “Three signals become two incidents. This duplicate remains a
+   report on the same SEV1 incident. It does not create another emergency or
+   generate a new sitrep, and nothing public is approved automatically.”
+5. In Foundry follow the exact classic path at the top; cancel any upgrade offer.
+   Inspect existing model rows only, then show actual Insights model/embedding
+   dependencies. **Authenticated portal rendering remains unverified.** Never
+   select +Deploy model, upgrade the resource or create a project to reach this view.
+   **Say:** “Azure permissions and real request telemetry confirm GPT-5.1 and
+   the Standard embedding deployment. Signed-in Foundry rendering was not
+   independently verified overnight, and the participant time remains an estimate.”
 
-Portal navigation sources, checked by Beast at 00:05 ET:
-[Create an Azure OpenAI model deployment](https://learn.microsoft.com/en-us/azure/foundry-classic/openai/how-to/create-resource#deploy-a-model)
-and [classic-only resources](https://learn.microsoft.com/en-us/azure/foundry/how-to/navigate-from-classic#classic-only-migration-required).
-These support the route, not the claim that p29 has rendered those pages.
+Official navigation sources:
+[OpenAI classic deployments](https://learn.microsoft.com/en-us/azure/foundry-classic/openai/how-to/create-resource#deploy-a-model),
+[classic-only resources](https://learn.microsoft.com/en-us/azure/foundry/how-to/navigate-from-classic#classic-only-migration-required).
+The resource is `kind:OpenAI`, not an upgraded AI Services project.
+Avoid simulated boards, Muni Water surge (40 writes), and the locally simulated
+audit route as substitutes for live evidence.
 
-## p29 access and its source
+## p29 shared Fabric access and source
 
-The read-only role query included inherited assignments and group memberships.
-No access to other RGs was exercised except the explicitly requested role inventory.
+Read-only role inventory included inherited/group assignments; no shared data was queried.
 
-| Scope | Role | Assignment source |
+| Scope | Role | Source |
 |---|---|---|
-| `rg-allclear-p29` | Owner | Direct user `c4894275-c7f1-499d-a0d3-cca1350415eb` |
-| `rg-allclear-coach-backend` | Reader | Group `SG - Azure Days AllClear Participants` (`9cc5fccc-d880-4df5-92bc-f08f60372050`) |
-| `rg-fabric-shared-use2-dev` | Reader; Foundry Project Manager | Group `SG - Azure Day Fabric Users` (`549dbd5c-e254-476e-8ab9-5d30a69a0813`) |
-| Shared RG / `kv-fabric-shared-use2` | Reader; Key Vault Administrator | Same Fabric Users group |
-| Shared RG / `shared-docintel-hack` | Contributor | Same Fabric Users group |
-| Shared RG / `acsfabricshareduse2dev01` | Reader; Communication and Email Service Owner | Same Fabric Users group |
-| Shared RG / `tin-iothub-fabrichack` | IoT Hub Data Contributor | Same Fabric Users group |
+| Own `rg-allclear-p29` | Owner | Direct p29 object `c4894275-c7f1-499d-a0d3-cca1350415eb` |
+| `rg-allclear-coach-backend` | Reader | AllClear Participants group `9cc5fccc-d880-4df5-92bc-f08f60372050` |
+| `rg-fabric-shared-use2-dev` | Reader; Foundry Project Manager | Fabric Users group `549dbd5c-e254-476e-8ab9-5d30a69a0813` |
+| Shared `kv-fabric-shared-use2` | Reader; Key Vault Administrator | Same Fabric Users group |
+| Shared `shared-docintel-hack` | Contributor | Same Fabric Users group |
+| Shared `acsfabricshareduse2dev01` | Reader; Communication and Email Service Owner | Same Fabric Users group |
+| Shared `tin-iothub-fabrichack` | IoT Hub Data Contributor | Same Fabric Users group |
 
-These are assigned RBAC roles, not successful data-plane tests. Key Vault Administrator can administer vault data (including secrets); Contributor on Document Intelligence permits resource management, subject to deny assignments/policies. No secrets or other shared-resource data were read. Both group display names were confirmed with read-only directory queries. No subscription-scope assignment appeared.
+Group names independently confirmed: **SG - Azure Day Fabric Users**, **SG -
+Azure Days AllClear Participants**. Assigned roles are not successful data-plane
+tests; no subscription assignment appeared. Own-RG assignment IDs
+`658bf96f-08be-fdb5-7dc2-f8a5cde27cbd`,
+`e3862ed1-ca36-7805-0c1d-1ede77367c8d` were unchanged after original deployment.
 
-Final own-RG assignment inventory was unchanged: pre-existing Owner assignment
-IDs `658bf96f-08be-fdb5-7dc2-f8a5cde27cbd` and
-`e3862ed1-ca36-7805-0c1d-1ede77367c8d`. No role, policy, provider-registration,
-application-registration, account-switch or login writes occurred.
+## Teardown command — NOT RUN
 
-## Teardown (NOT RUN)
-
-**NOT RUN. Leave everything running for 9:00 AM.** Enabled Bicep resources
-contain 10 top-level resources; Azure generated one smart-detector alert.
-Kitty verified **11 actual top-level resources**,
-all in `rg-allclear-p29`: two apps, environment, OpenAI, Cosmos,
-Search, registry, vault, Insights, workspace and its global smart-detector alert.
-All are eastus2 except Search eastus and the global alert. Backend minimum
-replicas 1; frontend minimum replicas 1. No scheduled teardown.
-
-The following is a deliberately gated **after-event-only Bash command**.
-It deletes a fixed allowlist, never resources discovered by wildcard/tag/query.
-Children are removed before parents where separately addressable management
-resources exist; apps precede their environment/registry and monitoring alert
-precedes Insights/workspace. Deleting the exact vault soft-deletes its secrets
-with it: p29 lacks own-vault data roles, so do not grant roles or read/delete
-secret values individually. Search index deletion similarly follows its exact
-service's deletion. No purge, role change, resource-group deletion, azd
-teardown, or cross-RG operation is included. These delete commands are documented,
-**not executed or destruction-tested**.
+**Leave running for 9:00 AM.** Ten enabled top-level Bicep resources plus one
+Azure-generated smart-detector alert = **11 actual top-level resources**.
+All eastus2 except Search eastus and global alert. Review this exact allowlist
+after the event. Deletes are documented, not destruction-tested. No RG deletion,
+azd teardown, purge, shared-RG operation or new role is included.
+The template's `targetScope = 'resourceGroup'`; it does not create a resource
+group or invoke a subscription-scope deployment.
+Deleting the exact vault soft-deletes its secrets; do not grant data roles to
+delete/read them individually. Search indexes follow exact service deletion.
 
 ```bash
 set -euo pipefail
 set +x
 test "${AFTER_EVENT_CONFIRMATION:-}" = 'DELETE-ONLY-P29-AFTER-EVENT'
-test "$(az account show --query user.name -o tsv)" = \
-  'azuredays-arl26-allclear-p29@establishedcorp.com'
-test "$(az account show --query id -o tsv)" = \
-  '0e1d648b-17c8-4724-9405-8e84b4c565c4'
+test "$(az account show --query user.name -o tsv)" = 'azuredays-arl26-allclear-p29@establishedcorp.com'
+test "$(az account show --query id -o tsv)" = '0e1d648b-17c8-4724-9405-8e84b4c565c4'
 SCOPE='/subscriptions/0e1d648b-17c8-4724-9405-8e84b4c565c4/resourceGroups/rg-allclear-p29'
 test "$(az group show -n rg-allclear-p29 --query id -o tsv)" = "$SCOPE"
 P='allclear-q2lt63vq6i5f4'
 delete_exact() {
-  local relative="$1" api="$2" id="$SCOPE/providers/$1"
-  printf 'Delete exact own-RG resource: %s\n' "$relative"
+  local id="$SCOPE/providers/$1" api="$2"
+  printf 'Delete exact own-RG resource: %s\n' "$1"
   az resource delete --ids "$id" --api-version "$api" --output none
-  az resource wait --ids "$id" --api-version "$api" --deleted \
-    --interval 10 --timeout 1200
+  az resource wait --ids "$id" --api-version "$api" --deleted --interval 10 --timeout 1200
 }
 delete_exact "Microsoft.App/containerApps/$P-frontend" '2023-08-01-preview'
 delete_exact "Microsoft.App/containerApps/$P-backend" '2023-08-01-preview'
 delete_exact "Microsoft.App/managedEnvironments/$P-env" '2023-08-01-preview'
-delete_exact "Microsoft.CognitiveServices/accounts/$P-openai/deployments/gpt-5.1" '2023-10-01-preview'
-delete_exact "Microsoft.CognitiveServices/accounts/$P-openai/deployments/text-embedding-3-small" '2023-10-01-preview'
+for model in gpt-5.1 text-embedding-3-small; do
+  delete_exact "Microsoft.CognitiveServices/accounts/$P-openai/deployments/$model" '2023-10-01-preview'
+done
 delete_exact "Microsoft.CognitiveServices/accounts/$P-openai" '2023-10-01-preview'
 for container in sessions audit_logs incidents; do
   delete_exact "Microsoft.DocumentDB/databaseAccounts/$P-cosmos/sqlDatabases/allclear/containers/$container" '2023-11-15'
 done
 delete_exact "Microsoft.DocumentDB/databaseAccounts/$P-cosmos/sqlDatabases/allclear" '2023-11-15'
 delete_exact "Microsoft.DocumentDB/databaseAccounts/$P-cosmos" '2023-11-15'
-delete_exact 'Microsoft.Search/searchServices/allclear-q2lt63vq6i5f4-search' '2023-11-01'
+delete_exact "Microsoft.Search/searchServices/$P-search" '2023-11-01'
 delete_exact 'Microsoft.ContainerRegistry/registries/allclearq2lt63vq6i5f4acr' '2023-07-01'
 delete_exact 'Microsoft.KeyVault/vaults/allclearq2lt63vq6i5f4kv' '2023-07-01'
 delete_exact "microsoft.alertsmanagement/smartDetectorAlertRules/Failure Anomalies - $P-insights" '2021-04-01'
 delete_exact "Microsoft.Insights/components/$P-insights" '2020-02-02'
 delete_exact "Microsoft.OperationalInsights/workspaces/$P-logs" '2022-10-01'
-# The existing rg-allclear-p29 remains. Never purge soft-deleted resources.
+# Existing resource group remains. No purge. Any failed delete/wait stops here.
 ```
 
-Set `AFTER_EVENT_CONFIRMATION` manually to the exact gate text **only after the
-event**. Review the allowlist against this report first. Any failed delete/wait
-stops the sequence; inspect that exact own-RG resource instead of broadening
-scope or retrying with force.
+Set the manual confirmation variable only after the event. Never broaden the
+allowlist, discover deletion targets by wildcard/tag, or force past a failure.
 
-## Blockers and exact errors
+## Current blockers and historical errors
 
-- Attempt 1: **`npm error Exit handler never called!`**; direct
-  `registry.npmjs.org` TLS failed. Local image recovery with a Microsoft package
-  feed succeeded, but does not prove a successful azd deployment.
-- Dependency resolver: **`received fatal alert: HandshakeFailure`** when
-  retrieving PyPI wheel metadata. The Linux lock uses the verified Microsoft
-  package proxy; external-network portability remains unproven.
-- Attempt 2 exact error: **`azure.yaml line 27: cannot unmarshal !!map into []osutil.ExpandableString`**.
-  `docker.buildArgs` must be a list for azd 1.37.3. Corrected and validated by
-  local packaging before the **third and final attempt**, which succeeded.
-  No second stack or additional deployment attempt is authorized.
-- **Unresolved safety gate:** first required signal returned
-  **`FIELD_HAZARD → OPEN_INCIDENT AC-0001; severity=SEV2; sla_minutes=60; escalate=false; action.escalated=false`**,
-  not SEV1/escalation. Classifier severity indicators were `["downed","sparking"]`;
-  it returned `requires_escalation=false`. Beast's source trace found the
-  deterministic router's life-safety recognition does not include these
-  indicators, so the field-hazard path maps to SEV2. The duplicate inherits that
-  unsafe result. Do not downgrade the expected assertion or alter the sample.
-- **Local fix is not live remediation:** `sparking` and `electrical arcing`
-  now trigger the existing deterministic life-safety route in source. Exact
-  reproduction tests failed before the change and all 23 focused routing/pipeline
-  tests pass after it; the final combined seven-file suite passed **92 tests in
-  11.79s** after strengthening the directly coupled route test. The branch-only
-  fix has **not** been built into/deployed
-  over the recorded revisions or live-validated; all deployment attempts and
-  application acceptance writes remain consumed. Existing unsafe incident data
-  is unchanged. Readiness remains **NOT READY**.
-- Deployment URLs, browser/health proof, all three responses, embedding dedup,
-  actual model invocation and Application Insights traces are proven.
-  **Authenticated p29 Foundry portal visibility remains unverified.**
-  Configured model names or `/health/models` alone are not proof
-  that a request used that model.
-- Empty CLI/REST quota responses (`[]`) are an evidence gap, not a capacity
-  error or a reason to provision a second stack.
-- Existing backend pytest cannot test live config: `backend/tests/conftest.py`
-  forces `ENVIRONMENT=test` and `MOCK_MODE=true`. Live-config pytest is
-  **skipped as unsupported**, not passed. The 85 regressions are mock/unit tests;
-  the dedicated verifier supplies the bounded live acceptance lane.
+- **Functional safety defect cleared:** the unchanged first signal opened
+  AC-0003 in backend recovery and AC-0005 in the final desktop run, both
+  SEV1/escalated. Their duplicates attached at magnitude 2 with SEV1/escalation
+  preserved. Original failed results remain historical evidence.
+- **Functional evidence complete:** new-request-scoped model/embedding telemetry,
+  traces, browser, exact three-signal acceptance and narrow durable readback passed.
+  No original trace counts were reused as recovery proof.
+- **Full-request proof gap:** authenticated p29 Foundry deployment-table rendering
+  unavailable. ARM listing permission and official navigation are proven, not UI.
+  The isolated browser observed HTTP 200, then blocked
+  `GET login.microsoftonline.com/organizations/oauth2/v2.0/authorize`;
+  final URL was exactly `chrome-error://chromewebdata/`, with
+  `rendered_text: ""`. No Azure authentication error text was returned:
+  Azure CLI/azd remained authenticated; this browser had no authorized session.
+- **Full-request timing qualification:** no clean-from-empty successful participant
+  run was measured. Separate cold-stage and recovered functional evidence do not
+  establish that claim; one-stack rule prevents a duplicate timed deployment.
+- **Audience preparation passed:** corrected desktop three-send run and audited
+  AC-0005/6 retirement verified. Zero active/six resolved/counter6/audit12,
+  final live health/frontend HTTP 200 at **01:51:15.229 ET**. No more signal
+  POSTs or maintenance planned; next expected IDs AC-0007/8 are not yet executed.
+- **Historical, fixed:** attempt 1 npm exit-handler/TLS failure; attempt 2 azd
+  buildArgs map schema error. PyPI metadata failed with
+  **`received fatal alert: HandshakeFailure`**; Microsoft proxy enabled image build.
+- **Limitations, not new capacity errors:** quota CLI/REST returned `[]`; actual
+  models succeeded but quota headroom is unknown. Startup-specific trace query
+  returned 0; four other traces/real dependencies are proven.
+- Backend live-config pytest is unsupported. Public-registry/proxy portability,
+  production sign-in and a clean-from-empty successful timing remain unproven.
+- **Cleared UI accuracy defects:** the old missing desktop receipt, false
+  aggregate zero and unconditional Sitrep ready were reproduced then fixed and
+  verified by actual desktop Sends. Current receipt/counter/null-sitrep copy pass;
+  old screenshots and mobile workaround are historical, not current defects.
+- **Storage evidence limit:** an incident's origin summary/citations represent
+  its first signal; the `reports` array contains attached duplicate text, not
+  every original raw signal. Original AC-0001 magnitude=2/reports length=1;
+  AC-0002 magnitude=1/reports length=0. Scripted API acceptance omitted
+  `student_id_hash`, so no full raw conversation is persisted for that run.
+  Normal UI supplies its own hash; no full conversation readback is claimed.
+  Preserve
+  observed records without claiming three raw report documents or adding an
+  identity to the unchanged verifier merely to conceal this limitation.
 
-## Participant Bash recipe
+## Participant Bash recipe — one stack, guarded scope
 
-Run from the repository root in **Bash** (WSL/Git Bash/Linux), not PowerShell.
-These commands are a source-reviewed recipe, not a claim that a fresh
-participant has completed it. Only Kitty may execute Azure writes during this
-overnight run. p29 already has an environment and stack: **do not create a
-second environment or rerun this recipe against the running demo**.
+Run in Bash from a **clean reviewed clone**, with az/azd/Docker/Python/backend
+dependencies installed and existing login valid. Never rerun fresh-environment
+steps against the running demo. A different participant must replace **identity,
+RG and environment together** with their assigned values. Cohort budget:
+six participant embedding deployments plus this demo, not extra test stacks.
+Tested tools: Azure CLI **2.93.0**, azd **1.37.3**, Docker server **29.9.3**.
+Sources: [domain](../../CONTEXT.md), [azd](../../azure.yaml),
+[Bicep](../../infra/main.bicep), [parameters](../../infra/main.parameters.json),
+[seeder](../../scripts/seed_search_index.py), [plan](../../specs/019-evolution-loop/plan.md).
 
-Canonical sources: [`CONTEXT.md`](../../CONTEXT.md),
-[`azure.yaml`](../../azure.yaml),
-[`infra/main.bicep`](../../infra/main.bicep),
-[deployment parameters](../../infra/main.parameters.json),
-[knowledge seeder](../../scripts/seed_search_index.py),
-[active plan](../../specs/019-evolution-loop/plan.md).
-
-### 1. Guard the identity and existing resource group
-
-Prerequisites: the tested branch, Azure CLI, azd, Docker server, Node/npm,
-Python 3.11+ and backend dependencies. Schedule participant embeddings in
-cohorts of **six plus this demo**; seven simultaneous deployments is the stated
-limit. Do not discover capacity by creating extra stacks.
+### 1. Guard identity; select branch; create one environment
 
 ```bash
 set -euo pipefail
-set +x                        # no shell tracing of secret operations
+set +x
+workflow_start=$(date -u +%FT%TZ); workflow_seconds=$SECONDS
 SUB='0e1d648b-17c8-4724-9405-8e84b4c565c4'
 EXPECTED_USER='azuredays-arl26-allclear-p29@establishedcorp.com'
 RG='rg-allclear-p29'
 ENV_NAME='p29-demo'
 BRANCH='azure/overnight-2026-11-18'
+SOURCE_COMMIT='b26e397500bc00f465a025363d17c548801a93cb'
 EXPECTED_SCOPE="/subscriptions/$SUB/resourceGroups/$RG"
 test "$(az account show --query user.name -o tsv)" = "$EXPECTED_USER"
 test "$(az account show --query id -o tsv)" = "$SUB"
-test "$(az group show --name "$RG" --query id -o tsv)" = "$EXPECTED_SCOPE"
-test "$(az group show --name "$RG" --query location -o tsv)" = 'eastus2'
-azd auth login --check-status   # check only; stop if expired, never log in/switch
-az version --query '"azure-cli"' -o tsv
-azd version
+test "$(az group show -n "$RG" --query id -o tsv)" = "$EXPECTED_SCOPE"
+test "$(az group show -n "$RG" --query location -o tsv)" = eastus2
+azd auth login --check-status
 docker version --format '{{.Server.Version}}'
-git status --short
-```
-
-For another participant, a coach must replace **all three** p29 identity,
-own-RG and environment values with that participant's assigned values before
-execution; never borrow the demo or shared RG. A mismatch/expired login is a
-hard stop. Do not run `az account set`, login, provider registration, role,
-policy, app-registration or subscription-scope writes.
-
-### 2. Select the reviewed branch and create one environment
-
-Only switch a clean participant clone; preserve any existing dirty worktree.
-No command below touches main or creates a resource group. On a fresh clone
-where the branch is not local, fetch that branch and create its tracking branch
-first; do not reset existing work.
-
-```bash
-test -z "$(git status --porcelain)" || {
-  echo 'STOP: preserve existing work; use a clean participant clone.'; exit 1;
-}
-git switch "$BRANCH"
+test -z "$(git status --porcelain)" || { echo 'STOP: preserve dirty work.'; exit 1; }
+case "$(git remote get-url origin)" in
+  https://github.com/msftsean/all-clear.git|https://github.com/msftsean/all-clear|git@github.com:msftsean/all-clear.git) ;;
+  *) echo 'STOP: expected canonical msftsean/all-clear origin.'; exit 1 ;;
+esac
+git fetch origin  # only after the coordinator confirms branch publication
+if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
+  git switch "$BRANCH"
+  git merge --ff-only "origin/$BRANCH"
+else
+  git switch --track "origin/$BRANCH"
+fi
 test "$(git branch --show-current)" = "$BRANCH"
+# Allow later report-only commits, but require identical reviewed runtime inputs.
+git diff --exit-code "$SOURCE_COMMIT" -- backend frontend infra scripts azure.yaml
 azd env new "$ENV_NAME" --subscription "$SUB" --location eastus2 --no-prompt
-azd env set AZURE_SUBSCRIPTION_ID "$SUB" -e "$ENV_NAME"
-azd env set AZURE_LOCATION eastus2 -e "$ENV_NAME"
-azd env set AZURE_RESOURCE_GROUP "$RG" -e "$ENV_NAME"
-azd env set MOCK_MODE false -e "$ENV_NAME"
-azd env set DEPLOY_PHONE false -e "$ENV_NAME"
-azd env set DEPLOY_REALTIME false -e "$ENV_NAME"
-azd env set CREATE_ROLE_ASSIGNMENTS false -e "$ENV_NAME"
-azd env set OPENAI_KEY_AUTH true -e "$ENV_NAME"
-# Only on a network that cannot reach public npm; verify reachability first:
-azd env set NPM_CONFIG_REGISTRY https://packagefeedproxy.microsoft.io/npm/ -e "$ENV_NAME"
+for setting in "AZURE_SUBSCRIPTION_ID=$SUB" "AZURE_LOCATION=eastus2" \
+  "AZURE_RESOURCE_GROUP=$RG" "MOCK_MODE=false" "DEPLOY_PHONE=false" \
+  "DEPLOY_REALTIME=false" "CREATE_ROLE_ASSIGNMENTS=false" "OPENAI_KEY_AUTH=true" \
+  "NPM_CONFIG_REGISTRY=https://registry.npmjs.org/"; do
+  azd env set "${setting%%=*}" "${setting#*=}" -e "$ENV_NAME"
+done
+# Optional only where public npm is blocked and this mirror is reachable:
+# azd env set NPM_CONFIG_REGISTRY https://packagefeedproxy.microsoft.io/npm/ -e "$ENV_NAME"
 ```
 
-Those azd settings contain **no secrets**. Do not use `azd env get-values`,
-export a `.env`, store keys in azd, print ARM `listKeys` output, enable `set -x`,
-or log environment/Container Apps secret values. Runtime secrets are evaluated
-in Azure by ARM into Container Apps secrets; seeding may hold credentials only
-in process memory.
+Mismatch/expired login is a hard stop; never switch accounts or renew login
+autonomously. No provider, subscription, role, policy or app-registration writes.
+Settings above are nonsecret. **No `azd env get-values`, secret `.env` exports,
+keys in azd, shell tracing, HTTP debugging or secret output.** Runtime keys go
+directly from ARM expressions into Container Apps secrets; seed keys stay in memory.
+The Linux lock's Microsoft PyPI index must be reachable or reviewed for portability.
 
-### 3. Preview, then time one stack
+### 2. Preview and time the full provisioning/deployment stage
 
 ```bash
 az bicep build --file infra/main.bicep --stdout >/dev/null
-preview_start=$SECONDS
 azd provision --preview -e "$ENV_NAME" --no-prompt
-printf 'Preview: %s seconds\n' "$((SECONDS-preview_start))"
-# STOP unless the preview is entirely inside EXPECTED_SCOPE, creates no roles,
-# and keeps embeddings on Standard. Search eastus; other enabled services eastus2.
-deploy_start=$(date -u +%FT%TZ)
-deploy_seconds=$SECONDS
+# STOP unless entirely EXPECTED_SCOPE, no roles, embeddings Standard,
+# Search eastus and other enabled services eastus2.
+start=$(date -u +%FT%TZ); start_seconds=$SECONDS
 set +e
 azd up -e "$ENV_NAME" --no-prompt
-deploy_rc=$?
+rc=$?
 set -e
-printf 'Deployment start=%s end=%s seconds=%s exit=%s\n' \
-  "$deploy_start" "$(date -u +%FT%TZ)" \
-  "$((SECONDS-deploy_seconds))" "$deploy_rc"
-test "$deploy_rc" -eq 0
+printf 'start=%s end=%s seconds=%s exit=%s\n' \
+  "$start" "$(date -u +%FT%TZ)" "$((SECONDS-start_seconds))" "$rc"
+test "$rc" -eq 0
 ```
 
-Keep the timer running through the seed and acceptance steps for the **usable
-participant path**, and separately report azd elapsed time. On failure inspect
-the exact error and original ARM deployment status; ARM can continue after azd
-exits. Retry only the same environment after terminal state, at most **three
-total attempts**. A warm retry excludes initial build/provisioning work and is
-not a cold participant estimate. Move Search eastus→eastus2 only if a real
-Search capacity/region error requires it; Search eastus already succeeded here.
-Never change embeddings from Standard, increase quota, or create a second stack.
+Keep a second end-to-end timer through seed/acceptance. On failure inspect the
+original ARM deployment: it can continue after azd exits. Never overlap attempts
+or create another stack. p29's explicit cap is now nine total (three original +
+six additional); others need their own authorization. Move Search only on an
+actual region/capacity error; eastus succeeded here. Never change embedding SKU.
+Backend-only recovery is **not** this fresh-provisioning stage's timing proof.
 
-### 4. Seed the own-RG knowledge index without secret files
+### 3. Seed knowledge with credentials only in process memory
 
-Use the existing `scripts/seed_search_index.py` with **explicit** index/model
-overrides: its legacy defaults are not this deployment's configuration.
-Runtime knowledge retrieval uses the supported `id`, `title`, `content`,
-`snippet`, `department`, `category`, `tags` and `content_vector` fields.
-Do not run `backend/scripts/seed_knowledge_base.py` unchanged: its Entra-only
-embedding authentication needs a data role that this lab does not create.
-
-The following wrapper queries **only the guarded own RG**, captures credentials
-directly into Python memory and supplies them only to the seeder child process.
-It does not print, persist or place keys in shell history/azd. Keep shell tracing,
-HTTP tracing and terminal session recording off; do not dump process environments.
-The branch's backend dependencies must already be installed in this Python.
+Explicit overrides avoid the seeder's legacy index/model defaults. Runtime
+Search fields are compatible; no seed-code modification was required.
 
 ```bash
-export EXPECTED_USER SUB RG  # identity/scope only; never export secret values
-seed_seconds=$SECONDS
+export EXPECTED_USER SUB RG  # nonsecret scope only
 python - <<'PY'
-import json
-import os
-import subprocess
-import sys
-
-def az_json(*args):
-    result = subprocess.run(
-        ["az", *args, "--output", "json", "--only-show-errors"],
-        check=True, capture_output=True, text=True,
-    )
-    return json.loads(result.stdout)
-
-account = az_json("account", "show")
-assert account["user"]["name"] == os.environ["EXPECTED_USER"], "Identity mismatch"
-assert account["id"] == os.environ["SUB"], "Subscription mismatch"
+import json, os, subprocess, sys
+def az(*args):
+    p = subprocess.run(["az", *args, "-o", "json", "--only-show-errors"],
+                       check=True, capture_output=True, text=True)
+    return json.loads(p.stdout)
+account = az("account", "show")
+assert account["user"]["name"] == os.environ["EXPECTED_USER"]
+assert account["id"] == os.environ["SUB"]
 rg = os.environ["RG"]
-group = az_json("group", "show", "--name", rg)
+group = az("group", "show", "-n", rg)
 assert group["id"].lower() == (
-    f"/subscriptions/{os.environ['SUB']}/resourceGroups/{rg}"
-).lower(), "Scope mismatch"
-assert group["location"] == "eastus2", "Region mismatch"
-resources = az_json("resource", "list", "--resource-group", rg)
-
-def one(resource_type):
-    matches = [
-        r for r in resources
-        if r["type"].lower() == resource_type.lower()
-    ]
-    assert len(matches) == 1, f"Expected one {resource_type}; stop for review"
-    return matches[0]["name"]
-
+    f"/subscriptions/{os.environ['SUB']}/resourceGroups/{rg}").lower()
+resources = az("resource", "list", "-g", rg)
+def one(kind):
+    matches = [r["name"] for r in resources if r["type"].lower() == kind.lower()]
+    assert len(matches) == 1, "Ambiguous own-RG resources; stop"
+    return matches[0]
 search = one("Microsoft.Search/searchServices")
-openai = one("Microsoft.CognitiveServices/accounts")
-search_keys = az_json("search", "admin-key", "show", "-g", rg,
-                      "--service-name", search)
-model_keys = az_json("cognitiveservices", "account", "keys", "list",
-                     "-g", rg, "-n", openai)
-model = az_json("cognitiveservices", "account", "show",
-                "-g", rg, "-n", openai)
-env = dict(os.environ)
-env.update({
-    "AZURE_SEARCH_ENDPOINT": f"https://{search}.search.windows.net",
-    "AZURE_SEARCH_API_KEY": search_keys["primaryKey"],
-    "AZURE_OPENAI_ENDPOINT": model["properties"]["endpoint"],
-    "AZURE_OPENAI_API_KEY": model_keys["key1"],
-    "AZURE_OPENAI_EMBEDDING_DEPLOYMENT": "text-embedding-3-small",
-})
-result = subprocess.run([
-    sys.executable, "scripts/seed_search_index.py",
-    "--index-name", "knowledge-base",
-], env=env, check=False)
-raise SystemExit(result.returncode)
+model = one("Microsoft.CognitiveServices/accounts")
+sk = az("search", "admin-key", "show", "-g", rg, "--service-name", search)
+mk = az("cognitiveservices", "account", "keys", "list", "-g", rg, "-n", model)
+endpoint = az("cognitiveservices", "account", "show", "-g", rg, "-n", model)
+env = dict(os.environ, AZURE_SEARCH_ENDPOINT=f"https://{search}.search.windows.net",
+           AZURE_SEARCH_API_KEY=sk["primaryKey"],
+           AZURE_OPENAI_ENDPOINT=endpoint["properties"]["endpoint"],
+           AZURE_OPENAI_API_KEY=mk["key1"],
+           AZURE_OPENAI_EMBEDDING_DEPLOYMENT="text-embedding-3-small")
+raise SystemExit(subprocess.run(
+    [sys.executable, "scripts/seed_search_index.py", "--index-name", "knowledge-base"],
+    env=env, check=False).returncode)
 PY
-printf 'Knowledge seed: %s seconds\n' "$((SECONDS-seed_seconds))"
 ```
 
-Only article IDs/titles, counts and timing should appear. Verify all documents
-upserted; a partial seed is not acceptance. Do not use shared Search/OpenAI
-resources, create another embedding deployment or grant a role to bypass errors.
+Verify **4/4** upserts. Do not print keys, process environments or connection
+strings; do not use shared Search/OpenAI or grant roles for an Entra-only seeder.
 
-### 5. Accept and record before claiming readiness
-
-Set `FRONTEND` and `BACKEND` from the exact verified URLs in this report (nonsecret).
+### 4. Check read-only health, then exactly three acceptance writes
 
 ```bash
 : "${FRONTEND:?Set the verified frontend URL}"
 : "${BACKEND:?Set the verified backend URL}"
 curl --fail --silent --show-error "$FRONTEND" >/dev/null
 curl --fail --silent --show-error "$BACKEND/api/health"
-curl --fail --silent --show-error "$BACKEND/api/health/models"
+python scripts/verify_live_demo.py --backend "$BACKEND" \
+  --output participant-live.json --submit-three
+printf 'Through seed/API acceptance: start=%s end=%s seconds=%s\n' \
+  "$workflow_start" "$(date -u +%FT%TZ)" "$((SECONDS-workflow_seconds))"
 ```
 
-Inspect `mock_mode: false`. In a clean browser use the five-step script above;
-submit the three specified signals **once each** and record intent, outcome,
-incident ID, severity, SLA, escalation, magnitude and duplicate similarity.
-Capture actual served-model evidence, embedding success, App Insights traces
-and p29 Foundry portal visibility. A model-health configuration value, HTTP 200
-HTML, unit-test pass, screenshot of a simulated board or a resource deployment's
-Succeeded state cannot substitute for those checks. Keep readiness **NOT READY**
-and report exact gaps if any fail. Leave the stack running for the event.
+Run the helper **instead of**, not in addition to, browser submissions. It
+refuses reused output and never retries a POST, even on timeout. Investigate an
+uncertain write rather than resubmit. Exact sequence: power line, water bill,
+exact power-line duplicate. Require SEV1/escalation and same-ID magnitude 2.
+Existing incidents can cause attachment; never falsely label that a new opening.
+Do not reset/delete data to make a demonstration pass.
 
-The optional scripted equivalent is
-`python scripts/verify_live_demo.py --backend "$BACKEND" --output participant-live.json --submit-three`.
-Run it **instead of**, never in addition to, the browser's three submissions.
-It refuses an existing output file and never retries a POST, even on timeout;
-an uncertain write requires investigation, not resubmission. Its JSON evidence
-contains synthetic acceptance results, not credentials. The separate browser
-check must remain read-only when the helper owns the three writes.
+### 5. Confirm evidence and leave it running
 
-## Decision and execution ledger
+Read-only browser root/Trust; actual model/embedding dependency telemetry;
+Insights traces; model versions/Standard SKU; authenticated p29 Foundry view.
+Configuration badges, mock tests and public portal HTML cannot substitute.
+If any required gate is missing, retain NOT READY and name the gap. A passing
+fresh-from-empty run remains **unproven** unless actually performed within the
+one-stack constraint; do not infer it from separately observed stages.
+Only after all checks truly pass, record the full usable-path timer:
 
-All times are Eastern (UTC-05:00). Never record secrets, tokens, passwords, or connection strings.
-Preparation/preflight ledger times through D12 are approximate minute-level
-notes, not captured command start/end timestamps. Their verification order is
-**before attempt 1 (23:47:40.5447848 ET)**. Precisely measured deployment,
-packaging, seed and acceptance windows/durations are identified separately.
+```bash
+printf 'All required checks verified: start=%s end=%s elapsed_seconds=%s\n' \
+  "$workflow_start" "$(date -u +%FT%TZ)" "$((SECONDS-workflow_seconds))"
+```
 
-Local nonsecret verifier artifacts are in session
+## Preserved history, decisions and evidence
+
+Original full D01–D39 record: commit `207b457`, this path. Prep timestamps were
+approximate; preview/85 tests/frontend build all preceded attempt 1. Measured
+command and request windows above retain their actual durations. Times span
+2026-11-17 evening through 2026-11-18 morning, Eastern (UTC-05:00); decision
+minute labels are notes, not additional precision claims.
+
+| IDs / time (ET) | Decision and reason |
+|---|---|
+| D01–D07 / preflight | Confirm exact p29/own existing RG, preserve dirty work/main, local Docker available; hard no-role rule wins; explicit RG scope, phone/realtime off, new p29 environment only. |
+| D08–D12 / before attempt 1 | Managed identity defaults preserved; p29 key-auth ARM secrets only; workspace Insights/no offline buffer; Linux lock through Microsoft proxy; secure Docker wincred; preview/85 tests/build passed before deployment. |
+| D13–D18 / recovery of initial packaging | Wait original ARM terminal; local images are not deployment attempts; document registry portability; correct spec headings; model badges are not invocation proof; keep no-login/fail-closed limitations; seed explicit correct index/model. |
+| D19–D24 / 00:02–00:07 | ARM metadata is not portal UI; pytest forces mock; Foundry classic path; exact ARM duration differs from observation; count schema failure as attempt 2; list-schema packaging passed 7.923088s; third attempt was last then-authorized. |
+| D25–D29 / 00:09–00:10 | Attempt 3/seed/browser succeeded; local audit remains simulation; exactly three POSTs exposed genuine safety failure; keep NOT READY and unchanged sample/assertions, report 22m37.413s as failed-path timing. |
+| D30–D34 / after 00:10 | Independent model/embedding/trace evidence; fixed exact deferred teardown inventory; leave replicas 1+1; distinguish two visible chat spans from three embeddings; no startup/portal/quota-headroom claims; workers stopped. |
+| D35–D39 / 00:14–00:20 | Authorize local-only bounded fix; correct preview count (12 rows versus 11 actual top-level); red→23 green; stale route expectation caught (91 pass/1 fail/13.21s), strengthened then 92 passed/11.79s. No live remediation then; cap 3/3 respected until new user authorization. |
+| D40 / 01:22:30 | User: **“Ok you have 6 more attempts. Make it happen.”** Authorizes six additional attempts, total max nine; preserve all original evidence. Parent reconfirms p29/azd at 01:23, same branch/source `207b457`. |
+| D41 / 01:25 | Only Kitty deploys backend and may audit/CAS-retire two confirmed synthetic fixtures; Beast owns fresh three writes. No deletion/report loss/severity or embedding rewrite/counter reset. NOT READY pending actual recovery and portal evidence. |
+| D42 / 01:26 | New guarded ARM account/deployments GETs prove p29 listing permission, not authenticated browser rendering. Keep the two forms of evidence distinct; no unauthorized login/profile/cookie/token access. |
+| D43 / 01:27 | Consolidate stale repeated narrative into current summary plus immutable initial history. Estimate participant time from observed cold stages; exclude authorization wait and never equate backend-only recovery with fresh end-to-end provisioning. |
+| D44 / 01:27 | Backend-only attempt 4 succeeded in 32.6767145s, 4/9 consumed. Do not equate deployment exit with new acceptance; Beast waits for audit/CAS fixture retirement completion. |
+| D45 / 01:27 | Original fixture identity was positively matched, including creation window, summaries, severity, report counts, embeddings and ETags. Document origin-summary versus raw-duplicate-report storage accurately; no full raw origin/session persistence claim or changed verifier identity field. |
+| D46 / 01:28:53–55 | Conditional audited retirement completed for only AC-0001/AC-0002. Only status changed; original unsafe severity, reports, origin summaries, embeddings and counter=2 preserved. Four durable audit documents; not real-incident remediation. |
+| D47 / 01:29 | New backend revision/digest Ready and healthy, frontend/models unchanged; Beast authorized exactly three new no-retry POSTs with immutable original verifier/input shape and a new filename. Readiness remains blocked pending actual results and authenticated portal evidence. |
+| D48 / 01:29:44–54 | Exactly three new authorized POSTs passed all seven immutable-verifier checks: AC-0003 opens SEV1/15m/escalated; billing AC-0004 escalates; exact duplicate attaches AC-0003/magnitude2/similarity1.0 with SEV1 retained. No changed sample, extra identity field, retries or counter reset. Record functional PASS without claiming authenticated portal UI or a fresh cold deployment. |
+| D49 / 01:30:45 | Scoped Cosmos readback proves old fixtures unchanged since audited retirement, stored new AC-0003/AC-0004 business fields and exact attached duplicate, four incidents/counter4 and four maintenance audit documents. Origin summaries/citations and one attached duplicate report are represented; do not claim all three raw signal texts were independently persisted as report documents. |
+| D50 / 01:32 | Fresh-only recovery telemetry proves all three model calls, three embedding spans/four HTTP embedding requests including knowledge lookup, own Search/Cosmos success and four new-revision traces. Six signal POSTs at that point. Functional recovery passes; authenticated portal rendering and a clean passing participant timing remain unproven. |
+| D51 / 01:33 | Kitty attested clean committed backend packaging, matching committed/working router blob and active Healthy new revision receiving 100% traffic. Same 11 top-level resources, model SKUs and unchanged role assignments. No in-container source-hash fetch or stronger provenance claim. Four of nine deployment attempts used; five remain unused. |
+| D52 / Pre-UI freeze | Beast froze bounded recovery: functional checks pass, portal rendering unverified; separate clean participant timing is not proven. Seven new JSON artifacts validated; verifier unchanged from `207b457`. Six signal POSTs then; later one-send rehearsal separately authorized below. |
+| D53 / 01:35:33 | Coordinator explicitly authorizes one additional real frontend Send rehearsal of the original power-line text after Beast notifies Kitty. Expected AC-0003 attachment/magnitude3/SEV1/escalation; no retries, batch or counter reinterpretation. Hold report freeze for actual click/network/screenshot proof; six POSTs so far, seven only if submitted. No extra Azure calls just for reporting or deployments for unavailable browser authentication. |
+| D54 / 01:36 reported | Parent separately authorized one narrow read-only exec on the exact serving backend revision. Live router SHA-256 equals local `b3dfc6338c01b09f73b970e45ec3e0e18a6dfa98a1107a10dde0b3f17b8dc8c7`; no code/env/secret dump or mutation. This supersedes the earlier lack of in-container source proof without changing attempt count. |
+| D55 / 01:36:27 | Real frontend Send rehearsal passed with one original power-line POST through same-origin nginx: AC-0003 attachment/magnitude3/SEV1/escalation/similarity1.0. Total seven signal POSTs; original R2 magnitude2 evidence unchanged. Desktop receipt trigger is absent; verified same-page 430px View button opens receipt without another POST. Document workaround and separate footer escalation label rather than claim an untested desktop click or patch UI unnecessarily. |
+| D56 / After UI capture | Coordinator authorizes audit/CAS status-only retirement of positively confirmed synthetic AC-0003/AC-0004 after Beast completion. Preserve all business data except status, counter4, every report/embedding and the magnitude2→3 rehearsal history; expected four resolved/zero active/eight maintenance audit documents. No extra signal/deployment. Morning next expected incident AC-0005, never a counter reset. |
+| D57 / UI evidence review | Disclose desktop receipt absence, incorrect browser-local attached aggregate 0 and unconditional Sitrep ready despite null attach sitrep. Correct footer/typed network/receipt evidence supports live functionality; do not hide UX limitations or add unauthorized UI patches. |
+| D58 / 01:38:58–01:39:01 | Final audience-prep retirement passed after exact evidence/ETag match: only AC-0003/AC-0004 status changed to resolved. AC-0003 magnitude3/reports2 and all non-status fields preserved; AC-0001/2 full docs/ETags and counter4 unchanged. Four resolved/zero active, eight durable maintenance audit docs. Preserve sequence and expect next audience AC-0005, not a reset. |
+| D59 / 01:39:07.947 | Final health live/Cosmos/GPT-5.1/no failover. Leave apps running, teardown NOT RUN, seven total authorized signal POSTs, four of nine deployment attempts consumed. Functional recovery and exact UI path proven with documented UX workarounds; authenticated portal rendering and clean passing participant timing remain unproven. |
+| D60 / After UI review | Parent authorizes minimal fixes for three directly coupled desktop accuracy defects: receipt access, attached-report aggregate and a false Sitrep ready claim for null sitrep. Parent owns code/tests/build/commit; Kitty may frontend-only deploy only after explicit validated-commit approval. Backend/clean queue/history unchanged; no preemptive deployment, extra POST or report freeze. Four of nine attempts remain used until another deploy actually starts. |
+| D61 / 01:47 reported | Beast reports parent authorization for exactly three actual desktop Sends after Kitty's explicit corrected-frontend Ready signal, original inputs/order and no retries/mocked state. Lifetime POST count stays seven until execution (ten if complete). Capture/freeze first, then release Kitty only for the separately authorized exact AC-0005/AC-0006 synthetic retirement; no preemptive writes or final-ID claims. |
+| D62 / 01:45 validation, subsequently committed | Parent's five-file UI correction committed `b26e397500bc00f465a025363d17c548801a93cb`: six focused tests, production build and targeted ESLint zero warnings pass; local bundle index-Co9HNnxP.js. Explicitly authorize Kitty frontend-only attempt 5 after guards, then exactly three original desktop inputs. Only after capture may confirmed AC-0005/6 be audit/CAS-retired; expected final six resolved/zero active/counter6/audit12 and next audience AC-0007/8 are plans until verified. |
+| D63 / 01:47:11–54; proof 01:49 | Frontend-only attempt 5 passed in 42.5539561s; five of nine attempts consumed. Clean committed source, Ready/Healthy 100%-traffic revision and matching live-container/public/local asset hashes attest actual deployed UI correction. Backend/queue untouched. Beast may now perform exactly three approved desktop Sends; maintenance waits until frozen capture. |
+| D64 / 01:49:24–42 | Corrected desktop acceptance fully captured/frozen: three real Sends, AC-0005 OPEN SEV1/escalated, AC-0006 human escalation, AC-0005 ATTACH/magnitude2. Desktop receipts work for all three at 1440px; attached count1, ready sitreps only when nonnull, null attach shows No sitrep returned/no approval gate. Ten lifetime POSTs, no retries/state injection/extra approvals; no more Beast signals. Release Kitty only for the already authorized positively matched AC-0005/6 audited retirement. |
+| D65 / 01:49:32–41 | Fresh final desktop telemetry independently correlates all three GPT-5.1 spans to own OpenAI HTTP 200 and three embedding spans to own deployment HTTP 200. This is actual current-call proof, not a constant receipt/model-health label. |
+| D66 / 01:51:04–15 | Final AC-0005/6 status-only CAS retirement passed; all other fields and old AC-0001–4 full docs/ETags preserved, full counter6 unchanged. Six resolved/zero active/audit12; final health/frontend passed 01:51:15.229. Leave apps running, teardown NOT RUN, 10 POSTs/5 of 9 deployments; next audience AC-0007/8 expected, not submitted. |
+| D67 / Planned publication | Coordinator plans a guarded normal branch-only push after final docs commit so participants can fetch tested fixes. Exact existing origin/base/workflows reviewed; no main push/merge/PR, no force and no Azure push deployment on this branch. Publication remains pending verified remote ref; recipe handles tracking-new versus existing local branch without reset or merging main. |
+| D68 / Merge-safety scope | Inventory means task-owned delta from 8ae9276, not all changes against main. Remote main16caa52/local main091953 differ; baseline was already server-visible and diverged31ahead/3behind before task commits. Publish the night branch for participant access only; after-event review/cherry-pick scoped task commits, never blindly merge/rebase the pre-existing divergent history. |
+
+Nonsecret local evidence lives under session
 `bf916367-8877-4639-a05a-4b90d955b6db`, `files/`:
-`beast-p29-live.json` (three exact results and timestamps),
+`beast-p29-live.json` (original probe `p29-acceptance-ebb095f68c234aff8307f39660d3fa3c`);
 `beast-p29-browser.json`, `beast-p29-preflight.json`,
-`beast-p29-azure-metadata.json`,
-`beast-p29-telemetry.json`, `beast-p29-dependencies.json`,
-`beast-p29-model-spans.json`, `beast-p29-result.json`,
-`beast-foundry-navigation.json`, plus
-`beast-p29-briefing-room.png` and `beast-p29-glass-box-audit.png`.
-They are local evidence references, not published URLs or credentials.
-
-| ID | Time | Decision / evidence / reason |
-|---|---|---|
-| D01 | 23:36 | Confirm p29 before Azure work. Account and subscription matched; own RG exists and is empty. |
-| D02 | 23:37 | Preserve the dirty worktree; create only the requested overnight branch. Do not modify main or existing unrelated artifacts. |
-| D03 | 23:37 | Retain local Docker builds because the Docker server responds; remote ACR build is unnecessary. |
-| D04 | 23:38 | Interpret the HARD RULE "No role assignments" as prohibiting all new role assignments, even inside own RG. The later instruction to keep RG-scoped assignments cannot override it. Investigate existing API-key support and Azure-resident secret references rather than create RBAC grants. |
-| D05 | 23:38 | The current Bicep already has implicit resource-group scope and creates no RG or app registration. Make scope explicit; never use subscription deployment commands. |
-| D06 | 23:38 | Disable optional phone/realtime for this chat-and-dedup demo. Keep live service mode; mock authentication, if needed, is separate from mock classification. All enabled resources except Search must be eastus2. |
-| D07 | 23:38 | Do not reuse the existing azd environment or its unrelated deployment plan. Create `p29-demo` bound to own RG only. |
-| D08 | 23:42 | Add `createRoleAssignments` (default true) and `openAiKeyAuth` (default false). Only `p29-demo` opts into no-role/key-auth mode. The OpenAI key is evaluated by ARM directly into a Container Apps secret, never an output or local file. Existing Cosmos/Search secrets stay Azure-resident. |
-| D09 | 23:43 | Add workspace-based Application Insights and opt-in Azure Monitor SDK startup; disable local offline export storage and live metrics. Emit one non-PII startup trace naming live/mock mode and model. No prompt/body collection is enabled. |
-| D10 | 23:45 | Direct PyPI wheel-metadata downloads failed with `received fatal alert: HandshakeFailure` using uv and Docker. Direct wheel downloads work. Resolve the Linux lock through the host's configured Microsoft package-feed proxy; emit that nonsecret index in the lock so Docker can reproduce installation. The temporary pip-tools Windows lock was replaced with the correct uv Linux lock (no pywin32). Review package-index portability before merge. |
-| D11 | 23:47 | Docker uses `wincred`, not plaintext credential storage. No credential values were inspected. Retain the existing ACR admin-secret pull approach rather than create AcrPull roles. |
-| D12 | Before attempt 1 | Proceed only after own-RG preview, 85 regressions and frontend build passed. Exact prep command timestamps were not retained; do not infer completion after the deployment start from rounded ledger notes. Existing unrelated `.azure/deployment-plan.md` is not overwritten or treated as p29 proof; this report and the active spec pack contain the p29 plan/evidence. No provider registration or subscription-scope commands are authorized. |
-| D13 | 23:49-23:58 | Treat the failed azd command and still-running ARM deployment separately. Do not cancel, overlap provisioners or consume a retry until the original deployment becomes terminal. Local image validation is not another Azure deployment attempt. |
-| D14 | 23:58 | Document npm proxy as an optional network workaround, not a universal registry requirement; keep the Dockerfile public-registry fallback. Distinguish warm retry timing from cold participant readiness. |
-| D15 | 00:01 | Keep the restricted deployment subsection outside Key Entities and the Verification Matrix; restore consolidation verification tasks under their original heading. Mark T503 complete only from the recorded preview/test/build evidence. |
-| D16 | 00:01 | Keep the morning script source-checked but unproven until Beast supplies browser/portal and exactly-three-signal evidence. `/api/health/models` alone can echo configuration and is insufficient served-model proof. No public update is approved during acceptance. |
-| D17 | 00:01 | Preserve no-end-user-auth and fail-closed privacy limitations explicitly. Restrict demonstration content to synthetic examples; do not present resource access or an existing app registration as deployed sign-in. |
-| D18 | 00:02 | Use the existing API-key-capable Search seeder with explicit `knowledge-base` and `text-embedding-3-small` overrides. Kitty verified runtime field compatibility; do not modify product code merely to add an unused queue field or use an Entra-only seed path without data roles. |
-| D19 | 00:02 | Record independent own-RG ARM model/App Insights metadata separately from portal and data-plane evidence. Beast cannot use an authenticated browser profile or log in; rendered Foundry portal visibility remains an explicit gap even though p29 ARM reads succeeded. |
-| D20 | 00:03 | Skip existing backend pytest against live config: its conftest forces test/mock settings. Use the focused-tested, explicit-opt-in live verifier for exactly three no-retry writes; do not rerun it through a browser submission or after an uncertain POST. |
-| D21 | 00:05 | Correct the source-checked portal recipe to Foundry classic, because the deployed account is `kind: OpenAI`. Follow official Shared resources → Deployments navigation; never upgrade/create resources to obtain the newer portal UI. Signed-in p29 visibility remains unverified. |
-| D22 | 00:06 | Original ARM deployment was observed Succeeded at 00:06:26 ET. Authorize attempt 2 only after this terminal state, on the same stack; no model/region changes or overlapping deployment. Exact ARM service duration is PT17M50.9427648S; approximately 18m46s is CLI-start-to-observation wall time. |
-| D23 | 00:07 | Count the 1.9457583s azd schema-parse failure as attempt 2 despite no cloud writes. Correct `docker.buildArgs` map to supported list schema and validate locally before the final attempt. Stop after attempt 3 fails; do not relabel parse failures to evade the cap. |
-| D24 | 00:07 | Official azd schema confirms `buildArgs` list syntax. Both images passed local-only `azd package --all` in 7.923088s (cache-warm); Kitty starts the final third `azd up` on the same guarded environment. Packaging does not reset or extend the deployment-attempt budget. |
-| D25 | 00:09 | Final attempt 3 succeeded in 72.9490883s at 00:09:10.791 ET; deployment writes are now closed. Kitty seeds knowledge with process-memory keys; Beast may inspect read-only UI/health now but must wait for seed-ready before exactly three signal writes. Readiness remains NOT READY until all requested evidence, including portal rendering, is proven. |
-| D26 | 00:09 | Beast's isolated browser proves the live root page, badges and Trust interaction with no writes/errors. The separate audit route explicitly declares local simulation; retain that label and never use its output as live Azure/Foundry evidence. Configured health/model badges remain distinct from actual served-model proof. |
-| D27 | 00:09 | Knowledge seeding succeeded: 4/4 canonical documents in 11.375s, keys only in process memory. Seed-ready authorizes Beast's exactly-three no-retry acceptance writes; no further application writes are assigned to another agent. |
-| D28 | 00:10 | Exactly three live POSTs completed. Power-line input failed required SEV1/escalation (actual SEV2/60m/not escalated); billing escalation and duplicate attachment passed. Keep NOT READY, disclose the safety failure prominently, preserve the original expectation/sample, and do not manufacture a passing demo using a different prompt. All deployment attempts and acceptance writes are consumed. |
-| D29 | 00:10 | Record initial-start-to-acceptance elapsed 22m37.413s as a failed-path observation, not a successful participant estimate. Keep deployed infrastructure running for the event while the coordinator reports the blocker; do not perform unauthorized remediation/redeployments or additional POSTs. |
-| D30 | After 00:10 | Kitty confirmed App Insights ingestion: 3 traces/24 dependencies with actual `chat gpt-5.1` → successful own OpenAI HTTP request correlation, plus successful embeddings/Search/Cosmos operations. Count that as real served-model/telemetry proof, but do not claim the absent startup-specific trace. |
-| D31 | After 00:10 | Build the deferred teardown from Kitty's exact 11-resource inventory and explicit child dependencies. Keep a manual after-event gate, no discovery-based deletion, no purge and no KV data-role workaround. All teardown remains NOT RUN and deployment remains up. |
-| D32 | After 00:10 | Kitty closed Azure work with attempts 3/3, unchanged role inventory, exact ready revisions/image digests and minimum replicas 1+1. Preserve these nonsecret identifiers for audit, leave the stack running for 9:00 AM, and report overall NOT READY despite healthy infrastructure. |
-| D33 | After 00:10 | Beast independently persisted telemetry: 4 traces, two successful `chat gpt-5.1` spans and three successful `text-embedding-3-small` spans with matching own-resource HTTP operations. Record observed counts without claiming every ingestion item has arrived, startup-trace visibility, quota headroom or authenticated portal rendering. |
-| D34 | 00:13 | Beast closed bounded acceptance and visually inspected the root screenshot. Final sanitized summary and correlated model-span artifacts validate as JSON; six verifier tests explicitly reject the observed SEV2/non-escalated result. Both Azure workers have stopped calls/writes, deployment remains up, safety and portal gaps remain unresolved. |
-| D35 | 00:14 | Coordinator authorized Forge only a local deterministic-router regression fix and focused tests for the observed downed/sparking field hazard. No fourth deployment, hotpatch or extra POST is permitted. If tests pass, label the source change TESTED LOCALLY, NOT DEPLOYED; preserve all deployed evidence and NOT READY verdict. |
-| D36 | 00:15 | Correct preview counting without changing actual inventory: preview displayed 12 rows, including two model deployments, not 12 top-level resources. Bicep enables 10 top-level resources; Azure's generated smart-detector alert makes 11 actual top-level resources. Database/secret children were not individually displayed in that preview. |
-| D37 | 00:16 | Forge completed local-only deterministic life-safety terms `sparking`/`electrical arcing` plus exact-input and negative/duplicate/report/audit regressions. Red reproduction: 4 failed/3 passed; green focused routing/pipeline: 23 passed in 2.40s. No new lint findings; no Azure/network submissions. Label TESTED LOCALLY, NOT DEPLOYED, retain recorded image identity and unsafe AC-0001, and require separate authorization for any future deployment/revalidation. |
-| D38 | 00:19 | Coordinator's integrated local run found one directly coupled stale route-test expectation: 91 passed/1 failed in 13.21s. Forge is strengthening that sparking-powerline route test from SEV2 to required SEV1/15m/escalation and rerunning the combined suite. Record this intermediate failure honestly; no cloud writes, live evidence changes or assertion weakening. |
-| D39 | 00:20 | Forge strengthened `test_routes.py`'s directly coupled sparking-powerline expectation to SEV1/15m, `escalate=true`, `sev1_incident`, action status escalated. Final combined telemetry/schema/routes/pipeline/router/voice-safety/voice-endpoints suite: 92 passed, three dependency warnings, 11.79s. Local safety change is four files total (one production tuple line plus three test files), TESTED LOCALLY, NOT DEPLOYED. Preserve NOT READY, existing unsafe incident, consumed budgets and all measured deployment/acceptance timings. |
+`beast-p29-azure-metadata.json`, `beast-p29-telemetry.json`,
+`beast-p29-dependencies.json`, `beast-p29-model-spans.json`,
+`beast-p29-result.json`, `beast-foundry-navigation.json`,
+`beast-p29-portal-arm-permissions-r2.json`,
+`beast-p29-portal-browser-r2.json`, and original browser screenshots.
+Recovery evidence: `beast-p29-live-r2.json` (probe
+`p29-acceptance-9ea0b5f080ec4c2c95f9a7d5e36811d9`), browser artifacts under
+`beast-r2/`, `beast-p29-dependencies-r2.json`, `beast-p29-traces-r2.json`,
+final complete artifact index/summary `beast-p29-result-r2.json`.
+Separate UI rehearsal: `beast-p29-ui-rehearsal.json`,
+`beast-p29-ui-rehearsal-summary.json`,
+`beast-p29-ui-typed.png`, `beast-p29-ui-desktop.png`,
+`beast-p29-ui-receipt-mobile.png`.
+Final preserved/clean audience queue attestation: `beast-p29-final-demo-state.json`.
+Corrected desktop acceptance: `beast-p29-final-desktop.json`,
+`beast-p29-final-desktop-{1,2,3}-{board,receipt}.png` and typed screenshot.
+Current model proof/final maintenance summary:
+`beast-p29-final-desktop-model-spans.json`,
+`beast-p29-final-desktop-summary.json` (three JSON files validated; seven PNGs).
+New filenames preserve the original evidence.

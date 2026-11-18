@@ -111,6 +111,19 @@ language, required safety gates, and active verification expectations.
   fallen-tree or empty indicators MUST NOT elevate every field hazard to SEV1.
   A locally tested source correction MUST NOT be described as deployed or as
   retroactively correcting an existing incident.
+- Recovery acceptance MAY retire only positively identified synthetic fixtures
+  to resolved with conditional concurrency checks and durable operator audit.
+  It MUST preserve origin summaries, reports, original severity, embeddings and
+  monotonic incident IDs, and MUST distinguish this preparation from correcting
+  a real incident. New acceptance MUST retain the exact original inputs.
+- Readiness evidence MUST distinguish actual served-model/embedding traffic,
+  p29 ARM listing permission and authenticated Foundry portal rendering.
+  A public portal shell or successful ARM GET MUST NOT be claimed as proof
+  that p29 rendered the selected account's model deployment rows.
+- Desktop live-result UI MUST expose the actual decision receipt and derive
+  attached-report totals from incident/report outcomes rather than a misleading
+  browser-local signal/incident subtraction. It MUST NOT claim a sitrep is ready
+  when the current action returns `sitrep:null`.
 
 ### Key Entities
 
